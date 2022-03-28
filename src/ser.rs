@@ -1,4 +1,5 @@
 use crate::error::{Error, Result};
+use alloc::string::String;
 use core::fmt::Display;
 use serde::{ser, Serialize};
 
@@ -135,7 +136,20 @@ impl ser::SerializeStructVariant for SerializeStructVariant {
     }
 }
 
-pub struct Serializer;
+pub struct Serializer {
+    output: String,
+    nesting_level: usize,
+}
+
+impl Serializer {
+    fn write_tag(&mut self, tag: &str) {
+        if self.nesting_level == 0 {
+            self.output.push('#');
+        }
+        self.output.push_str(tag);
+        self.output.push_str(";\n");
+    }
+}
 
 impl<'a> ser::Serializer for &'a mut Serializer {
     type Ok = ();
@@ -153,43 +167,89 @@ impl<'a> ser::Serializer for &'a mut Serializer {
     }
 
     fn serialize_i8(self, v: i8) -> Result<Self::Ok> {
-        todo!()
+        let mut buffer = itoa::Buffer::new();
+        let s = buffer.format(v);
+        self.write_tag(s);
+        Ok(())
     }
 
     fn serialize_i16(self, v: i16) -> Result<Self::Ok> {
-        todo!()
+        let mut buffer = itoa::Buffer::new();
+        let s = buffer.format(v);
+        self.write_tag(s);
+        Ok(())
     }
 
     fn serialize_i32(self, v: i32) -> Result<Self::Ok> {
-        todo!()
+        let mut buffer = itoa::Buffer::new();
+        let s = buffer.format(v);
+        self.write_tag(s);
+        Ok(())
     }
 
     fn serialize_i64(self, v: i64) -> Result<Self::Ok> {
-        todo!()
+        let mut buffer = itoa::Buffer::new();
+        let s = buffer.format(v);
+        self.write_tag(s);
+        Ok(())
+    }
+
+    #[cfg(has_i128)]
+    fn serialize_i128(self, v: i128) -> Result<Self::Ok> {
+        let mut buffer = itoa::Buffer::new();
+        let s = buffer.format(v);
+        self.write_tag(s);
+        Ok(())
     }
 
     fn serialize_u8(self, v: u8) -> Result<Self::Ok> {
-        todo!()
+        let mut buffer = itoa::Buffer::new();
+        let s = buffer.format(v);
+        self.write_tag(s);
+        Ok(())
     }
 
     fn serialize_u16(self, v: u16) -> Result<Self::Ok> {
-        todo!()
+        let mut buffer = itoa::Buffer::new();
+        let s = buffer.format(v);
+        self.write_tag(s);
+        Ok(())
     }
 
     fn serialize_u32(self, v: u32) -> Result<Self::Ok> {
-        todo!()
+        let mut buffer = itoa::Buffer::new();
+        let s = buffer.format(v);
+        self.write_tag(s);
+        Ok(())
     }
 
     fn serialize_u64(self, v: u64) -> Result<Self::Ok> {
-        todo!()
+        let mut buffer = itoa::Buffer::new();
+        let s = buffer.format(v);
+        self.write_tag(s);
+        Ok(())
+    }
+
+    #[cfg(has_u128)]
+    fn serialize_u128(self, v: u128) -> Result<Self::Ok> {
+        let mut buffer = itoa::Buffer::new();
+        let s = buffer.format(v);
+        self.write_tag(s);
+        Ok(())
     }
 
     fn serialize_f32(self, v: f32) -> Result<Self::Ok> {
-        todo!()
+        let mut buffer = ryu::Buffer::new();
+        let s = buffer.format(v);
+        self.write_tag(s);
+        Ok(())
     }
 
     fn serialize_f64(self, v: f64) -> Result<Self::Ok> {
-        todo!()
+        let mut buffer = ryu::Buffer::new();
+        let s = buffer.format(v);
+        self.write_tag(s);
+        Ok(())
     }
 
     fn serialize_char(self, v: char) -> Result<Self::Ok> {
@@ -301,5 +361,125 @@ impl<'a> ser::Serializer for &'a mut Serializer {
         T: ?Sized + Display,
     {
         todo!()
+    }
+}
+
+pub fn to_string<T>(value: &T) -> Result<String> where T: Serialize {
+    let mut serializer = Serializer {
+        output: String::new(),
+        nesting_level: 0,
+    };
+    value.serialize(&mut serializer)?;
+    Ok(serializer.output)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::to_string;
+    use claim::assert_ok_eq;
+
+    #[test]
+    fn i8() {
+        let expected = "#42;\n";
+        assert_ok_eq!(to_string(&42i8), expected);
+    }
+
+    #[test]
+    fn i16() {
+        let expected = "#42;\n";
+        assert_ok_eq!(to_string(&42i16), expected);
+    }
+
+    #[test]
+    fn i32() {
+        let expected = "#42;\n";
+        assert_ok_eq!(to_string(&42i32), expected);
+    }
+
+    #[test]
+    fn i64() {
+        let expected = "#42;\n";
+        assert_ok_eq!(to_string(&42i64), expected);
+    }
+
+    #[test]
+    #[cfg_attr(not(has_i128), ignore)]
+    fn i128() {
+        let expected = "#42;\n";
+        assert_ok_eq!(to_string(&42i128), expected);
+    }
+
+    #[test]
+    fn i8_neg() {
+        let expected = "#-42;\n";
+        assert_ok_eq!(to_string(&-42i8), expected);
+    }
+
+    #[test]
+    fn i16_neg() {
+        let expected = "#-42;\n";
+        assert_ok_eq!(to_string(&-42i16), expected);
+    }
+
+    #[test]
+    fn i32_neg() {
+        let expected = "#-42;\n";
+        assert_ok_eq!(to_string(&-42i32), expected);
+    }
+
+    #[test]
+    fn i64_neg() {
+        let expected = "#-42;\n";
+        assert_ok_eq!(to_string(&-42i64), expected);
+    }
+
+    #[test]
+    #[cfg_attr(not(has_i128), ignore)]
+    fn i128_neg() {
+        let expected = "#-42;\n";
+        assert_ok_eq!(to_string(&-42i128), expected);
+    }
+
+    #[test]
+    fn u8() {
+        let expected = "#42;\n";
+        assert_ok_eq!(to_string(&42u8), expected);
+    }
+
+    #[test]
+    fn u16() {
+        let expected = "#42;\n";
+        assert_ok_eq!(to_string(&42u16), expected);
+    }
+
+    #[test]
+    fn u32() {
+        let expected = "#42;\n";
+        assert_ok_eq!(to_string(&42u32), expected);
+    }
+
+    #[test]
+    fn u64() {
+        let expected = "#42;\n";
+        assert_ok_eq!(to_string(&42u64), expected);
+    }
+
+    #[test]
+    #[cfg_attr(not(has_u128), ignore)]
+    fn u128() {
+        let expected = "#42;\n";
+        assert_ok_eq!(to_string(&42u128), expected);
+    }
+
+    #[test]
+    fn f32() {
+        let expected = "#42.0;\n";
+        assert_ok_eq!(to_string(&42f32), expected);
+    }
+
+    #[test]
+    fn f64() {
+        let expected = "#42.0;\n";
+        assert_ok_eq!(to_string(&42f64), expected);
     }
 }
