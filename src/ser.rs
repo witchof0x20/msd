@@ -146,7 +146,7 @@ impl Serializer {
         if self.nesting_level == 0 {
             self.output.push('#');
         }
-        self.output.push_str(tag);
+        self.output.extend(tag.chars().map(|c| c.to_uppercase()).flatten());
         self.output.push_str(";\n");
     }
 }
@@ -163,7 +163,12 @@ impl<'a> ser::Serializer for &'a mut Serializer {
     type SerializeStructVariant = SerializeStructVariant;
 
     fn serialize_bool(self, v: bool) -> Result<Self::Ok> {
-        todo!()
+        if v {
+            self.write_tag("true");
+        } else {
+            self.write_tag("false");
+        }
+        Ok(())
     }
 
     fn serialize_i8(self, v: i8) -> Result<Self::Ok> {
@@ -377,6 +382,18 @@ pub fn to_string<T>(value: &T) -> Result<String> where T: Serialize {
 mod tests {
     use super::to_string;
     use claim::assert_ok_eq;
+
+    #[test]
+    fn bool_true() {
+        let expected = "#TRUE;\n";
+        assert_ok_eq!(to_string(&true), expected);
+    }
+
+    #[test]
+    fn bool_false() {
+        let expected = "#FALSE;\n";
+        assert_ok_eq!(to_string(&false), expected);
+    }
 
     #[test]
     fn i8() {
