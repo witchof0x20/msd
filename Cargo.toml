@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+either = "1.6.1"
 itoa = "1.0.1"
 ryu = "1.0.9"
 serde = {version = "1.0.136", default-features = false}

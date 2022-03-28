@@ -1,6 +1,7 @@
 use crate::error::{Error, Result};
 use alloc::string::String;
-use core::fmt::Display;
+use core::{fmt::Display, iter};
+use either::Either;
 use serde::{ser, Serialize};
 
 pub struct SerializeSeq;
@@ -146,7 +147,14 @@ impl Serializer {
         if self.nesting_level == 0 {
             self.output.push('#');
         }
-        self.output.extend(tag.chars().map(|c| c.to_uppercase()).flatten());
+        self.output.extend(
+            tag.chars()
+                .flat_map(|c| c.to_uppercase())
+                .flat_map(|c| match c {
+                    '#' | ':' | ';' | '\\' => Either::Left(iter::once('\\').chain(iter::once(c))),
+                    _ => Either::Right(iter::once(c)),
+                }),
+        );
         self.output.push_str(";\n");
     }
 }
@@ -258,7 +266,9 @@ impl<'a> ser::Serializer for &'a mut Serializer {
     }
 
     fn serialize_char(self, v: char) -> Result<Self::Ok> {
-        todo!()
+        let mut buffer = [0; 4];
+        self.write_tag(v.encode_utf8(&mut buffer));
+        Ok(())
     }
 
     fn serialize_str(self, v: &str) -> Result<Self::Ok> {
@@ -369,7 +379,10 @@ impl<'a> ser::Serializer for &'a mut Serializer {
     }
 }
 
-pub fn to_string<T>(value: &T) -> Result<String> where T: Serialize {
+pub fn to_string<T>(value: &T) -> Result<String>
+where
+    T: Serialize,
+{
     let mut serializer = Serializer {
         output: String::new(),
         nesting_level: 0,
@@ -498,5 +511,47 @@ mod tests {
     fn f64() {
         let expected = "#42.0;\n";
         assert_ok_eq!(to_string(&42f64), expected);
+    }
+
+    #[test]
+    fn char() {
+        let expected = "#A;\n";
+        assert_ok_eq!(to_string(&'A'), expected);
+    }
+
+    #[test]
+    fn char_uppercase() {
+        let expected = "#A;\n";
+        assert_ok_eq!(to_string(&'a'), expected);
+    }
+
+    #[test]
+    fn char_uppercase_complex() {
+        let expected = "#SS;\n";
+        assert_ok_eq!(to_string(&'ß'), expected);
+    }
+
+    #[test]
+    fn char_escape_number_sign() {
+        let expected = "#\\#;\n";
+        assert_ok_eq!(to_string(&'#'), expected);
+    }
+
+    #[test]
+    fn char_escape_colon() {
+        let expected = "#\\:;\n";
+        assert_ok_eq!(to_string(&':'), expected);
+    }
+
+    #[test]
+    fn char_escape_semicolon() {
+        let expected = "#\\;;\n";
+        assert_ok_eq!(to_string(&';'), expected);
+    }
+
+    #[test]
+    fn char_escape_backslash() {
+        let expected = "#\\\\;\n";
+        assert_ok_eq!(to_string(&'\\'), expected);
     }
 }
