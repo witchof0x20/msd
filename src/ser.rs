@@ -147,12 +147,27 @@ impl Serializer {
         if self.nesting_level == 0 {
             self.output.push('#');
         }
+        let mut preceding_slash = false;
         self.output.extend(
             tag.chars()
                 .flat_map(|c| c.to_uppercase())
                 .flat_map(|c| match c {
                     '#' | ':' | ';' | '\\' => Either::Left(iter::once('\\').chain(iter::once(c))),
                     _ => Either::Right(iter::once(c)),
+                })
+                .flat_map(|c| match c {
+                    '/' => {
+                        if preceding_slash {
+                            Either::Left(iter::once('\\').chain(iter::once(c)))
+                        } else {
+                            preceding_slash = true;
+                            Either::Right(iter::once(c))
+                        }
+                    }
+                    _ => {
+                        preceding_slash = false;
+                        Either::Right(iter::once(c))
+                    }
                 }),
         );
         self.output.push_str(";\n");
@@ -272,7 +287,8 @@ impl<'a> ser::Serializer for &'a mut Serializer {
     }
 
     fn serialize_str(self, v: &str) -> Result<Self::Ok> {
-        todo!()
+        self.write_tag(v);
+        Ok(())
     }
 
     fn serialize_bytes(self, v: &[u8]) -> Result<Self::Ok> {
@@ -553,5 +569,59 @@ mod tests {
     fn char_escape_backslash() {
         let expected = "#\\\\;\n";
         assert_ok_eq!(to_string(&'\\'), expected);
+    }
+
+    #[test]
+    fn char_not_escape_forwardslash() {
+        let expected = "#/;\n";
+        assert_ok_eq!(to_string(&'/'), expected);
+    }
+
+    #[test]
+    fn str() {
+        let expected = "#FOO;\n";
+        assert_ok_eq!(to_string(&"FOO"), expected);
+    }
+
+    #[test]
+    fn str_uppercase() {
+        let expected = "#FOO;\n";
+        assert_ok_eq!(to_string(&"foo"), expected);
+    }
+
+    #[test]
+    fn str_escape_number_sign() {
+        let expected = "#\\#;\n";
+        assert_ok_eq!(to_string(&"#"), expected);
+    }
+
+    #[test]
+    fn str_escape_colon() {
+        let expected = "#\\:;\n";
+        assert_ok_eq!(to_string(&":"), expected);
+    }
+
+    #[test]
+    fn str_escape_semicolon() {
+        let expected = "#\\;;\n";
+        assert_ok_eq!(to_string(&";"), expected);
+    }
+
+    #[test]
+    fn str_escape_backslash() {
+        let expected = "#\\\\;\n";
+        assert_ok_eq!(to_string(&"\\"), expected);
+    }
+
+    #[test]
+    fn str_not_escape_single_forwardslash() {
+        let expected = "#/;\n";
+        assert_ok_eq!(to_string(&"/"), expected);
+    }
+
+    #[test]
+    fn str_escape_double_forwardslash() {
+        let expected = "#/\\/;\n";
+        assert_ok_eq!(to_string(&"//"), expected);
     }
 }
