@@ -150,7 +150,6 @@ impl Serializer {
         let mut preceding_slash = false;
         self.output.extend(
             tag.chars()
-                .flat_map(|c| c.to_uppercase())
                 .flat_map(|c| match c {
                     '#' | ':' | ';' | '\\' => Either::Left(iter::once('\\').chain(iter::once(c))),
                     _ => Either::Right(iter::once(c)),
@@ -414,13 +413,13 @@ mod tests {
 
     #[test]
     fn bool_true() {
-        let expected = "#TRUE;\n";
+        let expected = "#true;\n";
         assert_ok_eq!(to_string(&true), expected);
     }
 
     #[test]
     fn bool_false() {
-        let expected = "#FALSE;\n";
+        let expected = "#false;\n";
         assert_ok_eq!(to_string(&false), expected);
     }
 
@@ -531,20 +530,8 @@ mod tests {
 
     #[test]
     fn char() {
-        let expected = "#A;\n";
-        assert_ok_eq!(to_string(&'A'), expected);
-    }
-
-    #[test]
-    fn char_uppercase() {
-        let expected = "#A;\n";
+        let expected = "#a;\n";
         assert_ok_eq!(to_string(&'a'), expected);
-    }
-
-    #[test]
-    fn char_uppercase_complex() {
-        let expected = "#SS;\n";
-        assert_ok_eq!(to_string(&'ß'), expected);
     }
 
     #[test]
@@ -579,13 +566,7 @@ mod tests {
 
     #[test]
     fn str() {
-        let expected = "#FOO;\n";
-        assert_ok_eq!(to_string(&"FOO"), expected);
-    }
-
-    #[test]
-    fn str_uppercase() {
-        let expected = "#FOO;\n";
+        let expected = "#foo;\n";
         assert_ok_eq!(to_string(&"foo"), expected);
     }
 
