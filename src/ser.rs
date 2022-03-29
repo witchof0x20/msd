@@ -142,33 +142,44 @@ pub struct Serializer {
     nesting_level: usize,
 }
 
+fn escape_single_char(
+    c: char,
+) -> Either<iter::Chain<iter::Once<char>, iter::Once<char>>, iter::Once<char>> {
+    match c {
+        '#' | ':' | ';' | '\\' => Either::Left(iter::once('\\').chain(iter::once(c))),
+        _ => Either::Right(iter::once(c)),
+    }
+}
+
 impl Serializer {
     fn write_tag(&mut self, tag: &str) {
         if self.nesting_level == 0 {
             self.output.push('#');
         }
         let mut preceding_slash = false;
-        self.output.extend(
-            tag.chars()
-                .flat_map(|c| match c {
-                    '#' | ':' | ';' | '\\' => Either::Left(iter::once('\\').chain(iter::once(c))),
-                    _ => Either::Right(iter::once(c)),
+        self.output.extend(tag.chars().flat_map(|c| {
+            if preceding_slash {
+                preceding_slash = false;
+                Either::Left(match c {
+                    '/' => Either::Left(
+                        iter::once('\\')
+                            .chain(iter::once(c).chain(iter::once('\\')).chain(iter::once(c))),
+                    ),
+                    _ => Either::Right(iter::once('/').chain(escape_single_char(c))),
                 })
-                .flat_map(|c| match c {
+            } else {
+                Either::Right(match c {
                     '/' => {
-                        if preceding_slash {
-                            Either::Left(iter::once('\\').chain(iter::once(c)))
-                        } else {
-                            preceding_slash = true;
-                            Either::Right(iter::once(c))
-                        }
+                        preceding_slash = true;
+                        Either::Left(iter::empty())
                     }
-                    _ => {
-                        preceding_slash = false;
-                        Either::Right(iter::once(c))
-                    }
-                }),
-        );
+                    _ => Either::Right(escape_single_char(c)),
+                })
+            }
+        }));
+        if preceding_slash {
+            self.output.push('/');
+        }
         self.output.push_str(";\n");
     }
 }
@@ -602,7 +613,7 @@ mod tests {
 
     #[test]
     fn str_escape_double_forwardslash() {
-        let expected = "#/\\/;\n";
+        let expected = "#\\/\\/;\n";
         assert_ok_eq!(to_string(&"//"), expected);
     }
 }
