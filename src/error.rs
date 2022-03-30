@@ -1,5 +1,5 @@
-use core::{fmt, fmt::Display};
 use serde::{de, ser};
+use std::{fmt, fmt::Display};
 
 #[derive(Debug)]
 pub struct Error;
@@ -27,5 +27,7 @@ impl Display for Error {
         todo!()
     }
 }
+
+impl std::error::Error for Error {}
 
 pub type Result<T> = core::result::Result<T, Error>;

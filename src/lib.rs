@@ -1,9 +1,6 @@
-#![no_std]
-
-extern crate alloc;
-
 mod de;
 mod error;
+mod escape;
 mod ser;
 
 pub use de::Deserializer;
