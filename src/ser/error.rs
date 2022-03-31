@@ -4,6 +4,7 @@ use std::{fmt, fmt::Display};
 #[derive(Debug)]
 pub enum Error {
     UnsupportedType,
+    Io,
 }
 
 impl ser::Error for Error {

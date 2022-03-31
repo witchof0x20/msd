@@ -1,10 +1,12 @@
 mod error;
 mod r#struct;
+mod write;
 
 pub use error::{Error, Result};
 
 use serde::{ser, ser::Impossible, Serialize};
 use std::{fmt, fmt::Display, io::Write};
+use write::WriteExt;
 
 pub struct Serializer<W> {
     writer: W,
