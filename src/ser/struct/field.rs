@@ -1,5 +1,5 @@
-use crate::{escape::Escaper, ser::unimplemented::Unimplemented, Error, Result};
-use serde::{ser, Serialize};
+use crate::{escape::Escaper, ser::{Error, Result}};
+use serde::{ser, ser::Impossible, Serialize};
 use std::io::Write;
 
 pub struct Serializer<'a, W> {
@@ -44,13 +44,13 @@ where
 {
     type Ok = ();
     type Error = Error;
-    type SerializeSeq = Unimplemented;
-    type SerializeTuple = Unimplemented;
-    type SerializeTupleStruct = Unimplemented;
-    type SerializeTupleVariant = Unimplemented;
-    type SerializeMap = Unimplemented;
-    type SerializeStruct = Unimplemented;
-    type SerializeStructVariant = Unimplemented;
+    type SerializeSeq = Impossible<Self::Ok, Self::Error>;
+    type SerializeTuple = Impossible<Self::Ok, Self::Error>;
+    type SerializeTupleStruct = Impossible<Self::Ok, Self::Error>;
+    type SerializeTupleVariant = Impossible<Self::Ok, Self::Error>;
+    type SerializeMap = Impossible<Self::Ok, Self::Error>;
+    type SerializeStruct = Impossible<Self::Ok, Self::Error>;
+    type SerializeStructVariant = Impossible<Self::Ok, Self::Error>;
 
     fn serialize_bool(self, v: bool) -> Result<Self::Ok> {
         if v {
@@ -199,7 +199,7 @@ where
     where
         T: ?Sized + Serialize,
     {
-        unimplemented!()
+        Err(Error::UnsupportedType)
     }
 
     fn serialize_newtype_variant<T>(
@@ -212,15 +212,15 @@ where
     where
         T: ?Sized + Serialize,
     {
-        unimplemented!()
+        Err(Error::UnsupportedType)
     }
 
     fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq> {
-        unimplemented!()
+        Err(Error::UnsupportedType)
     }
 
     fn serialize_tuple(self, len: usize) -> Result<Self::SerializeTuple> {
-        unimplemented!()
+        Err(Error::UnsupportedType)
     }
 
     fn serialize_tuple_struct(
@@ -228,7 +228,7 @@ where
         name: &'static str,
         len: usize,
     ) -> Result<Self::SerializeTupleStruct> {
-        unimplemented!()
+        Err(Error::UnsupportedType)
     }
 
     fn serialize_tuple_variant(
@@ -238,15 +238,15 @@ where
         variant: &'static str,
         len: usize,
     ) -> Result<Self::SerializeTupleVariant> {
-        unimplemented!()
+        Err(Error::UnsupportedType)
     }
 
     fn serialize_map(self, len: Option<usize>) -> Result<Self::SerializeMap> {
-        unimplemented!()
+        Err(Error::UnsupportedType)
     }
 
     fn serialize_struct(self, _name: &'static str, _len: usize) -> Result<Self::SerializeStruct> {
-        unimplemented!()
+        Err(Error::UnsupportedType)
     }
 
     fn serialize_struct_variant(
@@ -256,7 +256,7 @@ where
         variant: &'static str,
         len: usize,
     ) -> Result<Self::SerializeStructVariant> {
-        unimplemented!()
+        Err(Error::UnsupportedType)
     }
 }
 

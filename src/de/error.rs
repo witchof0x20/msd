@@ -1,19 +1,10 @@
-use serde::{de, ser};
+use serde::de;
 use std::{fmt, fmt::Display};
 
 #[derive(Debug)]
 pub struct Error;
 
 impl de::Error for Error {
-    fn custom<T>(msg: T) -> Self
-    where
-        T: Display,
-    {
-        todo!()
-    }
-}
-
-impl ser::Error for Error {
     fn custom<T>(msg: T) -> Self
     where
         T: Display,

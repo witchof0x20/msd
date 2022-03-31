@@ -1,6 +1,6 @@
 mod field;
 
-use crate::{Error, Result};
+use crate::ser::{Error, Result};
 use serde::{ser, Serialize};
 use std::io::Write;
 

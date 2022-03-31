@@ -1,4 +1,7 @@
-use crate::error::{Error, Result};
+mod error;
+
+pub use error::{Error, Result};
+
 use serde::{de, de::Visitor, Deserialize};
 
 pub struct Deserializer;
