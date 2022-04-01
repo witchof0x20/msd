@@ -1,7 +1,10 @@
 mod element;
 
 use crate::ser::{Error, Result, WriteExt};
-use serde::{ser::{SerializeTuple, SerializeTupleStruct}, Serialize};
+use serde::{
+    ser::{SerializeTuple, SerializeTupleStruct},
+    Serialize,
+};
 use std::io::Write;
 
 pub(in super::super) struct Serializer<'a, W> {

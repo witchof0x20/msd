@@ -242,11 +242,11 @@ where
         self.writer.close_tag()
     }
 
-    fn serialize_newtype_struct<T>(self, name: &'static str, value: &T) -> Result<Self::Ok>
+    fn serialize_newtype_struct<T>(self, _name: &'static str, value: &T) -> Result<Self::Ok>
     where
         T: ?Sized + Serialize,
     {
-        Err(Error::UnsupportedType)
+        value.serialize(self)
     }
 
     fn serialize_newtype_variant<T>(
@@ -263,7 +263,10 @@ where
     }
 
     fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq> {
-        Err(Error::UnsupportedType)
+        Ok(seq::Serializer::new(
+            self.writer,
+            Escaper::new(self.field_name.as_bytes()).collect::<Vec<_>>(),
+        ))
     }
 
     fn serialize_tuple(self, _len: usize) -> Result<Self::SerializeTuple> {
@@ -709,6 +712,93 @@ mod tests {
     }
 
     #[test]
+    fn newtype_struct() {
+        #[derive(Serialize)]
+        struct NewtypeStruct(u32);
+
+        let mut output = Vec::new();
+
+        assert_ok!(NewtypeStruct(42).serialize(&mut Serializer::new(&mut output, "foo")));
+
+        assert_eq!(output, b"#foo:42;\n");
+    }
+
+    #[test]
+    fn seq_empty() {
+        let mut output = Vec::new();
+
+        assert_ok!(Vec::<()>::new().serialize(&mut Serializer::new(&mut output, "foo")));
+
+        assert_eq!(output, b"");
+    }
+
+    #[test]
+    fn seq_units() {
+        let mut output = Vec::new();
+
+        assert_ok!(vec![(), (), ()].serialize(&mut Serializer::new(&mut output, "foo")));
+
+        assert_eq!(output, b"#foo:;\n#foo:;\n#foo:;\n");
+    }
+
+    #[test]
+    fn seq_primitives() {
+        let mut output = Vec::new();
+
+        assert_ok!(vec![1, 2, 3].serialize(&mut Serializer::new(&mut output, "foo")));
+
+        assert_eq!(output, b"#foo:1;\n#foo:2;\n#foo:3;\n");
+    }
+
+    #[test]
+    fn seq_tuples() {
+        let mut output = Vec::new();
+
+        assert_ok!(
+            vec![(1, 'a'), (2, 'b'), (3, 'c')].serialize(&mut Serializer::new(&mut output, "foo"))
+        );
+
+        assert_eq!(output, b"#foo:1:a;\n#foo:2:b;\n#foo:3:c;\n");
+    }
+
+    #[test]
+    fn seq_structs() {
+        #[derive(Serialize)]
+        struct Struct {
+            foo: usize,
+            bar: &'static str,
+            baz: (),
+            qux: Option<f32>,
+        }
+
+        let mut output = Vec::new();
+
+        assert_ok!(vec![
+            Struct {
+                foo: 1,
+                bar: "abc",
+                baz: (),
+                qux: None
+            },
+            Struct {
+                foo: 2,
+                bar: "def",
+                baz: (),
+                qux: Some(1.1),
+            },
+            Struct {
+                foo: 3,
+                bar: "ghi",
+                baz: (),
+                qux: None,
+            }
+        ]
+        .serialize(&mut Serializer::new(&mut output, "repeating")));
+
+        assert_eq!(output, b"#repeating:;\n#foo:1;\n#bar:abc;\n#baz:;\n#repeating:;\n#foo:2;\n#bar:def;\n#baz:;\n#qux:1.1;\n#repeating:;\n#foo:3;\n#bar:ghi;\n#baz:;\n");
+    }
+
+    #[test]
     fn empty_tuple() {
         let mut output = Vec::new();
 
@@ -745,9 +835,7 @@ mod tests {
 
         let mut output = Vec::new();
 
-        assert_ok!(TupleStruct().serialize(
-            &mut Serializer::new(&mut output, "foo")
-        ));
+        assert_ok!(TupleStruct().serialize(&mut Serializer::new(&mut output, "foo")));
 
         assert_eq!(output, b"#foo;\n");
     }
@@ -756,13 +844,16 @@ mod tests {
     fn single_element_tuple_struct() {
         struct TupleStruct(usize);
         impl Serialize for TupleStruct {
-            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: serde::Serializer {
+            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+            where
+                S: serde::Serializer,
+            {
                 let mut ts = serializer.serialize_tuple_struct("TupleStruct", 1)?;
                 ts.serialize_field(&self.0)?;
                 ts.end()
             }
-        } 
-        
+        }
+
         let mut output = Vec::new();
 
         assert_ok!(TupleStruct(42).serialize(&mut Serializer::new(&mut output, "foo")));
@@ -777,7 +868,9 @@ mod tests {
 
         let mut output = Vec::new();
 
-        assert_ok!(TupleStruct(42, "bar", (), 1.0).serialize(&mut Serializer::new(&mut output, "foo")));
+        assert_ok!(
+            TupleStruct(42, "bar", (), 1.0).serialize(&mut Serializer::new(&mut output, "foo"))
+        );
 
         assert_eq!(output, b"#foo:42:bar::1.0;\n");
     }

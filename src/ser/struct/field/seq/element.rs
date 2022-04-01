@@ -1,5 +1,5 @@
 use super::super::tuple;
-use crate::ser::{Error, Result, WriteExt};
+use crate::ser::{r#struct, Error, Result, WriteExt};
 use serde::{ser, ser::Impossible, Serialize};
 use std::io::Write;
 
@@ -24,7 +24,7 @@ where
     type SerializeTupleStruct = tuple::Serializer<'a, W>;
     type SerializeTupleVariant = Impossible<Self::Ok, Self::Error>;
     type SerializeMap = Impossible<Self::Ok, Self::Error>;
-    type SerializeStruct = Impossible<Self::Ok, Self::Error>;
+    type SerializeStruct = r#struct::Serializer<'a, W>;
     type SerializeStructVariant = Impossible<Self::Ok, Self::Error>;
 
     fn serialize_bool(self, v: bool) -> Result<Self::Ok> {
@@ -137,7 +137,8 @@ where
     fn serialize_char(self, v: char) -> Result<Self::Ok> {
         let mut buffer = [0; 4];
         v.encode_utf8(&mut buffer);
-        self.writer.write_parameter_escaped(&buffer[..v.len_utf8()])?;
+        self.writer
+            .write_parameter_escaped(&buffer[..v.len_utf8()])?;
 
         self.writer.close_tag()
     }
@@ -190,11 +191,11 @@ where
         self.writer.close_tag()
     }
 
-    fn serialize_newtype_struct<T>(self, name: &'static str, value: &T) -> Result<Self::Ok>
+    fn serialize_newtype_struct<T>(self, _name: &'static str, value: &T) -> Result<Self::Ok>
     where
         T: ?Sized + Serialize,
     {
-        Err(Error::UnsupportedType)
+        value.serialize(self)
     }
 
     fn serialize_newtype_variant<T>(
@@ -241,7 +242,9 @@ where
     }
 
     fn serialize_struct(self, _name: &'static str, _len: usize) -> Result<Self::SerializeStruct> {
-        Err(Error::UnsupportedType)
+        self.writer.write_parameter_unescaped(b"")?;
+        self.writer.close_tag()?;
+        Ok(r#struct::Serializer::new(self.writer))
     }
 
     fn serialize_struct_variant(
@@ -259,7 +262,7 @@ where
 mod tests {
     use super::Serializer;
     use claim::assert_ok;
-    use serde::{Serialize, ser::SerializeTupleStruct};
+    use serde::{ser::SerializeTupleStruct, Serialize};
     use serde_bytes::Bytes;
     use serde_derive::Serialize;
 
@@ -653,6 +656,18 @@ mod tests {
     }
 
     #[test]
+    fn newtype_struct() {
+        #[derive(Serialize)]
+        struct NewtypeStruct(u32);
+
+        let mut output = Vec::new();
+
+        assert_ok!(NewtypeStruct(42).serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b":42;\n");
+    }
+
+    #[test]
     fn empty_tuple() {
         let mut output = Vec::new();
 
@@ -686,9 +701,7 @@ mod tests {
 
         let mut output = Vec::new();
 
-        assert_ok!(TupleStruct().serialize(
-            &mut Serializer::new(&mut output)
-        ));
+        assert_ok!(TupleStruct().serialize(&mut Serializer::new(&mut output)));
 
         assert_eq!(output, b";\n");
     }
@@ -697,13 +710,16 @@ mod tests {
     fn single_element_tuple_struct() {
         struct TupleStruct(usize);
         impl Serialize for TupleStruct {
-            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: serde::Serializer {
+            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+            where
+                S: serde::Serializer,
+            {
                 let mut ts = serializer.serialize_tuple_struct("TupleStruct", 1)?;
                 ts.serialize_field(&self.0)?;
                 ts.end()
             }
-        } 
-        
+        }
+
         let mut output = Vec::new();
 
         assert_ok!(TupleStruct(42).serialize(&mut Serializer::new(&mut output)));
@@ -721,5 +737,28 @@ mod tests {
         assert_ok!(TupleStruct(42, "bar", (), 1.0).serialize(&mut Serializer::new(&mut output)));
 
         assert_eq!(output, b":42:bar::1.0;\n");
+    }
+
+    #[test]
+    fn r#struct() {
+        #[derive(Serialize)]
+        struct Struct {
+            foo: usize,
+            bar: &'static str,
+            baz: (),
+            qux: Option<f32>,
+        }
+
+        let mut output = Vec::new();
+
+        assert_ok!(Struct {
+            foo: 42,
+            bar: "test",
+            baz: (),
+            qux: None,
+        }
+        .serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b":;\n#foo:42;\n#bar:test;\n#baz:;\n");
     }
 }
