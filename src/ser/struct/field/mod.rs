@@ -829,6 +829,15 @@ mod tests {
     }
 
     #[test]
+    fn nested_tuple() {
+        let mut output = Vec::new();
+
+        assert_ok!((1, (2, 3), ((4), 5), 6).serialize(&mut Serializer::new(&mut output, "foo")));
+
+        assert_eq!(output, b"#foo:1:2:3:4:5:6;\n");
+    }
+
+    #[test]
     fn empty_tuple_struct() {
         #[derive(Serialize)]
         struct TupleStruct();
@@ -873,6 +882,18 @@ mod tests {
         );
 
         assert_eq!(output, b"#foo:42:bar::1.0;\n");
+    }
+
+    #[test]
+    fn nested_tuple_struct() {
+        #[derive(Serialize)]
+        struct TupleStruct(usize, (usize, usize), ((usize, usize), usize), usize);
+
+        let mut output = Vec::new();
+
+        assert_ok!(TupleStruct(1, (2, 3), ((4, 5), 6), 7).serialize(&mut Serializer::new(&mut output, "foo")));
+
+        assert_eq!(output, b"#foo:1:2:3:4:5:6:7;\n");
     }
 
     #[test]

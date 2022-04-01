@@ -1,3 +1,5 @@
+mod nested_tuple;
+
 use crate::ser::{Error, Result, WriteExt};
 use serde::{ser, ser::Impossible, Serialize};
 use std::io::Write;
@@ -19,8 +21,8 @@ where
     type Ok = ();
     type Error = Error;
     type SerializeSeq = Impossible<Self::Ok, Self::Error>;
-    type SerializeTuple = Impossible<Self::Ok, Self::Error>;
-    type SerializeTupleStruct = Impossible<Self::Ok, Self::Error>;
+    type SerializeTuple = nested_tuple::Serializer<'a, W>;
+    type SerializeTupleStruct = nested_tuple::Serializer<'a, W>;
     type SerializeTupleVariant = Impossible<Self::Ok, Self::Error>;
     type SerializeMap = Impossible<Self::Ok, Self::Error>;
     type SerializeStruct = Impossible<Self::Ok, Self::Error>;
@@ -175,7 +177,7 @@ where
     }
 
     fn serialize_tuple(self, len_: usize) -> Result<Self::SerializeTuple> {
-        Err(Error::UnsupportedType)
+        Ok(nested_tuple::Serializer::new(self.writer))
     }
 
     fn serialize_tuple_struct(
@@ -183,7 +185,7 @@ where
         name: &'static str,
         len: usize,
     ) -> Result<Self::SerializeTupleStruct> {
-        Err(Error::UnsupportedType)
+        Ok(nested_tuple::Serializer::new(self.writer))
     }
 
     fn serialize_tuple_variant(
@@ -219,7 +221,7 @@ where
 mod tests {
     use super::Serializer;
     use claim::assert_ok;
-    use serde::Serialize;
+    use serde::{ser::SerializeTupleStruct, Serialize};
     use serde_bytes::Bytes;
     use serde_derive::Serialize;
 
@@ -610,5 +612,82 @@ mod tests {
         assert_ok!(Enum::A.serialize(&mut Serializer::new(&mut output)));
 
         assert_eq!(output, b":A");
+    }
+
+    #[test]
+    fn empty_tuple() {
+        let mut output = Vec::new();
+
+        assert_ok!(<[(); 0]>::serialize(
+            &[],
+            &mut Serializer::new(&mut output)
+        ));
+
+        assert_eq!(output, b"");
+    }
+
+    #[test]
+    fn single_element_tuple() {
+        let mut output = Vec::new();
+
+        assert_ok!((42).serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b":42");
+    }
+
+    #[test]
+    fn multiple_element_tuple() {
+        let mut output = Vec::new();
+
+        assert_ok!((42, "bar", (), 1.0).serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b":42:bar::1.0");
+    }
+
+    #[test]
+    fn empty_tuple_struct() {
+        #[derive(Serialize)]
+        struct TupleStruct();
+
+        let mut output = Vec::new();
+
+        assert_ok!(TupleStruct().serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"");
+    }
+
+    #[test]
+    fn single_element_tuple_struct() {
+        struct TupleStruct(usize);
+        impl Serialize for TupleStruct {
+            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+            where
+                S: serde::Serializer,
+            {
+                let mut ts = serializer.serialize_tuple_struct("TupleStruct", 1)?;
+                ts.serialize_field(&self.0)?;
+                ts.end()
+            }
+        }
+
+        let mut output = Vec::new();
+
+        assert_ok!(TupleStruct(42).serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b":42");
+    }
+
+    #[test]
+    fn multiple_element_tuple_struct() {
+        #[derive(Serialize)]
+        struct TupleStruct(usize, &'static str, (), f32);
+
+        let mut output = Vec::new();
+
+        assert_ok!(
+            TupleStruct(42, "bar", (), 1.0).serialize(&mut Serializer::new(&mut output))
+        );
+
+        assert_eq!(output, b":42:bar::1.0");
     }
 }
