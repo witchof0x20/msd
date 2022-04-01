@@ -1,7 +1,10 @@
-mod parameter;
+mod seq;
 mod tuple;
 
-use crate::{escape::Escaper, ser::{Error, Result, WriteExt}};
+use crate::{
+    escape::Escaper,
+    ser::{Error, Result, WriteExt},
+};
 use serde::{ser, ser::Impossible, Serialize};
 use std::io::Write;
 
@@ -47,7 +50,7 @@ where
 {
     type Ok = ();
     type Error = Error;
-    type SerializeSeq = Impossible<Self::Ok, Self::Error>;
+    type SerializeSeq = seq::Serializer<'a, W>;
     type SerializeTuple = tuple::Serializer<'a, W>;
     type SerializeTupleStruct = Impossible<Self::Ok, Self::Error>;
     type SerializeTupleVariant = Impossible<Self::Ok, Self::Error>;
@@ -56,7 +59,8 @@ where
     type SerializeStructVariant = Impossible<Self::Ok, Self::Error>;
 
     fn serialize_bool(self, v: bool) -> Result<Self::Ok> {
-        self.writer.write_tag_name_escaped(self.field_name.as_bytes())?;
+        self.writer
+            .write_tag_name_escaped(self.field_name.as_bytes())?;
         if v {
             self.writer.write_parameter_unescaped(b"true")?;
         } else {
@@ -66,7 +70,8 @@ where
     }
 
     fn serialize_i8(self, v: i8) -> Result<Self::Ok> {
-        self.writer.write_tag_name_escaped(self.field_name.as_bytes())?;
+        self.writer
+            .write_tag_name_escaped(self.field_name.as_bytes())?;
 
         let mut buffer = itoa::Buffer::new();
         let s = buffer.format(v);
@@ -76,7 +81,8 @@ where
     }
 
     fn serialize_i16(self, v: i16) -> Result<Self::Ok> {
-        self.writer.write_tag_name_escaped(self.field_name.as_bytes())?;
+        self.writer
+            .write_tag_name_escaped(self.field_name.as_bytes())?;
 
         let mut buffer = itoa::Buffer::new();
         let s = buffer.format(v);
@@ -86,7 +92,8 @@ where
     }
 
     fn serialize_i32(self, v: i32) -> Result<Self::Ok> {
-        self.writer.write_tag_name_escaped(self.field_name.as_bytes())?;
+        self.writer
+            .write_tag_name_escaped(self.field_name.as_bytes())?;
 
         let mut buffer = itoa::Buffer::new();
         let s = buffer.format(v);
@@ -96,7 +103,8 @@ where
     }
 
     fn serialize_i64(self, v: i64) -> Result<Self::Ok> {
-        self.writer.write_tag_name_escaped(self.field_name.as_bytes())?;
+        self.writer
+            .write_tag_name_escaped(self.field_name.as_bytes())?;
 
         let mut buffer = itoa::Buffer::new();
         let s = buffer.format(v);
@@ -107,7 +115,8 @@ where
 
     #[cfg(has_i128)]
     fn serialize_i128(self, v: i128) -> Result<Self::Ok> {
-        self.writer.write_tag_name_escaped(self.field_name.as_bytes())?;
+        self.writer
+            .write_tag_name_escaped(self.field_name.as_bytes())?;
 
         let mut buffer = itoa::Buffer::new();
         let s = buffer.format(v);
@@ -117,7 +126,8 @@ where
     }
 
     fn serialize_u8(self, v: u8) -> Result<Self::Ok> {
-        self.writer.write_tag_name_escaped(self.field_name.as_bytes())?;
+        self.writer
+            .write_tag_name_escaped(self.field_name.as_bytes())?;
 
         let mut buffer = itoa::Buffer::new();
         let s = buffer.format(v);
@@ -127,7 +137,8 @@ where
     }
 
     fn serialize_u16(self, v: u16) -> Result<Self::Ok> {
-        self.writer.write_tag_name_escaped(self.field_name.as_bytes())?;
+        self.writer
+            .write_tag_name_escaped(self.field_name.as_bytes())?;
 
         let mut buffer = itoa::Buffer::new();
         let s = buffer.format(v);
@@ -137,7 +148,8 @@ where
     }
 
     fn serialize_u32(self, v: u32) -> Result<Self::Ok> {
-        self.writer.write_tag_name_escaped(self.field_name.as_bytes())?;
+        self.writer
+            .write_tag_name_escaped(self.field_name.as_bytes())?;
 
         let mut buffer = itoa::Buffer::new();
         let s = buffer.format(v);
@@ -147,7 +159,8 @@ where
     }
 
     fn serialize_u64(self, v: u64) -> Result<Self::Ok> {
-        self.writer.write_tag_name_escaped(self.field_name.as_bytes())?;
+        self.writer
+            .write_tag_name_escaped(self.field_name.as_bytes())?;
 
         let mut buffer = itoa::Buffer::new();
         let s = buffer.format(v);
@@ -158,7 +171,8 @@ where
 
     #[cfg(has_u128)]
     fn serialize_u128(self, v: u128) -> Result<Self::Ok> {
-        self.writer.write_tag_name_escaped(self.field_name.as_bytes())?;
+        self.writer
+            .write_tag_name_escaped(self.field_name.as_bytes())?;
 
         let mut buffer = itoa::Buffer::new();
         let s = buffer.format(v);
@@ -168,7 +182,8 @@ where
     }
 
     fn serialize_f32(self, v: f32) -> Result<Self::Ok> {
-        self.writer.write_tag_name_escaped(self.field_name.as_bytes())?;
+        self.writer
+            .write_tag_name_escaped(self.field_name.as_bytes())?;
 
         let mut buffer = ryu::Buffer::new();
         let s = buffer.format(v);
@@ -178,7 +193,8 @@ where
     }
 
     fn serialize_f64(self, v: f64) -> Result<Self::Ok> {
-        self.writer.write_tag_name_escaped(self.field_name.as_bytes())?;
+        self.writer
+            .write_tag_name_escaped(self.field_name.as_bytes())?;
 
         let mut buffer = ryu::Buffer::new();
         let s = buffer.format(v);
@@ -188,23 +204,27 @@ where
     }
 
     fn serialize_char(self, v: char) -> Result<Self::Ok> {
-        self.writer.write_tag_name_escaped(self.field_name.as_bytes())?;
+        self.writer
+            .write_tag_name_escaped(self.field_name.as_bytes())?;
 
         let mut buffer = [0; 4];
         v.encode_utf8(&mut buffer);
-        self.writer.write_parameter_escaped(&buffer[..v.len_utf8()])?;
-        
+        self.writer
+            .write_parameter_escaped(&buffer[..v.len_utf8()])?;
+
         self.writer.close_tag()
     }
 
     fn serialize_str(self, v: &str) -> Result<Self::Ok> {
-        self.writer.write_tag_name_escaped(self.field_name.as_bytes())?;
+        self.writer
+            .write_tag_name_escaped(self.field_name.as_bytes())?;
         self.writer.write_parameter_escaped(v.as_bytes())?;
         self.writer.close_tag()
     }
 
     fn serialize_bytes(self, v: &[u8]) -> Result<Self::Ok> {
-        self.writer.write_tag_name_escaped(self.field_name.as_bytes())?;
+        self.writer
+            .write_tag_name_escaped(self.field_name.as_bytes())?;
         self.writer.write_parameter_escaped(v)?;
         self.writer.close_tag()
     }
@@ -221,13 +241,15 @@ where
     }
 
     fn serialize_unit(self) -> Result<Self::Ok> {
-        self.writer.write_tag_name_escaped(self.field_name.as_bytes())?;
+        self.writer
+            .write_tag_name_escaped(self.field_name.as_bytes())?;
         self.writer.write_parameter_unescaped(b"")?;
         self.writer.close_tag()
     }
 
     fn serialize_unit_struct(self, _name: &'static str) -> Result<Self::Ok> {
-        self.writer.write_tag_name_escaped(self.field_name.as_bytes())?;
+        self.writer
+            .write_tag_name_escaped(self.field_name.as_bytes())?;
         self.writer.write_parameter_unescaped(b"")?;
         self.writer.close_tag()
     }
@@ -238,7 +260,8 @@ where
         _variant_index: u32,
         variant: &'static str,
     ) -> Result<Self::Ok> {
-        self.writer.write_tag_name_escaped(self.field_name.as_bytes())?;
+        self.writer
+            .write_tag_name_escaped(self.field_name.as_bytes())?;
         self.writer.write_parameter_escaped(variant.as_bytes())?;
         self.writer.close_tag()
     }
@@ -268,7 +291,8 @@ where
     }
 
     fn serialize_tuple(self, len_: usize) -> Result<Self::SerializeTuple> {
-        self.writer.write_tag_name_escaped(self.field_name.as_bytes())?;
+        self.writer
+            .write_tag_name_escaped(self.field_name.as_bytes())?;
         Ok(tuple::Serializer::new(self.writer))
     }
 
@@ -710,7 +734,10 @@ mod tests {
     fn empty_tuple() {
         let mut output = Vec::new();
 
-        assert_ok!(<[(); 0]>::serialize(&[], &mut Serializer::new(&mut output, "foo")));
+        assert_ok!(<[(); 0]>::serialize(
+            &[],
+            &mut Serializer::new(&mut output, "foo")
+        ));
 
         assert_eq!(output, b"#foo;\n");
     }

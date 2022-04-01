@@ -1,5 +1,6 @@
+mod element;
+
 use crate::ser::{Error, Result, WriteExt};
-use super::parameter;
 use serde::{ser::SerializeTuple, Serialize};
 use std::io::Write;
 
@@ -9,18 +10,22 @@ pub(in super::super) struct Serializer<'a, W> {
 
 impl<'a, W> Serializer<'a, W> {
     pub(super) fn new(writer: &'a mut W) -> Self {
-        Self {
-            writer,
-        }
+        Self { writer }
     }
 }
 
-impl<'a, W> SerializeTuple for Serializer<'a, W> where W: Write {
+impl<'a, W> SerializeTuple for Serializer<'a, W>
+where
+    W: Write,
+{
     type Ok = ();
     type Error = Error;
 
-    fn serialize_element<T>(&mut self, value: &T) -> Result<Self::Ok> where T: ?Sized + Serialize {
-        value.serialize(&mut parameter::Serializer::new(self.writer))
+    fn serialize_element<T>(&mut self, value: &T) -> Result<Self::Ok>
+    where
+        T: ?Sized + Serialize,
+    {
+        value.serialize(&mut element::Serializer::new(self.writer))
     }
 
     fn end(self) -> Result<Self::Ok> {
@@ -31,8 +36,8 @@ impl<'a, W> SerializeTuple for Serializer<'a, W> where W: Write {
 #[cfg(test)]
 mod tests {
     use super::Serializer;
-    use serde::ser::SerializeTuple;
     use claim::assert_ok;
+    use serde::ser::SerializeTuple;
 
     #[test]
     fn empty() {

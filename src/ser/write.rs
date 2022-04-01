@@ -1,4 +1,7 @@
-use crate::{escape::Escaper, ser::{Error, Result}};
+use crate::{
+    escape::Escaper,
+    ser::{Error, Result},
+};
 use std::io::Write;
 
 pub(super) trait WriteExt {
@@ -9,7 +12,10 @@ pub(super) trait WriteExt {
     fn close_tag(&mut self) -> Result<()>;
 }
 
-impl<W> WriteExt for W where W: Write {
+impl<W> WriteExt for W
+where
+    W: Write,
+{
     fn write_tag_name_unescaped(&mut self, tag_name: &[u8]) -> Result<()> {
         self.write_all(b"#").or(Err(Error::Io))?;
         self.write_all(tag_name).or(Err(Error::Io))
@@ -36,7 +42,7 @@ impl<W> WriteExt for W where W: Write {
 #[cfg(test)]
 mod tests {
     use super::WriteExt;
-    use claim::{assert_ok, assert_err};
+    use claim::{assert_err, assert_ok};
     use std::{io, io::Write};
 
     #[test]

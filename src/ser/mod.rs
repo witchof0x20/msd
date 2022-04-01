@@ -14,9 +14,7 @@ pub struct Serializer<W> {
 
 impl<W> Serializer<W> {
     pub fn new(writer: W) -> Self {
-        Self {
-            writer,
-        }
+        Self { writer }
     }
 }
 
@@ -35,7 +33,7 @@ where
     type SerializeStructVariant = Impossible<Self::Ok, Self::Error>;
 
     fn serialize_bool(self, v: bool) -> Result<Self::Ok> {
-       Err(Error::UnsupportedType)
+        Err(Error::UnsupportedType)
     }
 
     fn serialize_i8(self, v: i8) -> Result<Self::Ok> {
@@ -207,9 +205,7 @@ mod tests {
         }
         let mut output = Vec::new();
 
-        assert_ok!(Foo {
-            bar: 42,
-        }.serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(Foo { bar: 42 }.serialize(&mut Serializer::new(&mut output)));
         assert_eq!(output, b"#bar:42;\n");
     }
 
@@ -227,7 +223,8 @@ mod tests {
             bar: 42,
             baz: None,
             qux: Some("test:test"),
-        }.serialize(&mut Serializer::new(&mut output)));
+        }
+        .serialize(&mut Serializer::new(&mut output)));
         assert_eq!(output, b"#bar:42;\n#qux:test\\:test;\n");
     }
 }
