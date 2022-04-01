@@ -21,7 +21,7 @@ where
     type Error = Error;
     type SerializeSeq = Impossible<Self::Ok, Self::Error>;
     type SerializeTuple = tuple::Serializer<'a, W>;
-    type SerializeTupleStruct = Impossible<Self::Ok, Self::Error>;
+    type SerializeTupleStruct = tuple::Serializer<'a, W>;
     type SerializeTupleVariant = Impossible<Self::Ok, Self::Error>;
     type SerializeMap = Impossible<Self::Ok, Self::Error>;
     type SerializeStruct = Impossible<Self::Ok, Self::Error>;
@@ -214,16 +214,16 @@ where
         Err(Error::UnsupportedType)
     }
 
-    fn serialize_tuple(self, len_: usize) -> Result<Self::SerializeTuple> {
+    fn serialize_tuple(self, _len: usize) -> Result<Self::SerializeTuple> {
         Ok(tuple::Serializer::new(self.writer))
     }
 
     fn serialize_tuple_struct(
         self,
-        name: &'static str,
-        len: usize,
+        _name: &'static str,
+        _len: usize,
     ) -> Result<Self::SerializeTupleStruct> {
-        Err(Error::UnsupportedType)
+        Ok(tuple::Serializer::new(self.writer))
     }
 
     fn serialize_tuple_variant(
@@ -259,7 +259,7 @@ where
 mod tests {
     use super::Serializer;
     use claim::assert_ok;
-    use serde::Serialize;
+    use serde::{Serialize, ser::SerializeTupleStruct};
     use serde_bytes::Bytes;
     use serde_derive::Serialize;
 
@@ -675,6 +675,50 @@ mod tests {
         let mut output = Vec::new();
 
         assert_ok!((42, "bar", (), 1.0).serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b":42:bar::1.0;\n");
+    }
+
+    #[test]
+    fn empty_tuple_struct() {
+        #[derive(Serialize)]
+        struct TupleStruct();
+
+        let mut output = Vec::new();
+
+        assert_ok!(TupleStruct().serialize(
+            &mut Serializer::new(&mut output)
+        ));
+
+        assert_eq!(output, b";\n");
+    }
+
+    #[test]
+    fn single_element_tuple_struct() {
+        struct TupleStruct(usize);
+        impl Serialize for TupleStruct {
+            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: serde::Serializer {
+                let mut ts = serializer.serialize_tuple_struct("TupleStruct", 1)?;
+                ts.serialize_field(&self.0)?;
+                ts.end()
+            }
+        } 
+        
+        let mut output = Vec::new();
+
+        assert_ok!(TupleStruct(42).serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b":42;\n");
+    }
+
+    #[test]
+    fn multiple_element_tuple_struct() {
+        #[derive(Serialize)]
+        struct TupleStruct(usize, &'static str, (), f32);
+
+        let mut output = Vec::new();
+
+        assert_ok!(TupleStruct(42, "bar", (), 1.0).serialize(&mut Serializer::new(&mut output)));
 
         assert_eq!(output, b":42:bar::1.0;\n");
     }

@@ -1,7 +1,7 @@
 mod element;
 
 use crate::ser::{Error, Result, WriteExt};
-use serde::{ser::SerializeTuple, Serialize};
+use serde::{ser::{SerializeTuple, SerializeTupleStruct}, Serialize};
 use std::io::Write;
 
 pub(in super::super) struct Serializer<'a, W> {
@@ -22,6 +22,25 @@ where
     type Error = Error;
 
     fn serialize_element<T>(&mut self, value: &T) -> Result<Self::Ok>
+    where
+        T: ?Sized + Serialize,
+    {
+        value.serialize(&mut element::Serializer::new(self.writer))
+    }
+
+    fn end(self) -> Result<Self::Ok> {
+        self.writer.close_tag()
+    }
+}
+
+impl<'a, W> SerializeTupleStruct for Serializer<'a, W>
+where
+    W: Write,
+{
+    type Ok = ();
+    type Error = Error;
+
+    fn serialize_field<T>(&mut self, value: &T) -> Result<Self::Ok>
     where
         T: ?Sized + Serialize,
     {
