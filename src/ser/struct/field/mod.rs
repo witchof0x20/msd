@@ -29,7 +29,7 @@ where
     type SerializeSeq = seq::Serializer<'a, W>;
     type SerializeTuple = tuple::Serializer<'a, W>;
     type SerializeTupleStruct = tuple::Serializer<'a, W>;
-    type SerializeTupleVariant = Impossible<Self::Ok, Self::Error>;
+    type SerializeTupleVariant = tuple::Serializer<'a, W>;
     type SerializeMap = Impossible<Self::Ok, Self::Error>;
     type SerializeStruct = Impossible<Self::Ok, Self::Error>;
     type SerializeStructVariant = Impossible<Self::Ok, Self::Error>;
@@ -287,12 +287,14 @@ where
 
     fn serialize_tuple_variant(
         self,
-        name: &'static str,
-        variant_index: u32,
+        _name: &'static str,
+        _variant_index: u32,
         variant: &'static str,
-        len: usize,
+        _len: usize,
     ) -> Result<Self::SerializeTupleVariant> {
-        Err(Error::UnsupportedType)
+        self.writer.write_tag_name_escaped(self.field_name.as_bytes())?;
+        self.writer.write_parameter_escaped(variant.as_bytes())?;
+        Ok(tuple::Serializer::new(self.writer))
     }
 
     fn serialize_map(self, len: Option<usize>) -> Result<Self::SerializeMap> {
@@ -318,7 +320,7 @@ where
 mod tests {
     use super::Serializer;
     use claim::assert_ok;
-    use serde::{ser::SerializeTupleStruct, Serialize};
+    use serde::{ser::{SerializeTupleStruct, SerializeTupleVariant}, Serialize};
     use serde_bytes::Bytes;
     use serde_derive::Serialize;
 
@@ -894,6 +896,84 @@ mod tests {
         assert_ok!(TupleStruct(1, (2, 3), ((4, 5), 6), 7).serialize(&mut Serializer::new(&mut output, "foo")));
 
         assert_eq!(output, b"#foo:1:2:3:4:5:6:7;\n");
+    }
+
+    #[test]
+    fn empty_tuple_variant() {
+        enum TupleEnum {
+            Variant()
+        }
+        impl Serialize for TupleEnum {
+            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+            where
+                S: serde::Serializer,
+            {
+                serializer.serialize_tuple_variant("TupleEnum", 0, "Variant", 0)?.end()
+            }
+        }
+
+        let mut output = Vec::new();
+
+        assert_ok!(TupleEnum::Variant().serialize(&mut Serializer::new(&mut output, "foo")));
+
+        assert_eq!(output, b"#foo:Variant;\n");
+    }
+
+    #[test]
+    fn single_element_tuple_variant() {
+        enum TupleEnum {
+            Variant(usize),
+        }
+        impl Serialize for TupleEnum {
+            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+            where
+                S: serde::Serializer,
+            {
+                if let Self::Variant(inner) = self {
+                    let mut tv = serializer.serialize_tuple_variant("TupleEnum", 0, "Variant", 1)?;
+                    tv.serialize_field(&inner)?;
+                    tv.end()
+                } else {
+                    unreachable!("there is only one variant")
+                }
+            }
+        }
+
+        let mut output = Vec::new();
+
+        assert_ok!(TupleEnum::Variant(42).serialize(&mut Serializer::new(&mut output, "foo")));
+
+        assert_eq!(output, b"#foo:Variant:42;\n");
+    }
+
+    #[test]
+    fn multiple_element_tuple_variant() {
+        #[derive(Serialize)]
+        enum TupleEnum {
+            Variant(usize, &'static str, (), f32),
+        }
+
+        let mut output = Vec::new();
+
+        assert_ok!(
+            TupleEnum::Variant(42, "bar", (), 1.0).serialize(&mut Serializer::new(&mut output, "foo"))
+        );
+
+        assert_eq!(output, b"#foo:Variant:42:bar::1.0;\n");
+    }
+
+    #[test]
+    fn nested_tuple_variant() {
+        #[derive(Serialize)]
+        enum TupleEnum  {
+            Variant(usize, (usize, usize), ((usize, usize), usize), usize)
+        }
+
+        let mut output = Vec::new();
+
+        assert_ok!(TupleEnum::Variant(1, (2, 3), ((4, 5), 6), 7).serialize(&mut Serializer::new(&mut output, "foo")));
+
+        assert_eq!(output, b"#foo:Variant:1:2:3:4:5:6:7;\n");
     }
 
     #[test]
