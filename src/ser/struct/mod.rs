@@ -1,7 +1,10 @@
 mod field;
 
 use crate::ser::{Error, Result};
-use serde::{ser, Serialize};
+use serde::{
+    ser::{SerializeStruct, SerializeStructVariant},
+    Serialize,
+};
 use std::io::Write;
 
 pub struct Serializer<'a, W> {
@@ -14,7 +17,26 @@ impl<'a, W> Serializer<'a, W> {
     }
 }
 
-impl<'a, W> ser::SerializeStruct for Serializer<'a, W>
+impl<'a, W> SerializeStruct for Serializer<'a, W>
+where
+    W: Write,
+{
+    type Ok = ();
+    type Error = Error;
+
+    fn serialize_field<T>(&mut self, key: &'static str, value: &T) -> Result<()>
+    where
+        T: ?Sized + Serialize,
+    {
+        value.serialize(&mut field::Serializer::new(self.writer, key))
+    }
+
+    fn end(self) -> Result<Self::Ok> {
+        Ok(())
+    }
+}
+
+impl<'a, W> SerializeStructVariant for Serializer<'a, W>
 where
     W: Write,
 {
@@ -37,10 +59,11 @@ where
 mod tests {
     use super::Serializer;
     use claim::assert_ok;
-    use serde::ser::SerializeStruct;
 
     #[test]
-    fn no_fields() {
+    fn struct_no_fields() {
+        use serde::ser::SerializeStruct;
+
         let mut output = Vec::new();
         let serializer = Serializer::new(&mut output);
 
@@ -49,7 +72,9 @@ mod tests {
     }
 
     #[test]
-    fn field() {
+    fn struct_field() {
+        use serde::ser::SerializeStruct;
+
         let mut output = Vec::new();
         let mut serializer = Serializer::new(&mut output);
 
@@ -60,7 +85,48 @@ mod tests {
     }
 
     #[test]
-    fn multiple_fields() {
+    fn struct_multiple_fields() {
+        use serde::ser::SerializeStruct;
+
+        let mut output = Vec::new();
+        let mut serializer = Serializer::new(&mut output);
+
+        assert_ok!(serializer.serialize_field("foo", &42));
+        assert_ok!(serializer.serialize_field("bar", &Option::<()>::None));
+        assert_ok!(serializer.serialize_field("baz", &"test;"));
+
+        assert_ok!(serializer.end());
+        assert_eq!(output, b"#foo:42;\n#baz:test\\;;\n");
+    }
+
+    #[test]
+    fn struct_variant_no_fields() {
+        use serde::ser::SerializeStructVariant;
+
+        let mut output = Vec::new();
+        let serializer = Serializer::new(&mut output);
+
+        assert_ok!(serializer.end());
+        assert_eq!(output, b"");
+    }
+
+    #[test]
+    fn struct_variant_field() {
+        use serde::ser::SerializeStructVariant;
+
+        let mut output = Vec::new();
+        let mut serializer = Serializer::new(&mut output);
+
+        assert_ok!(serializer.serialize_field("foo", &42));
+
+        assert_ok!(serializer.end());
+        assert_eq!(output, b"#foo:42;\n");
+    }
+
+    #[test]
+    fn struct_variant_multiple_fields() {
+        use serde::ser::SerializeStructVariant;
+
         let mut output = Vec::new();
         let mut serializer = Serializer::new(&mut output);
 

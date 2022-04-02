@@ -859,6 +859,45 @@ mod tests {
     }
 
     #[test]
+    fn seq_struct_variants() {
+        #[derive(Serialize)]
+        enum Struct {
+            Variant {
+                foo: usize,
+                bar: &'static str,
+                baz: (),
+                qux: Option<f32>,
+            },
+        }
+
+        let mut output = Vec::new();
+
+        assert_ok!(vec![
+            Struct::Variant {
+                foo: 1,
+                bar: "abc",
+                baz: (),
+                qux: None
+            },
+            Struct::Variant {
+                foo: 2,
+                bar: "def",
+                baz: (),
+                qux: Some(1.1),
+            },
+            Struct::Variant {
+                foo: 3,
+                bar: "ghi",
+                baz: (),
+                qux: None,
+            }
+        ]
+        .serialize(&mut Serializer::new(&mut output, "repeating")));
+
+        assert_eq!(output, b"#repeating:Variant;\n#foo:1;\n#bar:abc;\n#baz:;\n#repeating:Variant;\n#foo:2;\n#bar:def;\n#baz:;\n#qux:1.1;\n#repeating:Variant;\n#foo:3;\n#bar:ghi;\n#baz:;\n");
+    }
+
+    #[test]
     fn empty_tuple() {
         let mut output = Vec::new();
 

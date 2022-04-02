@@ -25,7 +25,7 @@ where
     type SerializeTupleVariant = tuple::Serializer<'a, W>;
     type SerializeMap = map::Serializer<'a, W>;
     type SerializeStruct = r#struct::Serializer<'a, W>;
-    type SerializeStructVariant = Impossible<Self::Ok, Self::Error>;
+    type SerializeStructVariant = r#struct::Serializer<'a, W>;
 
     fn serialize_bool(self, v: bool) -> Result<Self::Ok> {
         if v {
@@ -251,12 +251,14 @@ where
 
     fn serialize_struct_variant(
         self,
-        name: &'static str,
-        variant_index: u32,
+        _name: &'static str,
+        _variant_index: u32,
         variant: &'static str,
-        len: usize,
+        _len: usize,
     ) -> Result<Self::SerializeStructVariant> {
-        Err(Error::UnsupportedType)
+        self.writer.write_parameter_escaped(variant.as_bytes())?;
+        self.writer.close_tag()?;
+        Ok(r#struct::Serializer::new(self.writer))
     }
 }
 
@@ -898,5 +900,30 @@ mod tests {
         .serialize(&mut Serializer::new(&mut output)));
 
         assert_eq!(output, b":;\n#foo:42;\n#bar:test;\n#baz:;\n");
+    }
+
+    #[test]
+    fn struct_variant() {
+        #[derive(Serialize)]
+        enum Struct {
+            Variant {
+                foo: usize,
+                bar: &'static str,
+                baz: (),
+                qux: Option<f32>,
+            },
+        }
+
+        let mut output = Vec::new();
+
+        assert_ok!(Struct::Variant {
+            foo: 42,
+            bar: "test",
+            baz: (),
+            qux: None,
+        }
+        .serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b":Variant;\n#foo:42;\n#bar:test;\n#baz:;\n");
     }
 }
