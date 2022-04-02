@@ -1,4 +1,4 @@
-mod element;
+pub(crate) mod element;
 
 use crate::ser::{Error, Result, WriteExt};
 use serde::{

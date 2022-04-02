@@ -1,15 +1,15 @@
-mod nested_tuple;
+pub(crate) mod nested_tuple;
 
 use crate::ser::{Error, Result, WriteExt};
 use serde::{ser, ser::Impossible, Serialize};
 use std::io::Write;
 
-pub(super) struct Serializer<'a, W> {
+pub(crate) struct Serializer<'a, W> {
     writer: &'a mut W,
 }
 
 impl<'a, W> Serializer<'a, W> {
-    pub(super) fn new(writer: &'a mut W) -> Self {
+    pub(crate) fn new(writer: &'a mut W) -> Self {
         Self { writer }
     }
 }
