@@ -9,6 +9,8 @@ pub(super) trait WriteExt {
     fn write_tag_name_escaped(&mut self, tag_name: &[u8]) -> Result<()>;
     fn write_parameter_unescaped(&mut self, parameter: &[u8]) -> Result<()>;
     fn write_parameter_escaped(&mut self, parameter: &[u8]) -> Result<()>;
+    fn write_key_unescaped(&mut self, value: &[u8]) -> Result<()>;
+    fn write_key_escaped(&mut self, value: &[u8]) -> Result<()>;
     fn close_tag(&mut self) -> Result<()>;
 }
 
@@ -32,6 +34,16 @@ where
 
     fn write_parameter_escaped(&mut self, parameter: &[u8]) -> Result<()> {
         self.write_parameter_unescaped(&Escaper::new(parameter).collect::<Vec<_>>())
+    }
+
+
+    fn write_key_unescaped(&mut self, value: &[u8]) -> Result<()> {
+        self.write_all(b"   ").or(Err(Error::Io))?;
+        self.write_all(value).or(Err(Error::Io))
+    }
+
+    fn write_key_escaped(&mut self, value: &[u8]) -> Result<()> {
+        self.write_key_unescaped(&Escaper::new(value).collect::<Vec<_>>())
     }
 
     fn close_tag(&mut self) -> Result<()> {
@@ -118,6 +130,33 @@ mod tests {
     }
 
     #[test]
+    fn write_key_unescaped_escapes() {
+        let mut output = Vec::new();
+
+        assert_ok!(output.write_key_unescaped(b"fo#o"));
+
+        assert_eq!(output, b"   fo#o");
+    }
+
+    #[test]
+    fn write_key_escaped_regular() {
+        let mut output = Vec::new();
+
+        assert_ok!(output.write_key_escaped(b"foo"));
+
+        assert_eq!(output, b"   foo");
+    }
+
+    #[test]
+    fn write_key_escaped_escapes() {
+        let mut output = Vec::new();
+
+        assert_ok!(output.write_key_escaped(b"fo#o"));
+
+        assert_eq!(output, b"   fo\\#o");
+    }
+
+    #[test]
     fn close_tag() {
         let mut output = Vec::new();
 
@@ -163,7 +202,21 @@ mod tests {
     fn write_parameter_escaped_failure() {
         let mut output = FailingWriter;
 
-        assert_err!(output.write_parameter_escaped(b"foo"));
+        assert_err!(output.write_parameter_unescaped(b"foo"));
+    }
+
+    #[test]
+    fn write_key_unescaped_failure() {
+        let mut output = FailingWriter;
+
+        assert_err!(output.write_key_unescaped(b"foo"));
+    }
+
+    #[test]
+    fn write_key_escaped_failure() {
+        let mut output = FailingWriter;
+
+        assert_err!(output.write_key_escaped(b"foo"));
     }
 
     #[test]
