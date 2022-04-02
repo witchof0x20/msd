@@ -30,7 +30,7 @@ where
     type SerializeTupleVariant = Impossible<Self::Ok, Self::Error>;
     type SerializeMap = Impossible<Self::Ok, Self::Error>;
     type SerializeStruct = r#struct::Serializer<'a, W>;
-    type SerializeStructVariant = Impossible<Self::Ok, Self::Error>;
+    type SerializeStructVariant = r#struct::Serializer<'a, W>;
 
     fn serialize_bool(self, v: bool) -> Result<Self::Ok> {
         Err(Error::UnsupportedType)
@@ -182,12 +182,14 @@ where
 
     fn serialize_struct_variant(
         self,
-        name: &'static str,
-        variant_index: u32,
+        _name: &'static str,
+        _variant_index: u32,
         variant: &'static str,
-        len: usize,
+        _len: usize,
     ) -> Result<Self::SerializeStructVariant> {
-        Err(Error::UnsupportedType)
+        self.writer.write_tag_name_escaped(variant.as_bytes());
+        self.writer.close_tag();
+        Ok(r#struct::Serializer::new(&mut self.writer))
     }
 }
 
@@ -196,10 +198,21 @@ mod tests {
     use super::Serializer;
     use claim::assert_ok;
     use serde::Serialize;
+    use serde_derive::Serialize;
 
     #[test]
-    fn single_field() {
-        #[derive(serde_derive::Serialize)]
+    fn struct_empty() {
+        #[derive(Serialize)]
+        struct Foo {}
+        let mut output = Vec::new();
+
+        assert_ok!(Foo {}.serialize(&mut Serializer::new(&mut output)));
+        assert_eq!(output, b"");
+    }
+
+    #[test]
+    fn struct_single_field() {
+        #[derive(Serialize)]
         struct Foo {
             bar: usize,
         }
@@ -210,8 +223,8 @@ mod tests {
     }
 
     #[test]
-    fn multiple_fields() {
-        #[derive(serde_derive::Serialize)]
+    fn struct_multiple_fields() {
+        #[derive(Serialize)]
         struct Foo {
             bar: usize,
             baz: Option<()>,
@@ -226,5 +239,50 @@ mod tests {
         }
         .serialize(&mut Serializer::new(&mut output)));
         assert_eq!(output, b"#bar:42;\n#qux:test\\:test;\n");
+    }
+
+    #[test]
+    fn struct_variant_empty() {
+        #[derive(Serialize)]
+        enum Foo {
+            Variant {},
+        }
+        let mut output = Vec::new();
+
+        assert_ok!(Foo::Variant {}.serialize(&mut Serializer::new(&mut output)));
+        assert_eq!(output, b"#Variant;\n");
+    }
+
+    #[test]
+    fn struct_variant_single_field() {
+        #[derive(Serialize)]
+        enum Foo {
+            Variant {
+                bar: usize,
+            }
+        }
+        let mut output = Vec::new();
+
+        assert_ok!(Foo::Variant { bar: 42 }.serialize(&mut Serializer::new(&mut output)));
+        assert_eq!(output, b"#Variant;\n#bar:42;\n");
+    }
+
+    #[test]
+    fn struct_variant_multiple_fields() {
+        #[derive(Serialize)]
+        enum Foo { Variant {
+            bar: usize,
+            baz: Option<()>,
+            qux: Option<&'static str>,
+        }}
+        let mut output = Vec::new();
+
+        assert_ok!(Foo::Variant {
+            bar: 42,
+            baz: None,
+            qux: Some("test:test"),
+        }
+        .serialize(&mut Serializer::new(&mut output)));
+        assert_eq!(output, b"#Variant;\n#bar:42;\n#qux:test\\:test;\n");
     }
 }
