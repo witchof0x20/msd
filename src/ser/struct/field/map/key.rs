@@ -150,19 +150,19 @@ where
         self.writer.write_key_escaped(variant.as_bytes())
     }
 
-    fn serialize_newtype_struct<T>(self, name: &'static str, value: &T) -> Result<Self::Ok>
+    fn serialize_newtype_struct<T>(self, _name: &'static str, value: &T) -> Result<Self::Ok>
     where
         T: ?Sized + Serialize,
     {
-        Err(Error::UnsupportedType)
+        value.serialize(self)
     }
 
     fn serialize_newtype_variant<T>(
         self,
-        name: &'static str,
-        variant_index: u32,
-        variant: &'static str,
-        value: &T,
+        _name: &'static str,
+        _variant_index: u32,
+        _variant: &'static str,
+        _value: &T,
     ) -> Result<Self::Ok>
     where
         T: ?Sized + Serialize,
@@ -170,7 +170,7 @@ where
         Err(Error::UnsupportedType)
     }
 
-    fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq> {
+    fn serialize_seq(self, _len: Option<usize>) -> Result<Self::SerializeSeq> {
         Err(Error::UnsupportedType)
     }
 
@@ -197,7 +197,7 @@ where
         Err(Error::UnsupportedType)
     }
 
-    fn serialize_map(self, len: Option<usize>) -> Result<Self::SerializeMap> {
+    fn serialize_map(self, _len: Option<usize>) -> Result<Self::SerializeMap> {
         Err(Error::UnsupportedType)
     }
 
@@ -207,10 +207,10 @@ where
 
     fn serialize_struct_variant(
         self,
-        name: &'static str,
-        variant_index: u32,
-        variant: &'static str,
-        len: usize,
+        _name: &'static str,
+        _variant_index: u32,
+        _variant: &'static str,
+        _len: usize,
     ) -> Result<Self::SerializeStructVariant> {
         Err(Error::UnsupportedType)
     }
@@ -220,10 +220,7 @@ where
 mod tests {
     use super::Serializer;
     use claim::assert_ok;
-    use serde::{
-        ser::{SerializeTupleStruct, SerializeTupleVariant},
-        Serialize,
-    };
+    use serde::Serialize;
     use serde_bytes::Bytes;
     use serde_derive::Serialize;
 
@@ -614,5 +611,17 @@ mod tests {
         assert_ok!(Enum::A.serialize(&mut Serializer::new(&mut output)));
 
         assert_eq!(output, b"   A");
+    }
+
+    #[test]
+    fn newtype_struct() {
+        #[derive(Serialize)]
+        struct NewtypeStruct(u32);
+
+        let mut output = Vec::new();
+
+        assert_ok!(NewtypeStruct(42).serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"   42");
     }
 }

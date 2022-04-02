@@ -1,6 +1,6 @@
 use super::super::element;
 
-use crate::ser::{Error, Result, WriteExt};
+use crate::ser::{Error, Result};
 use serde::{
     ser::{SerializeTuple, SerializeTupleStruct, SerializeTupleVariant},
     Serialize,

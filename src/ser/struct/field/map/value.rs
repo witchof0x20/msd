@@ -1,5 +1,5 @@
 use super::super::tuple;
-use crate::ser::{r#struct, Error, Result, WriteExt};
+use crate::ser::{Error, Result, WriteExt};
 use serde::{ser, ser::Impossible, Serialize};
 use std::io::Write;
 
@@ -200,10 +200,10 @@ where
 
     fn serialize_newtype_variant<T>(
         self,
-        name: &'static str,
-        variant_index: u32,
-        variant: &'static str,
-        value: &T,
+        _name: &'static str,
+        _variant_index: u32,
+        _variant: &'static str,
+        _value: &T,
     ) -> Result<Self::Ok>
     where
         T: ?Sized + Serialize,
@@ -211,7 +211,7 @@ where
         Err(Error::UnsupportedType)
     }
 
-    fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq> {
+    fn serialize_seq(self, _len: Option<usize>) -> Result<Self::SerializeSeq> {
         Err(Error::UnsupportedType)
     }
 
@@ -238,7 +238,7 @@ where
         Ok(tuple::Serializer::new(self.writer))
     }
 
-    fn serialize_map(self, len: Option<usize>) -> Result<Self::SerializeMap> {
+    fn serialize_map(self, _len: Option<usize>) -> Result<Self::SerializeMap> {
         Err(Error::UnsupportedType)
     }
 
@@ -248,10 +248,10 @@ where
 
     fn serialize_struct_variant(
         self,
-        name: &'static str,
-        variant_index: u32,
-        variant: &'static str,
-        len: usize,
+        _name: &'static str,
+        _variant_index: u32,
+        _variant: &'static str,
+        _len: usize,
     ) -> Result<Self::SerializeStructVariant> {
         Err(Error::UnsupportedType)
     }
@@ -774,14 +774,11 @@ mod tests {
             where
                 S: serde::Serializer,
             {
-                if let Self::Variant(inner) = self {
-                    let mut tv =
-                        serializer.serialize_tuple_variant("TupleEnum", 0, "Variant", 1)?;
-                    tv.serialize_field(&inner)?;
-                    tv.end()
-                } else {
-                    unreachable!("there is only one variant")
-                }
+                let Self::Variant(inner) = self;
+                let mut tv =
+                    serializer.serialize_tuple_variant("TupleEnum", 0, "Variant", 1)?;
+                tv.serialize_field(&inner)?;
+                tv.end()
             }
         }
 

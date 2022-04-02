@@ -8,7 +8,7 @@ pub enum Error {
 }
 
 impl ser::Error for Error {
-    fn custom<T>(msg: T) -> Self
+    fn custom<T>(_msg: T) -> Self
     where
         T: Display,
     {
@@ -17,7 +17,7 @@ impl ser::Error for Error {
 }
 
 impl Display for Error {
-    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, _formatter: &mut fmt::Formatter) -> fmt::Result {
         todo!()
     }
 }
