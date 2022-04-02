@@ -31,7 +31,7 @@ where
     type SerializeTuple = tuple::Serializer<'a, W>;
     type SerializeTupleStruct = tuple::Serializer<'a, W>;
     type SerializeTupleVariant = tuple::Serializer<'a, W>;
-    type SerializeMap = map::Serializer::<'a, W>;
+    type SerializeMap = map::Serializer<'a, W>;
     type SerializeStruct = Impossible<Self::Ok, Self::Error>;
     type SerializeStructVariant = Impossible<Self::Ok, Self::Error>;
 
@@ -293,13 +293,15 @@ where
         variant: &'static str,
         _len: usize,
     ) -> Result<Self::SerializeTupleVariant> {
-        self.writer.write_tag_name_escaped(self.field_name.as_bytes())?;
+        self.writer
+            .write_tag_name_escaped(self.field_name.as_bytes())?;
         self.writer.write_parameter_escaped(variant.as_bytes())?;
         Ok(tuple::Serializer::new(self.writer))
     }
 
     fn serialize_map(self, len: Option<usize>) -> Result<Self::SerializeMap> {
-        self.writer.write_tag_name_escaped(self.field_name.as_bytes())?;
+        self.writer
+            .write_tag_name_escaped(self.field_name.as_bytes())?;
         self.writer.write_parameter_unescaped(b"\n")?;
         Ok(map::Serializer::new(self.writer))
     }
@@ -323,10 +325,13 @@ where
 mod tests {
     use super::Serializer;
     use claim::assert_ok;
-    use std::collections::HashMap;
-    use serde::{ser::{SerializeMap, SerializeTupleStruct, SerializeTupleVariant}, Serialize};
+    use serde::{
+        ser::{SerializeMap, SerializeTupleStruct, SerializeTupleVariant},
+        Serialize,
+    };
     use serde_bytes::Bytes;
     use serde_derive::Serialize;
+    use std::collections::HashMap;
 
     #[test]
     fn r#true() {
@@ -768,6 +773,55 @@ mod tests {
     }
 
     #[test]
+    fn seq_maps() {
+        struct Map {
+            a: (&'static str, usize),
+            b: (&'static str, usize),
+            c: (&'static str, usize),
+            d: (&'static str, usize),
+        }
+        impl Serialize for Map {
+            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+            where
+                S: serde::Serializer,
+            {
+                let mut map = serializer.serialize_map(Some(4))?;
+                map.serialize_entry(self.a.0, &self.a.1)?;
+                map.serialize_entry(self.b.0, &self.b.1)?;
+                map.serialize_entry(self.c.0, &self.c.1)?;
+                map.serialize_entry(self.d.0, &self.d.1)?;
+                map.end()
+            }
+        }
+
+        let mut output = Vec::new();
+
+        assert_ok!(vec![
+            Map {
+                a: ("a", 1),
+                b: ("b", 2),
+                c: ("c", 3),
+                d: ("d", 4)
+            },
+            Map {
+                a: ("e", 5),
+                b: ("f", 6),
+                c: ("g", 7),
+                d: ("h", 8)
+            },
+            Map {
+                a: ("i", 9),
+                b: ("j", 10),
+                c: ("k", 11),
+                d: ("l", 12)
+            }
+        ]
+        .serialize(&mut Serializer::new(&mut output, "foo")));
+
+        assert_eq!(output, b"#foo:\n   a:1;\n   b:2;\n   c:3;\n   d:4;\n#END;\n#foo:\n   e:5;\n   f:6;\n   g:7;\n   h:8;\n#END;\n#foo:\n   i:9;\n   j:10;\n   k:11;\n   l:12;\n#END;\n");
+    }
+
+    #[test]
     fn seq_structs() {
         #[derive(Serialize)]
         struct Struct {
@@ -897,7 +951,8 @@ mod tests {
 
         let mut output = Vec::new();
 
-        assert_ok!(TupleStruct(1, (2, 3), ((4, 5), 6), 7).serialize(&mut Serializer::new(&mut output, "foo")));
+        assert_ok!(TupleStruct(1, (2, 3), ((4, 5), 6), 7)
+            .serialize(&mut Serializer::new(&mut output, "foo")));
 
         assert_eq!(output, b"#foo:1:2:3:4:5:6:7;\n");
     }
@@ -905,14 +960,16 @@ mod tests {
     #[test]
     fn empty_tuple_variant() {
         enum TupleEnum {
-            Variant()
+            Variant(),
         }
         impl Serialize for TupleEnum {
             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
             where
                 S: serde::Serializer,
             {
-                serializer.serialize_tuple_variant("TupleEnum", 0, "Variant", 0)?.end()
+                serializer
+                    .serialize_tuple_variant("TupleEnum", 0, "Variant", 0)?
+                    .end()
             }
         }
 
@@ -934,7 +991,8 @@ mod tests {
                 S: serde::Serializer,
             {
                 if let Self::Variant(inner) = self {
-                    let mut tv = serializer.serialize_tuple_variant("TupleEnum", 0, "Variant", 1)?;
+                    let mut tv =
+                        serializer.serialize_tuple_variant("TupleEnum", 0, "Variant", 1)?;
                     tv.serialize_field(&inner)?;
                     tv.end()
                 } else {
@@ -959,9 +1017,8 @@ mod tests {
 
         let mut output = Vec::new();
 
-        assert_ok!(
-            TupleEnum::Variant(42, "bar", (), 1.0).serialize(&mut Serializer::new(&mut output, "foo"))
-        );
+        assert_ok!(TupleEnum::Variant(42, "bar", (), 1.0)
+            .serialize(&mut Serializer::new(&mut output, "foo")));
 
         assert_eq!(output, b"#foo:Variant:42:bar::1.0;\n");
     }
@@ -969,13 +1026,14 @@ mod tests {
     #[test]
     fn nested_tuple_variant() {
         #[derive(Serialize)]
-        enum TupleEnum  {
-            Variant(usize, (usize, usize), ((usize, usize), usize), usize)
+        enum TupleEnum {
+            Variant(usize, (usize, usize), ((usize, usize), usize), usize),
         }
 
         let mut output = Vec::new();
 
-        assert_ok!(TupleEnum::Variant(1, (2, 3), ((4, 5), 6), 7).serialize(&mut Serializer::new(&mut output, "foo")));
+        assert_ok!(TupleEnum::Variant(1, (2, 3), ((4, 5), 6), 7)
+            .serialize(&mut Serializer::new(&mut output, "foo")));
 
         assert_eq!(output, b"#foo:Variant:1:2:3:4:5:6:7;\n");
     }
@@ -983,7 +1041,7 @@ mod tests {
     #[test]
     fn empty_map() {
         let map: HashMap<(), ()> = HashMap::new();
-        
+
         let mut output = Vec::new();
 
         assert_ok!(map.serialize(&mut Serializer::new(&mut output, "foo")));
@@ -995,7 +1053,7 @@ mod tests {
     fn single_entry_map() {
         let mut map = HashMap::new();
         map.insert("abc", 1);
-        
+
         let mut output = Vec::new();
 
         assert_ok!(map.serialize(&mut Serializer::new(&mut output, "foo")));
@@ -1019,12 +1077,15 @@ mod tests {
                 map.end()
             }
         }
-        
+
         let mut output = Vec::new();
 
         assert_ok!(Map.serialize(&mut Serializer::new(&mut output, "foo")));
 
-        assert_eq!(output, b"#foo:\n   abc:1;\n   def:2;\n   ghi:3;\n   jkl:4;\n#END;\n");
+        assert_eq!(
+            output,
+            b"#foo:\n   abc:1;\n   def:2;\n   ghi:3;\n   jkl:4;\n#END;\n"
+        );
     }
 
     #[test]

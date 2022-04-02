@@ -36,7 +36,6 @@ where
         self.write_parameter_unescaped(&Escaper::new(parameter).collect::<Vec<_>>())
     }
 
-
     fn write_key_unescaped(&mut self, value: &[u8]) -> Result<()> {
         self.write_all(b"   ").or(Err(Error::Io))?;
         self.write_all(value).or(Err(Error::Io))

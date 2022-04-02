@@ -11,21 +11,28 @@ pub(in super::super) struct Serializer<'a, W> {
 
 impl<'a, W> Serializer<'a, W> {
     pub(super) fn new(writer: &'a mut W) -> Self {
-        Self {
-            writer,
-        }
+        Self { writer }
     }
 }
 
-impl<'a, W> SerializeMap for Serializer<'a, W> where W: Write {
+impl<'a, W> SerializeMap for Serializer<'a, W>
+where
+    W: Write,
+{
     type Ok = ();
     type Error = Error;
 
-    fn serialize_key<T>(&mut self, key: &T) -> Result<()> where T: ?Sized + Serialize {
+    fn serialize_key<T>(&mut self, key: &T) -> Result<()>
+    where
+        T: ?Sized + Serialize,
+    {
         key.serialize(&mut key::Serializer::new(self.writer))
     }
 
-    fn serialize_value<T>(&mut self, value: &T) -> Result<()> where T: ?Sized + Serialize {
+    fn serialize_value<T>(&mut self, value: &T) -> Result<()>
+    where
+        T: ?Sized + Serialize,
+    {
         value.serialize(&mut value::Serializer::new(self.writer))
     }
 

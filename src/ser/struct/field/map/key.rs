@@ -220,7 +220,10 @@ where
 mod tests {
     use super::Serializer;
     use claim::assert_ok;
-    use serde::{ser::{SerializeTupleStruct, SerializeTupleVariant}, Serialize};
+    use serde::{
+        ser::{SerializeTupleStruct, SerializeTupleVariant},
+        Serialize,
+    };
     use serde_bytes::Bytes;
     use serde_derive::Serialize;
 

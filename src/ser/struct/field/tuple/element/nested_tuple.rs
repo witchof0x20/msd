@@ -107,7 +107,7 @@ mod tests {
     #[test]
     fn serialize_tuple_multiple() {
         use serde::ser::SerializeTuple;
-        
+
         let mut output = Vec::new();
 
         let mut serializer = Serializer::new(&mut output);
@@ -148,7 +148,7 @@ mod tests {
     #[test]
     fn serialize_tuple_struct_multiple() {
         use serde::ser::SerializeTupleStruct;
-        
+
         let mut output = Vec::new();
 
         let mut serializer = Serializer::new(&mut output);
@@ -189,7 +189,7 @@ mod tests {
     #[test]
     fn serialize_tuple_variant_multiple() {
         use serde::ser::SerializeTupleVariant;
-        
+
         let mut output = Vec::new();
 
         let mut serializer = Serializer::new(&mut output);

@@ -222,7 +222,10 @@ where
 mod tests {
     use super::Serializer;
     use claim::assert_ok;
-    use serde::{ser::{SerializeTupleStruct, SerializeTupleVariant}, Serialize};
+    use serde::{
+        ser::{SerializeTupleStruct, SerializeTupleVariant},
+        Serialize,
+    };
     use serde_bytes::Bytes;
     use serde_derive::Serialize;
 
@@ -619,10 +622,7 @@ mod tests {
     fn empty_tuple() {
         let mut output = Vec::new();
 
-        assert_ok!(<[(); 0]>::serialize(
-            &[],
-            &mut Serializer::new(&mut output)
-        ));
+        assert_ok!(<[(); 0]>::serialize(&[], &mut Serializer::new(&mut output)));
 
         assert_eq!(output, b"");
     }
@@ -685,9 +685,7 @@ mod tests {
 
         let mut output = Vec::new();
 
-        assert_ok!(
-            TupleStruct(42, "bar", (), 1.0).serialize(&mut Serializer::new(&mut output))
-        );
+        assert_ok!(TupleStruct(42, "bar", (), 1.0).serialize(&mut Serializer::new(&mut output)));
 
         assert_eq!(output, b":42:bar::1.0");
     }
@@ -695,14 +693,16 @@ mod tests {
     #[test]
     fn empty_tuple_variant() {
         enum TupleEnum {
-            Variant()
+            Variant(),
         }
         impl Serialize for TupleEnum {
             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
             where
                 S: serde::Serializer,
             {
-                serializer.serialize_tuple_variant("TupleEnum", 0, "Variant", 0)?.end()
+                serializer
+                    .serialize_tuple_variant("TupleEnum", 0, "Variant", 0)?
+                    .end()
             }
         }
 
@@ -724,7 +724,8 @@ mod tests {
                 S: serde::Serializer,
             {
                 if let Self::Variant(inner) = self {
-                    let mut tv = serializer.serialize_tuple_variant("TupleEnum", 0, "Variant", 1)?;
+                    let mut tv =
+                        serializer.serialize_tuple_variant("TupleEnum", 0, "Variant", 1)?;
                     tv.serialize_field(&inner)?;
                     tv.end()
                 } else {
@@ -759,13 +760,14 @@ mod tests {
     #[test]
     fn nested_tuple_variant() {
         #[derive(Serialize)]
-        enum TupleEnum  {
-            Variant(usize, (usize, usize), ((usize, usize), usize), usize)
+        enum TupleEnum {
+            Variant(usize, (usize, usize), ((usize, usize), usize), usize),
         }
 
         let mut output = Vec::new();
 
-        assert_ok!(TupleEnum::Variant(1, (2, 3), ((4, 5), 6), 7).serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(TupleEnum::Variant(1, (2, 3), ((4, 5), 6), 7)
+            .serialize(&mut Serializer::new(&mut output)));
 
         assert_eq!(output, b":Variant:1:2:3:4:5:6:7");
     }
