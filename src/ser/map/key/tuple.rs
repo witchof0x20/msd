@@ -1,5 +1,5 @@
 use super::super::key;
-use crate::ser::{r#struct::field::tuple::element, Error, Result, WriteExt};
+use crate::ser::{tuple::element, Error, Result, WriteExt};
 use serde::{
     ser::{SerializeTuple, SerializeTupleStruct, SerializeTupleVariant},
     Serialize,

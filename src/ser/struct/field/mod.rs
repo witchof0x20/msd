@@ -1,10 +1,6 @@
-mod map;
-mod seq;
-mod tuple;
-
 use crate::{
     escape::Escaper,
-    ser::{Error, Result, WriteExt},
+    ser::{Error, Result, WriteExt, map, seq, tuple},
 };
 use serde::{ser, ser::Impossible, Serialize};
 use std::io::Write;

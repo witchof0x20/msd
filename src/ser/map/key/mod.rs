@@ -1,7 +1,6 @@
 mod tuple;
 
-use super::super::tuple::{element, element::nested_tuple};
-use crate::ser::{Error, Result, WriteExt};
+use crate::ser::{Error, Result, WriteExt, tuple::{element, element::nested_tuple}};
 use serde::{ser, ser::Impossible, Serialize};
 use std::io::Write;
 

@@ -1,5 +1,4 @@
-use super::super::tuple;
-use crate::ser::{Error, Result, WriteExt};
+use crate::ser::{Error, Result, WriteExt, tuple};
 use serde::{ser, ser::Impossible, Serialize};
 use std::io::Write;
 

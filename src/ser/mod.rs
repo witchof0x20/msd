@@ -1,5 +1,8 @@
 mod error;
+mod map;
+mod seq;
 mod r#struct;
+mod tuple;
 mod write;
 
 pub use error::{Error, Result};
