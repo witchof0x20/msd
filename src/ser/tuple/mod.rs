@@ -1,4 +1,6 @@
-pub(crate) mod element;
+pub(super) mod element;
+pub(super) mod key;
+pub(super) mod nested;
 
 use crate::ser::{Error, Result, WriteExt};
 use serde::{

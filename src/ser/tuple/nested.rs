@@ -1,5 +1,5 @@
-use super::super::key;
-use crate::ser::{tuple::element, Error, Result, WriteExt};
+use super::element;
+use crate::ser::{Error, Result};
 use serde::{
     ser::{SerializeTuple, SerializeTupleStruct, SerializeTupleVariant},
     Serialize,
@@ -8,12 +8,11 @@ use std::io::Write;
 
 pub(in super::super) struct Serializer<'a, W> {
     writer: &'a mut W,
-    written_key: bool,
 }
 
 impl<'a, W> Serializer<'a, W> {
-    pub(super) fn new(writer: &'a mut W) -> Self {
-        Self { writer, written_key: false, }
+    pub(in super::super) fn new(writer: &'a mut W) -> Self {
+        Self { writer }
     }
 }
 
@@ -28,20 +27,11 @@ where
     where
         T: ?Sized + Serialize,
     {
-        if self.written_key {
-            value.serialize(&mut element::Serializer::new(self.writer))
-        } else {
-            self.written_key = true;
-            value.serialize(&mut key::Serializer::new(self.writer))
-        }
+        value.serialize(&mut element::Serializer::new(self.writer))
     }
 
     fn end(self) -> Result<Self::Ok> {
-        if self.written_key {
-            Ok(())
-        } else {
-            self.writer.write_key_unescaped(b"")
-        }
+        Ok(())
     }
 }
 
@@ -56,20 +46,11 @@ where
     where
         T: ?Sized + Serialize,
     {
-        if self.written_key {
-            value.serialize(&mut element::Serializer::new(self.writer))
-        } else {
-            self.written_key = true;
-            value.serialize(&mut key::Serializer::new(self.writer))
-        }
+        value.serialize(&mut element::Serializer::new(self.writer))
     }
 
     fn end(self) -> Result<Self::Ok> {
-        if self.written_key {
-            Ok(())
-        } else {
-            self.writer.write_key_unescaped(b"")
-        }
+        Ok(())
     }
 }
 
@@ -84,20 +65,11 @@ where
     where
         T: ?Sized + Serialize,
     {
-        if self.written_key {
-            value.serialize(&mut element::Serializer::new(self.writer))
-        } else {
-            self.written_key = true;
-            value.serialize(&mut key::Serializer::new(self.writer))
-        }
+        value.serialize(&mut element::Serializer::new(self.writer))
     }
 
     fn end(self) -> Result<Self::Ok> {
-        if self.written_key {
-            Ok(())
-        } else {
-            self.writer.write_key_unescaped(b"")
-        }
+        Ok(())
     }
 }
 
@@ -115,7 +87,7 @@ mod tests {
         let serializer = Serializer::new(&mut output);
 
         assert_ok!(serializer.end());
-        assert_eq!(output, b"   ");
+        assert_eq!(output, b"");
     }
 
     #[test]
@@ -128,7 +100,7 @@ mod tests {
 
         assert_ok!(serializer.serialize_element(&42));
         assert_ok!(serializer.end());
-        assert_eq!(output, b"   42");
+        assert_eq!(output, b":42");
     }
 
     #[test]
@@ -144,7 +116,7 @@ mod tests {
         assert_ok!(serializer.serialize_element(&()));
         assert_ok!(serializer.serialize_element(&1.0));
         assert_ok!(serializer.end());
-        assert_eq!(output, b"   42:foo::1.0");
+        assert_eq!(output, b":42:foo::1.0");
     }
 
     #[test]
@@ -156,7 +128,7 @@ mod tests {
         let serializer = Serializer::new(&mut output);
 
         assert_ok!(serializer.end());
-        assert_eq!(output, b"   ");
+        assert_eq!(output, b"");
     }
 
     #[test]
@@ -169,7 +141,7 @@ mod tests {
 
         assert_ok!(serializer.serialize_field(&42));
         assert_ok!(serializer.end());
-        assert_eq!(output, b"   42");
+        assert_eq!(output, b":42");
     }
 
     #[test]
@@ -185,7 +157,7 @@ mod tests {
         assert_ok!(serializer.serialize_field(&()));
         assert_ok!(serializer.serialize_field(&1.0));
         assert_ok!(serializer.end());
-        assert_eq!(output, b"   42:foo::1.0");
+        assert_eq!(output, b":42:foo::1.0");
     }
 
     #[test]
@@ -197,7 +169,7 @@ mod tests {
         let serializer = Serializer::new(&mut output);
 
         assert_ok!(serializer.end());
-        assert_eq!(output, b"   ");
+        assert_eq!(output, b"");
     }
 
     #[test]
@@ -210,7 +182,7 @@ mod tests {
 
         assert_ok!(serializer.serialize_field(&42));
         assert_ok!(serializer.end());
-        assert_eq!(output, b"   42");
+        assert_eq!(output, b":42");
     }
 
     #[test]
@@ -226,6 +198,6 @@ mod tests {
         assert_ok!(serializer.serialize_field(&()));
         assert_ok!(serializer.serialize_field(&1.0));
         assert_ok!(serializer.end());
-        assert_eq!(output, b"   42:foo::1.0");
+        assert_eq!(output, b":42:foo::1.0");
     }
 }

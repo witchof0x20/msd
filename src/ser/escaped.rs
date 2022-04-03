@@ -11,7 +11,7 @@ enum State {
 ///
 /// This should be used when preparing to write unknown values during serialization. to ensure the
 /// serialization is correct.
-pub(crate) struct Escaper<'a> {
+pub(crate) struct Escaped<'a> {
     current_pointer: *const u8,
     end_pointer: *const u8,
     state: State,
@@ -19,7 +19,7 @@ pub(crate) struct Escaper<'a> {
     lifetime: PhantomData<&'a ()>,
 }
 
-impl<'a> Escaper<'a> {
+impl<'a> Escaped<'a> {
     pub(crate) fn new(bytes: &'a [u8]) -> Self {
         let pointer = bytes.as_ptr();
         Self {
@@ -34,7 +34,7 @@ impl<'a> Escaper<'a> {
     }
 }
 
-impl<'a> Iterator for Escaper<'a> {
+impl<'a> Iterator for Escaped<'a> {
     type Item = u8;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -98,92 +98,92 @@ impl<'a> Iterator for Escaper<'a> {
 
 #[cfg(test)]
 mod tests {
-    use super::Escaper;
+    use super::Escaped;
 
     #[test]
     fn empty() {
-        let escaper = Escaper::new(b"");
+        let escaped = Escaped::new(b"");
 
-        assert_eq!(escaper.collect::<Vec<_>>(), b"");
+        assert_eq!(escaped.collect::<Vec<_>>(), b"");
     }
 
     #[test]
     fn no_escapes() {
-        let escaper = Escaper::new(b"foo");
+        let escaped = Escaped::new(b"foo");
 
-        assert_eq!(escaper.collect::<Vec<_>>(), b"foo");
+        assert_eq!(escaped.collect::<Vec<_>>(), b"foo");
     }
 
     #[test]
     fn escapes_number_sign() {
-        let escaper = Escaper::new(b"#");
+        let escaped = Escaped::new(b"#");
 
-        assert_eq!(escaper.collect::<Vec<_>>(), b"\\#");
+        assert_eq!(escaped.collect::<Vec<_>>(), b"\\#");
     }
 
     #[test]
     fn escapes_colon() {
-        let escaper = Escaper::new(b":");
+        let escaped = Escaped::new(b":");
 
-        assert_eq!(escaper.collect::<Vec<_>>(), b"\\:");
+        assert_eq!(escaped.collect::<Vec<_>>(), b"\\:");
     }
 
     #[test]
     fn escapes_semicolon() {
-        let escaper = Escaper::new(b";");
+        let escaped = Escaped::new(b";");
 
-        assert_eq!(escaper.collect::<Vec<_>>(), b"\\;");
+        assert_eq!(escaped.collect::<Vec<_>>(), b"\\;");
     }
 
     #[test]
     fn escapes_backslash() {
-        let escaper = Escaper::new(b"\\");
+        let escaped = Escaped::new(b"\\");
 
-        assert_eq!(escaper.collect::<Vec<_>>(), b"\\\\");
+        assert_eq!(escaped.collect::<Vec<_>>(), b"\\\\");
     }
 
     #[test]
     fn no_escape_single_forward_slash() {
-        let escaper = Escaper::new(b"/foo");
+        let escaped = Escaped::new(b"/foo");
 
-        assert_eq!(escaper.collect::<Vec<_>>(), b"/foo");
+        assert_eq!(escaped.collect::<Vec<_>>(), b"/foo");
     }
 
     #[test]
     fn no_escape_single_forward_slash_at_end() {
-        let escaper = Escaper::new(b"/");
+        let escaped = Escaped::new(b"/");
 
-        assert_eq!(escaper.collect::<Vec<_>>(), b"/");
+        assert_eq!(escaped.collect::<Vec<_>>(), b"/");
     }
 
     #[test]
     fn escapes_double_forward_slash() {
-        let escaper = Escaper::new(b"//");
+        let escaped = Escaped::new(b"//");
 
-        assert_eq!(escaper.collect::<Vec<_>>(), b"\\/\\/");
+        assert_eq!(escaped.collect::<Vec<_>>(), b"\\/\\/");
     }
 
     #[test]
     fn escapes_triple_forward_slash() {
-        let escaper = Escaper::new(b"///");
+        let escaped = Escaped::new(b"///");
 
-        assert_eq!(escaper.collect::<Vec<_>>(), b"\\/\\//");
+        assert_eq!(escaped.collect::<Vec<_>>(), b"\\/\\//");
     }
 
     #[test]
     fn escapes_multiple() {
-        let escaper = Escaper::new(b"foo//bar#baz;qux:quux\\");
+        let escaped = Escaped::new(b"foo//bar#baz;qux:quux\\");
 
         assert_eq!(
-            escaper.collect::<Vec<_>>(),
+            escaped.collect::<Vec<_>>(),
             b"foo\\/\\/bar\\#baz\\;qux\\:quux\\\\"
         );
     }
 
     #[test]
     fn escapes_back_to_back() {
-        let escaper = Escaper::new(b"#:;\\////");
+        let escaped = Escaped::new(b"#:;\\////");
 
-        assert_eq!(escaper.collect::<Vec<_>>(), b"\\#\\:\\;\\\\\\/\\/\\/\\/");
+        assert_eq!(escaped.collect::<Vec<_>>(), b"\\#\\:\\;\\\\\\/\\/\\/\\/");
     }
 }

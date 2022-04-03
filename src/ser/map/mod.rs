@@ -1,4 +1,4 @@
-mod key;
+pub(super) mod key;
 mod value;
 
 use crate::ser::{Error, Result, WriteExt};

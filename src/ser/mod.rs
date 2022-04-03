@@ -1,4 +1,5 @@
 mod error;
+mod escaped;
 mod map;
 mod seq;
 mod r#struct;
@@ -7,6 +8,7 @@ mod write;
 
 pub use error::{Error, Result};
 
+use escaped::Escaped;
 use serde::{ser, ser::Impossible, Serialize};
 use std::io::Write;
 use write::WriteExt;

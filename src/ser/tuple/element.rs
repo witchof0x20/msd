@@ -1,15 +1,13 @@
-pub(crate) mod nested_tuple;
-
-use crate::ser::{Error, Result, WriteExt};
+use crate::ser::{Error, Result, WriteExt, tuple};
 use serde::{ser, ser::Impossible, Serialize};
 use std::io::Write;
 
-pub(crate) struct Serializer<'a, W> {
+pub(in super::super) struct Serializer<'a, W> {
     writer: &'a mut W,
 }
 
 impl<'a, W> Serializer<'a, W> {
-    pub(crate) fn new(writer: &'a mut W) -> Self {
+    pub(in super::super) fn new(writer: &'a mut W) -> Self {
         Self { writer }
     }
 }
@@ -21,9 +19,9 @@ where
     type Ok = ();
     type Error = Error;
     type SerializeSeq = Impossible<Self::Ok, Self::Error>;
-    type SerializeTuple = nested_tuple::Serializer<'a, W>;
-    type SerializeTupleStruct = nested_tuple::Serializer<'a, W>;
-    type SerializeTupleVariant = nested_tuple::Serializer<'a, W>;
+    type SerializeTuple = tuple::nested::Serializer<'a, W>;
+    type SerializeTupleStruct = tuple::nested::Serializer<'a, W>;
+    type SerializeTupleVariant = tuple::nested::Serializer<'a, W>;
     type SerializeMap = Impossible<Self::Ok, Self::Error>;
     type SerializeStruct = Impossible<Self::Ok, Self::Error>;
     type SerializeStructVariant = Impossible<Self::Ok, Self::Error>;
@@ -177,7 +175,7 @@ where
     }
 
     fn serialize_tuple(self, _len: usize) -> Result<Self::SerializeTuple> {
-        Ok(nested_tuple::Serializer::new(self.writer))
+        Ok(tuple::nested::Serializer::new(self.writer))
     }
 
     fn serialize_tuple_struct(
@@ -185,7 +183,7 @@ where
         _name: &'static str,
         _len: usize,
     ) -> Result<Self::SerializeTupleStruct> {
-        Ok(nested_tuple::Serializer::new(self.writer))
+        Ok(tuple::nested::Serializer::new(self.writer))
     }
 
     fn serialize_tuple_variant(
@@ -196,7 +194,7 @@ where
         _len: usize,
     ) -> Result<Self::SerializeTupleVariant> {
         self.writer.write_parameter_escaped(variant.as_bytes())?;
-        Ok(nested_tuple::Serializer::new(self.writer))
+        Ok(tuple::nested::Serializer::new(self.writer))
     }
 
     fn serialize_map(self, _len: Option<usize>) -> Result<Self::SerializeMap> {

@@ -1,7 +1,4 @@
-use crate::{
-    escape::Escaper,
-    ser::{Error, Result, WriteExt, map, seq, tuple},
-};
+use crate::ser::{Error, Escaped, Result, WriteExt, map, seq, tuple};
 use serde::{ser, ser::Impossible, Serialize};
 use std::io::Write;
 
@@ -262,7 +259,7 @@ where
     fn serialize_seq(self, _len: Option<usize>) -> Result<Self::SerializeSeq> {
         Ok(seq::Serializer::new(
             self.writer,
-            Escaper::new(self.field_name.as_bytes()).collect::<Vec<_>>(),
+            Escaped::new(self.field_name.as_bytes()).collect::<Vec<_>>(),
         ))
     }
 

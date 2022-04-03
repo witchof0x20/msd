@@ -1,15 +1,13 @@
-mod tuple;
-
-use crate::ser::{Error, Result, WriteExt, tuple::{element, element::nested_tuple}};
+use crate::ser::{Error, Result, WriteExt, tuple};
 use serde::{ser, ser::Impossible, Serialize};
 use std::io::Write;
 
-pub(super) struct Serializer<'a, W> {
+pub(in super::super) struct Serializer<'a, W> {
     writer: &'a mut W,
 }
 
 impl<'a, W> Serializer<'a, W> {
-    pub(super) fn new(writer: &'a mut W) -> Self {
+    pub(in super::super) fn new(writer: &'a mut W) -> Self {
         Self { writer }
     }
 }
@@ -21,9 +19,9 @@ where
     type Ok = ();
     type Error = Error;
     type SerializeSeq = Impossible<Self::Ok, Self::Error>;
-    type SerializeTuple = tuple::Serializer<'a, W>;
-    type SerializeTupleStruct = tuple::Serializer<'a, W>;
-    type SerializeTupleVariant = nested_tuple::Serializer<'a, W>;
+    type SerializeTuple = tuple::key::Serializer<'a, W>;
+    type SerializeTupleStruct = tuple::key::Serializer<'a, W>;
+    type SerializeTupleVariant = tuple::nested::Serializer<'a, W>;
     type SerializeMap = Impossible<Self::Ok, Self::Error>;
     type SerializeStruct = Impossible<Self::Ok, Self::Error>;
     type SerializeStructVariant = Impossible<Self::Ok, Self::Error>;
@@ -170,7 +168,7 @@ where
         T: ?Sized + Serialize,
     {
         self.writer.write_key_escaped(variant.as_bytes())?;
-        value.serialize(&mut element::Serializer::new(self.writer))
+        value.serialize(&mut tuple::element::Serializer::new(self.writer))
     }
 
     fn serialize_seq(self, _len: Option<usize>) -> Result<Self::SerializeSeq> {
@@ -178,7 +176,7 @@ where
     }
 
     fn serialize_tuple(self, _len: usize) -> Result<Self::SerializeTuple> {
-        Ok(tuple::Serializer::new(self.writer))
+        Ok(tuple::key::Serializer::new(self.writer))
     }
 
     fn serialize_tuple_struct(
@@ -186,7 +184,7 @@ where
         _name: &'static str,
         _len: usize,
     ) -> Result<Self::SerializeTupleStruct> {
-        Ok(tuple::Serializer::new(self.writer))
+        Ok(tuple::key::Serializer::new(self.writer))
     }
 
     fn serialize_tuple_variant(
@@ -197,7 +195,7 @@ where
         _len: usize,
     ) -> Result<Self::SerializeTupleVariant> {
         self.writer.write_key_escaped(variant.as_bytes())?;
-        Ok(nested_tuple::Serializer::new(self.writer))
+        Ok(tuple::nested::Serializer::new(self.writer))
     }
 
     fn serialize_map(self, _len: Option<usize>) -> Result<Self::SerializeMap> {

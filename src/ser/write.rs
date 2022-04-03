@@ -1,7 +1,4 @@
-use crate::{
-    escape::Escaper,
-    ser::{Error, Result},
-};
+use crate::ser::{Error, Escaped, Result};
 use std::io::Write;
 
 pub(super) trait WriteExt {
@@ -24,7 +21,7 @@ where
     }
 
     fn write_tag_name_escaped(&mut self, tag_name: &[u8]) -> Result<()> {
-        self.write_tag_name_unescaped(&Escaper::new(tag_name).collect::<Vec<_>>())
+        self.write_tag_name_unescaped(&Escaped::new(tag_name).collect::<Vec<_>>())
     }
 
     fn write_parameter_unescaped(&mut self, parameter: &[u8]) -> Result<()> {
@@ -33,7 +30,7 @@ where
     }
 
     fn write_parameter_escaped(&mut self, parameter: &[u8]) -> Result<()> {
-        self.write_parameter_unescaped(&Escaper::new(parameter).collect::<Vec<_>>())
+        self.write_parameter_unescaped(&Escaped::new(parameter).collect::<Vec<_>>())
     }
 
     fn write_key_unescaped(&mut self, value: &[u8]) -> Result<()> {
@@ -42,7 +39,7 @@ where
     }
 
     fn write_key_escaped(&mut self, value: &[u8]) -> Result<()> {
-        self.write_key_unescaped(&Escaper::new(value).collect::<Vec<_>>())
+        self.write_key_unescaped(&Escaped::new(value).collect::<Vec<_>>())
     }
 
     fn close_tag(&mut self) -> Result<()> {
