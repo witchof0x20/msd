@@ -162,11 +162,13 @@ where
     }
 
     fn serialize_unit(self) -> Result<Self::Ok> {
-        Err(Error::UnsupportedType)
+        self.writer.write_tag_name_unescaped(b"")?;
+        self.writer.close_tag()
     }
 
     fn serialize_unit_struct(self, _name: &'static str) -> Result<Self::Ok> {
-        Err(Error::UnsupportedType)
+        self.writer.write_tag_name_unescaped(b"")?;
+        self.writer.close_tag()
     }
 
     fn serialize_unit_variant(
@@ -623,6 +625,27 @@ mod tests {
         assert_ok!(Some(42).serialize(&mut Serializer::new(&mut output)));
 
         assert_eq!(output, b"#42;\n");
+    }
+
+    #[test]
+    fn unit() {
+        let mut output = Vec::new();
+
+        assert_ok!(().serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#;\n");
+    }
+
+    #[test]
+    fn unit_struct() {
+        #[derive(Serialize)]
+        struct Unit;
+
+        let mut output = Vec::new();
+
+        assert_ok!(Unit.serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#;\n");
     }
 
     #[test]
