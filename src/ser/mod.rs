@@ -140,12 +140,14 @@ where
         self.writer.close_tag()
     }
 
-    fn serialize_str(self, _v: &str) -> Result<Self::Ok> {
-        Err(Error::UnsupportedType)
+    fn serialize_str(self, v: &str) -> Result<Self::Ok> {
+        self.writer.write_tag_name_escaped(v.as_bytes())?;
+        self.writer.close_tag()
     }
 
-    fn serialize_bytes(self, _v: &[u8]) -> Result<Self::Ok> {
-        Err(Error::UnsupportedType)
+    fn serialize_bytes(self, v: &[u8]) -> Result<Self::Ok> {
+        self.writer.write_tag_name_escaped(v)?;
+        self.writer.close_tag()
     }
 
     fn serialize_none(self) -> Result<Self::Ok> {
@@ -248,6 +250,7 @@ mod tests {
     use super::Serializer;
     use claim::assert_ok;
     use serde::Serialize;
+    use serde_bytes::Bytes;
     use serde_derive::Serialize;
 
     #[test]
@@ -476,6 +479,132 @@ mod tests {
         assert_ok!('/'.serialize(&mut Serializer::new(&mut output)));
 
         assert_eq!(output, b"#/;\n");
+    }
+
+    #[test]
+    fn str() {
+        let mut output = Vec::new();
+
+        assert_ok!("bar".serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#bar;\n");
+    }
+
+    #[test]
+    fn str_escape_number_sign() {
+        let mut output = Vec::new();
+
+        assert_ok!("ba#r".serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#ba\\#r;\n");
+    }
+
+    #[test]
+    fn str_escape_colon() {
+        let mut output = Vec::new();
+
+        assert_ok!("ba:r".serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#ba\\:r;\n");
+    }
+
+    #[test]
+    fn str_escape_semicolon() {
+        let mut output = Vec::new();
+
+        assert_ok!("ba;r".serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#ba\\;r;\n");
+    }
+
+    #[test]
+    fn str_escape_backslash() {
+        let mut output = Vec::new();
+
+        assert_ok!("ba\\r".serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#ba\\\\r;\n");
+    }
+
+    #[test]
+    fn str_escape_double_forwardslash() {
+        let mut output = Vec::new();
+
+        assert_ok!("ba//r".serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#ba\\/\\/r;\n");
+    }
+
+    #[test]
+    fn str_do_not_escape_single_forwardslash() {
+        let mut output = Vec::new();
+
+        assert_ok!("ba/r".serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#ba/r;\n");
+    }
+
+    #[test]
+    fn bytes() {
+        let mut output = Vec::new();
+
+        assert_ok!(Bytes::new(b"bar").serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#bar;\n");
+    }
+
+    #[test]
+    fn bytes_escape_number_sign() {
+        let mut output = Vec::new();
+
+        assert_ok!(Bytes::new(b"ba#r").serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#ba\\#r;\n");
+    }
+
+    #[test]
+    fn bytes_escape_colon() {
+        let mut output = Vec::new();
+
+        assert_ok!(Bytes::new(b"ba:r").serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#ba\\:r;\n");
+    }
+
+    #[test]
+    fn bytes_escape_semicolon() {
+        let mut output = Vec::new();
+
+        assert_ok!(Bytes::new(b"ba;r").serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#ba\\;r;\n");
+    }
+
+    #[test]
+    fn bytes_escape_backslash() {
+        let mut output = Vec::new();
+
+        assert_ok!(Bytes::new(b"ba\\r").serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#ba\\\\r;\n");
+    }
+
+    #[test]
+    fn bytes_escape_double_forwardslash() {
+        let mut output = Vec::new();
+
+        assert_ok!(Bytes::new(b"ba//r").serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#ba\\/\\/r;\n");
+    }
+
+    #[test]
+    fn bytes_do_not_escape_single_forwardslash() {
+        let mut output = Vec::new();
+
+        assert_ok!(Bytes::new(b"ba/r").serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#ba/r;\n");
     }
 
     #[test]
