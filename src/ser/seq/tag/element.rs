@@ -12,7 +12,7 @@ impl<'a, W> Serializer<'a, W> {
     }
 }
 
-impl<'a, W> ser::Serializer for &'a mut Serializer<'a, W>
+impl<'a, W> ser::Serializer for Serializer<'a, W>
 where
     W: Write,
 {
@@ -208,7 +208,7 @@ where
         T: ?Sized + Serialize,
     {
         self.writer.write_tag_name_escaped(variant.as_bytes())?;
-        value.serialize(&mut super::super::element::Serializer::new(self.writer))
+        value.serialize(super::super::element::Serializer::new(self.writer))
     }
 
     fn serialize_seq(self, _len: Option<usize>) -> Result<Self::SerializeSeq> {
@@ -275,7 +275,7 @@ mod tests {
     fn r#true() {
         let mut output = Vec::new();
 
-        assert_ok!(true.serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(true.serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#true;\n");
     }
@@ -284,7 +284,7 @@ mod tests {
     fn r#false() {
         let mut output = Vec::new();
 
-        assert_ok!(false.serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(false.serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#false;\n");
     }
@@ -293,7 +293,7 @@ mod tests {
     fn i8() {
         let mut output = Vec::new();
 
-        assert_ok!(42i8.serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(42i8.serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#42;\n");
     }
@@ -302,7 +302,7 @@ mod tests {
     fn i16() {
         let mut output = Vec::new();
 
-        assert_ok!(42i16.serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(42i16.serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#42;\n");
     }
@@ -311,7 +311,7 @@ mod tests {
     fn i32() {
         let mut output = Vec::new();
 
-        assert_ok!(42i32.serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(42i32.serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#42;\n");
     }
@@ -320,7 +320,7 @@ mod tests {
     fn i64() {
         let mut output = Vec::new();
 
-        assert_ok!(42i64.serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(42i64.serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#42;\n");
     }
@@ -330,7 +330,7 @@ mod tests {
     fn i128() {
         let mut output = Vec::new();
 
-        assert_ok!(42i128.serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(42i128.serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#42;\n");
     }
@@ -339,7 +339,7 @@ mod tests {
     fn i8_neg() {
         let mut output = Vec::new();
 
-        assert_ok!((-42i8).serialize(&mut Serializer::new(&mut output)));
+        assert_ok!((-42i8).serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#-42;\n");
     }
@@ -348,7 +348,7 @@ mod tests {
     fn i16_neg() {
         let mut output = Vec::new();
 
-        assert_ok!((-42i16).serialize(&mut Serializer::new(&mut output)));
+        assert_ok!((-42i16).serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#-42;\n");
     }
@@ -357,7 +357,7 @@ mod tests {
     fn i32_neg() {
         let mut output = Vec::new();
 
-        assert_ok!((-42i32).serialize(&mut Serializer::new(&mut output)));
+        assert_ok!((-42i32).serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#-42;\n");
     }
@@ -366,7 +366,7 @@ mod tests {
     fn i64_neg() {
         let mut output = Vec::new();
 
-        assert_ok!((-42i64).serialize(&mut Serializer::new(&mut output)));
+        assert_ok!((-42i64).serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#-42;\n");
     }
@@ -376,7 +376,7 @@ mod tests {
     fn i128_neg() {
         let mut output = Vec::new();
 
-        assert_ok!((-42i128).serialize(&mut Serializer::new(&mut output)));
+        assert_ok!((-42i128).serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#-42;\n");
     }
@@ -385,7 +385,7 @@ mod tests {
     fn u8() {
         let mut output = Vec::new();
 
-        assert_ok!(42u8.serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(42u8.serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#42;\n");
     }
@@ -394,7 +394,7 @@ mod tests {
     fn u16() {
         let mut output = Vec::new();
 
-        assert_ok!(42u16.serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(42u16.serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#42;\n");
     }
@@ -403,7 +403,7 @@ mod tests {
     fn u32() {
         let mut output = Vec::new();
 
-        assert_ok!(42u32.serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(42u32.serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#42;\n");
     }
@@ -412,7 +412,7 @@ mod tests {
     fn u64() {
         let mut output = Vec::new();
 
-        assert_ok!(42u64.serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(42u64.serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#42;\n");
     }
@@ -422,7 +422,7 @@ mod tests {
     fn u128() {
         let mut output = Vec::new();
 
-        assert_ok!(42u128.serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(42u128.serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#42;\n");
     }
@@ -431,7 +431,7 @@ mod tests {
     fn f32() {
         let mut output = Vec::new();
 
-        assert_ok!(42f32.serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(42f32.serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#42.0;\n");
     }
@@ -440,7 +440,7 @@ mod tests {
     fn f64() {
         let mut output = Vec::new();
 
-        assert_ok!(42f64.serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(42f64.serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#42.0;\n");
     }
@@ -449,7 +449,7 @@ mod tests {
     fn char() {
         let mut output = Vec::new();
 
-        assert_ok!('a'.serialize(&mut Serializer::new(&mut output)));
+        assert_ok!('a'.serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#a;\n");
     }
@@ -458,7 +458,7 @@ mod tests {
     fn char_escape_number_sign() {
         let mut output = Vec::new();
 
-        assert_ok!('#'.serialize(&mut Serializer::new(&mut output)));
+        assert_ok!('#'.serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#\\#;\n");
     }
@@ -467,7 +467,7 @@ mod tests {
     fn char_escape_colon() {
         let mut output = Vec::new();
 
-        assert_ok!(':'.serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(':'.serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#\\:;\n");
     }
@@ -476,7 +476,7 @@ mod tests {
     fn char_escape_semicolon() {
         let mut output = Vec::new();
 
-        assert_ok!(';'.serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(';'.serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#\\;;\n");
     }
@@ -485,7 +485,7 @@ mod tests {
     fn char_escape_backslash() {
         let mut output = Vec::new();
 
-        assert_ok!('\\'.serialize(&mut Serializer::new(&mut output)));
+        assert_ok!('\\'.serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#\\\\;\n");
     }
@@ -494,7 +494,7 @@ mod tests {
     fn char_does_not_escape_forward_slash() {
         let mut output = Vec::new();
 
-        assert_ok!('/'.serialize(&mut Serializer::new(&mut output)));
+        assert_ok!('/'.serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#/;\n");
     }
@@ -503,7 +503,7 @@ mod tests {
     fn str() {
         let mut output = Vec::new();
 
-        assert_ok!("bar".serialize(&mut Serializer::new(&mut output)));
+        assert_ok!("bar".serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#bar;\n");
     }
@@ -512,7 +512,7 @@ mod tests {
     fn str_escape_number_sign() {
         let mut output = Vec::new();
 
-        assert_ok!("ba#r".serialize(&mut Serializer::new(&mut output)));
+        assert_ok!("ba#r".serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#ba\\#r;\n");
     }
@@ -521,7 +521,7 @@ mod tests {
     fn str_escape_colon() {
         let mut output = Vec::new();
 
-        assert_ok!("ba:r".serialize(&mut Serializer::new(&mut output)));
+        assert_ok!("ba:r".serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#ba\\:r;\n");
     }
@@ -530,7 +530,7 @@ mod tests {
     fn str_escape_semicolon() {
         let mut output = Vec::new();
 
-        assert_ok!("ba;r".serialize(&mut Serializer::new(&mut output)));
+        assert_ok!("ba;r".serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#ba\\;r;\n");
     }
@@ -539,7 +539,7 @@ mod tests {
     fn str_escape_backslash() {
         let mut output = Vec::new();
 
-        assert_ok!("ba\\r".serialize(&mut Serializer::new(&mut output)));
+        assert_ok!("ba\\r".serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#ba\\\\r;\n");
     }
@@ -548,7 +548,7 @@ mod tests {
     fn str_escape_double_forwardslash() {
         let mut output = Vec::new();
 
-        assert_ok!("ba//r".serialize(&mut Serializer::new(&mut output)));
+        assert_ok!("ba//r".serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#ba\\/\\/r;\n");
     }
@@ -557,7 +557,7 @@ mod tests {
     fn str_do_not_escape_single_forwardslash() {
         let mut output = Vec::new();
 
-        assert_ok!("ba/r".serialize(&mut Serializer::new(&mut output)));
+        assert_ok!("ba/r".serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#ba/r;\n");
     }
@@ -566,7 +566,7 @@ mod tests {
     fn bytes() {
         let mut output = Vec::new();
 
-        assert_ok!(Bytes::new(b"bar").serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(Bytes::new(b"bar").serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#bar;\n");
     }
@@ -575,7 +575,7 @@ mod tests {
     fn bytes_escape_number_sign() {
         let mut output = Vec::new();
 
-        assert_ok!(Bytes::new(b"ba#r").serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(Bytes::new(b"ba#r").serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#ba\\#r;\n");
     }
@@ -584,7 +584,7 @@ mod tests {
     fn bytes_escape_colon() {
         let mut output = Vec::new();
 
-        assert_ok!(Bytes::new(b"ba:r").serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(Bytes::new(b"ba:r").serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#ba\\:r;\n");
     }
@@ -593,7 +593,7 @@ mod tests {
     fn bytes_escape_semicolon() {
         let mut output = Vec::new();
 
-        assert_ok!(Bytes::new(b"ba;r").serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(Bytes::new(b"ba;r").serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#ba\\;r;\n");
     }
@@ -602,7 +602,7 @@ mod tests {
     fn bytes_escape_backslash() {
         let mut output = Vec::new();
 
-        assert_ok!(Bytes::new(b"ba\\r").serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(Bytes::new(b"ba\\r").serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#ba\\\\r;\n");
     }
@@ -611,7 +611,7 @@ mod tests {
     fn bytes_escape_double_forwardslash() {
         let mut output = Vec::new();
 
-        assert_ok!(Bytes::new(b"ba//r").serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(Bytes::new(b"ba//r").serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#ba\\/\\/r;\n");
     }
@@ -620,7 +620,7 @@ mod tests {
     fn bytes_do_not_escape_single_forwardslash() {
         let mut output = Vec::new();
 
-        assert_ok!(Bytes::new(b"ba/r").serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(Bytes::new(b"ba/r").serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#ba/r;\n");
     }
@@ -629,7 +629,7 @@ mod tests {
     fn none() {
         let mut output = Vec::new();
 
-        assert_ok!(Option::<()>::None.serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(Option::<()>::None.serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#;\n");
     }
@@ -638,7 +638,7 @@ mod tests {
     fn some() {
         let mut output = Vec::new();
 
-        assert_ok!(Some(42).serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(Some(42).serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#42;\n");
     }
@@ -647,7 +647,7 @@ mod tests {
     fn unit() {
         let mut output = Vec::new();
 
-        assert_ok!(().serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(().serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#;\n");
     }
@@ -659,7 +659,7 @@ mod tests {
 
         let mut output = Vec::new();
 
-        assert_ok!(Bar.serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(Bar.serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#;\n");
     }
@@ -673,7 +673,7 @@ mod tests {
 
         let mut output = Vec::new();
 
-        assert_ok!(Enum::A.serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(Enum::A.serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#A;\n");
     }
@@ -685,7 +685,7 @@ mod tests {
 
         let mut output = Vec::new();
 
-        assert_ok!(NewtypeStruct(42).serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(NewtypeStruct(42).serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#42;\n");
     }
@@ -699,7 +699,7 @@ mod tests {
 
         let mut output = Vec::new();
 
-        assert_ok!(Newtype::Variant(42).serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(Newtype::Variant(42).serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#Variant:42;\n");
     }
@@ -708,7 +708,7 @@ mod tests {
     fn empty_tuple() {
         let mut output = Vec::new();
 
-        assert_ok!(<[(); 0]>::serialize(&[], &mut Serializer::new(&mut output)));
+        assert_ok!(<[(); 0]>::serialize(&[], Serializer::new(&mut output)));
 
         assert_eq!(output, b"#;\n");
     }
@@ -717,7 +717,7 @@ mod tests {
     fn single_element_tuple() {
         let mut output = Vec::new();
 
-        assert_ok!((42).serialize(&mut Serializer::new(&mut output)));
+        assert_ok!((42).serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#42;\n");
     }
@@ -726,7 +726,7 @@ mod tests {
     fn multiple_element_tuple() {
         let mut output = Vec::new();
 
-        assert_ok!((42, "bar", (), 1.0).serialize(&mut Serializer::new(&mut output)));
+        assert_ok!((42, "bar", (), 1.0).serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#42:bar::1.0;\n");
     }
@@ -738,7 +738,7 @@ mod tests {
 
         let mut output = Vec::new();
 
-        assert_ok!(TupleStruct().serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(TupleStruct().serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#;\n");
     }
@@ -759,7 +759,7 @@ mod tests {
 
         let mut output = Vec::new();
 
-        assert_ok!(TupleStruct(42).serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(TupleStruct(42).serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#42;\n");
     }
@@ -771,7 +771,7 @@ mod tests {
 
         let mut output = Vec::new();
 
-        assert_ok!(TupleStruct(42, "bar", (), 1.0).serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(TupleStruct(42, "bar", (), 1.0).serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#42:bar::1.0;\n");
     }
@@ -794,7 +794,7 @@ mod tests {
 
         let mut output = Vec::new();
 
-        assert_ok!(TupleEnum::Variant().serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(TupleEnum::Variant().serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#Variant;\n");
     }
@@ -818,7 +818,7 @@ mod tests {
 
         let mut output = Vec::new();
 
-        assert_ok!(TupleEnum::Variant(42).serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(TupleEnum::Variant(42).serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#Variant:42;\n");
     }
@@ -833,7 +833,7 @@ mod tests {
         let mut output = Vec::new();
 
         assert_ok!(
-            TupleEnum::Variant(42, "bar", (), 1.0).serialize(&mut Serializer::new(&mut output))
+            TupleEnum::Variant(42, "bar", (), 1.0).serialize(Serializer::new(&mut output))
         );
 
         assert_eq!(output, b"#Variant:42:bar::1.0;\n");
@@ -849,7 +849,7 @@ mod tests {
         let mut output = Vec::new();
 
         assert_ok!(TupleEnum::Variant(1, (2, 3), ((4, 5), 6), 7)
-            .serialize(&mut Serializer::new(&mut output)));
+            .serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#Variant:1:2:3:4:5:6:7;\n");
     }
@@ -874,7 +874,7 @@ mod tests {
             baz: (),
             qux: None,
         }
-        .serialize(&mut Serializer::new(&mut output)));
+        .serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#Variant:;\n#foo:42;\n#bar:test;\n#baz:;\n");
     }

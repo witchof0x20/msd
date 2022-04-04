@@ -36,10 +36,10 @@ where
         T: ?Sized + Serialize,
     {
         if self.written_first {
-            value.serialize(&mut tuple::element::Serializer::new(self.writer))
+            value.serialize(tuple::element::Serializer::new(self.writer))
         } else {
             self.written_first = true;
-            value.serialize(&mut element::Serializer::new(self.writer))
+            value.serialize(element::Serializer::new(self.writer))
         }
     }
 
@@ -63,10 +63,10 @@ where
         T: ?Sized + Serialize,
     {
         if self.written_first {
-            value.serialize(&mut tuple::element::Serializer::new(self.writer))
+            value.serialize(tuple::element::Serializer::new(self.writer))
         } else {
             self.written_first = true;
-            value.serialize(&mut element::Serializer::new(self.writer))
+            value.serialize(element::Serializer::new(self.writer))
         }
     }
 
@@ -90,10 +90,10 @@ where
         T: ?Sized + Serialize,
     {
         if self.written_first {
-            value.serialize(&mut tuple::element::Serializer::new(self.writer))
+            value.serialize(tuple::element::Serializer::new(self.writer))
         } else {
             self.written_first = true;
-            value.serialize(&mut element::Serializer::new(self.writer))
+            value.serialize(element::Serializer::new(self.writer))
         }
     }
 

@@ -32,10 +32,10 @@ where
         T: ?Sized + Serialize,
     {
         if self.written_key {
-            value.serialize(&mut element::Serializer::new(self.writer))
+            value.serialize(element::Serializer::new(self.writer))
         } else {
             self.written_key = true;
-            value.serialize(&mut key::Serializer::new(self.writer))
+            value.serialize(key::Serializer::new(self.writer))
         }
     }
 
@@ -60,10 +60,10 @@ where
         T: ?Sized + Serialize,
     {
         if self.written_key {
-            value.serialize(&mut element::Serializer::new(self.writer))
+            value.serialize(element::Serializer::new(self.writer))
         } else {
             self.written_key = true;
-            value.serialize(&mut key::Serializer::new(self.writer))
+            value.serialize(key::Serializer::new(self.writer))
         }
     }
 
@@ -88,10 +88,10 @@ where
         T: ?Sized + Serialize,
     {
         if self.written_key {
-            value.serialize(&mut element::Serializer::new(self.writer))
+            value.serialize(element::Serializer::new(self.writer))
         } else {
             self.written_key = true;
-            value.serialize(&mut key::Serializer::new(self.writer))
+            value.serialize(key::Serializer::new(self.writer))
         }
     }
 

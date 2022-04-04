@@ -198,7 +198,7 @@ where
     where
         T: ?Sized + Serialize,
     {
-        value.serialize(&mut r#struct::field::Serializer::new(&mut self.writer, Escaped::new(variant.as_bytes()).collect::<Vec<_>>()))
+        value.serialize(r#struct::field::Serializer::new(&mut self.writer, Escaped::new(variant.as_bytes()).collect::<Vec<_>>()))
     }
 
     fn serialize_seq(self, _len: Option<usize>) -> Result<Self::SerializeSeq> {

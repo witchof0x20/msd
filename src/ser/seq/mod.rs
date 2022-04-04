@@ -35,7 +35,7 @@ where
     {
         self.writer
             .write_tag_name_unescaped(&self.escaped_field_name)?;
-        value.serialize(&mut element::Serializer::new(self.writer))
+        value.serialize(element::Serializer::new(self.writer))
     }
 
     fn end(self) -> Result<Self::Ok> {

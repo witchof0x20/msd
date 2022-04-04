@@ -26,14 +26,14 @@ where
     where
         T: ?Sized + Serialize,
     {
-        key.serialize(&mut key::Serializer::new(self.writer))
+        key.serialize(key::Serializer::new(self.writer))
     }
 
     fn serialize_value<T>(&mut self, value: &T) -> Result<()>
     where
         T: ?Sized + Serialize,
     {
-        value.serialize(&mut value::Serializer::new(self.writer))
+        value.serialize(value::Serializer::new(self.writer))
     }
 
     fn end(self) -> Result<Self::Ok> {

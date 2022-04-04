@@ -28,7 +28,7 @@ where
     where
         T: ?Sized + Serialize,
     {
-        value.serialize(&mut field::Serializer::new(
+        value.serialize(field::Serializer::new(
             self.writer,
             Escaped::new(key.as_bytes()).collect::<Vec<_>>(),
         ))
@@ -50,7 +50,7 @@ where
     where
         T: ?Sized + Serialize,
     {
-        value.serialize(&mut field::Serializer::new(
+        value.serialize(field::Serializer::new(
             self.writer,
             Escaped::new(key.as_bytes()).collect::<Vec<_>>(),
         ))
