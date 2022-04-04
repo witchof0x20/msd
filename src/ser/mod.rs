@@ -175,9 +175,10 @@ where
         self,
         _name: &'static str,
         _variant_index: u32,
-        _variant: &'static str,
+        variant: &'static str,
     ) -> Result<Self::Ok> {
-        Err(Error::UnsupportedType)
+        self.writer.write_tag_name_escaped(variant.as_bytes())?;
+        self.writer.close_tag()
     }
 
     fn serialize_newtype_struct<T>(self, _name: &'static str, value: &T) -> Result<Self::Ok>
@@ -646,6 +647,20 @@ mod tests {
         assert_ok!(Unit.serialize(&mut Serializer::new(&mut output)));
 
         assert_eq!(output, b"#;\n");
+    }
+
+    #[test]
+    fn unit_variant() {
+        #[derive(Serialize)]
+        enum Unit {
+            Variant,
+        }
+
+        let mut output = Vec::new();
+
+        assert_ok!(Unit::Variant.serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#Variant;\n");
     }
 
     #[test]
