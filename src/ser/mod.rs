@@ -132,8 +132,12 @@ where
         self.writer.close_tag()
     }
 
-    fn serialize_char(self, _v: char) -> Result<Self::Ok> {
-        Err(Error::UnsupportedType)
+    fn serialize_char(self, v: char) -> Result<Self::Ok> {
+        let mut buffer = [0; 4];
+        v.encode_utf8(&mut buffer);
+        self.writer
+            .write_tag_name_escaped(&buffer[..v.len_utf8()])?;
+        self.writer.close_tag()
     }
 
     fn serialize_str(self, _v: &str) -> Result<Self::Ok> {
@@ -418,6 +422,60 @@ mod tests {
         assert_ok!(42f64.serialize(&mut Serializer::new(&mut output)));
 
         assert_eq!(output, b"#42.0;\n");
+    }
+
+    #[test]
+    fn char() {
+        let mut output = Vec::new();
+
+        assert_ok!('a'.serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#a;\n");
+    }
+
+    #[test]
+    fn char_escape_number_sign() {
+        let mut output = Vec::new();
+
+        assert_ok!('#'.serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#\\#;\n");
+    }
+
+    #[test]
+    fn char_escape_colon() {
+        let mut output = Vec::new();
+
+        assert_ok!(':'.serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#\\:;\n");
+    }
+
+    #[test]
+    fn char_escape_semicolon() {
+        let mut output = Vec::new();
+
+        assert_ok!(';'.serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#\\;;\n");
+    }
+
+    #[test]
+    fn char_escape_backslash() {
+        let mut output = Vec::new();
+
+        assert_ok!('\\'.serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#\\\\;\n");
+    }
+
+    #[test]
+    fn char_does_not_escape_forward_slash() {
+        let mut output = Vec::new();
+
+        assert_ok!('/'.serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#/;\n");
     }
 
     #[test]
