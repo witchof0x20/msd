@@ -37,8 +37,13 @@ where
     type SerializeStruct = r#struct::Serializer<'a, W>;
     type SerializeStructVariant = r#struct::Serializer<'a, W>;
 
-    fn serialize_bool(self, _v: bool) -> Result<Self::Ok> {
-        Err(Error::UnsupportedType)
+    fn serialize_bool(self, v: bool) -> Result<Self::Ok> {
+        if v {
+            self.writer.write_tag_name_unescaped(b"true")?;
+        } else {
+            self.writer.write_tag_name_unescaped(b"false")?;
+        }
+        self.writer.close_tag()
     }
 
     fn serialize_i8(self, _v: i8) -> Result<Self::Ok> {
@@ -204,6 +209,24 @@ mod tests {
     use claim::assert_ok;
     use serde::Serialize;
     use serde_derive::Serialize;
+
+    #[test]
+    fn r#true() {
+        let mut output = Vec::new();
+
+        assert_ok!(true.serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#true;\n");
+    }
+
+    #[test]
+    fn r#false() {
+        let mut output = Vec::new();
+
+        assert_ok!(false.serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#false;\n");
+    }
 
     #[test]
     fn newtype_struct() {
