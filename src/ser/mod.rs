@@ -151,14 +151,14 @@ where
     }
 
     fn serialize_none(self) -> Result<Self::Ok> {
-        Err(Error::UnsupportedType)
+        Ok(())
     }
 
-    fn serialize_some<T>(self, _v: &T) -> Result<Self::Ok>
+    fn serialize_some<T>(self, v: &T) -> Result<Self::Ok>
     where
         T: ?Sized + Serialize,
     {
-        Err(Error::UnsupportedType)
+        v.serialize(self)
     }
 
     fn serialize_unit(self) -> Result<Self::Ok> {
@@ -605,6 +605,24 @@ mod tests {
         assert_ok!(Bytes::new(b"ba/r").serialize(&mut Serializer::new(&mut output)));
 
         assert_eq!(output, b"#ba/r;\n");
+    }
+
+    #[test]
+    fn none() {
+        let mut output = Vec::new();
+
+        assert_ok!(Option::<()>::None.serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"");
+    }
+
+    #[test]
+    fn some() {
+        let mut output = Vec::new();
+
+        assert_ok!(Some(42).serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#42;\n");
     }
 
     #[test]
