@@ -1,4 +1,4 @@
-mod field;
+pub(super) mod field;
 
 use crate::ser::{Error, Escaped, Result};
 use serde::{

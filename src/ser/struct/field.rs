@@ -2,14 +2,14 @@ use crate::ser::{map, seq, tuple, Error, Result, WriteExt};
 use serde::{ser, ser::Impossible, Serialize};
 use std::io::Write;
 
-pub(super) struct Serializer<'a, W> {
+pub(in super::super) struct Serializer<'a, W> {
     writer: &'a mut W,
 
     escaped_field_name: Vec<u8>,
 }
 
 impl<'a, W> Serializer<'a, W> {
-    pub(super) fn new(writer: &'a mut W, escaped_field_name: Vec<u8>) -> Self {
+    pub(in super::super) fn new(writer: &'a mut W, escaped_field_name: Vec<u8>) -> Self {
         Self {
             writer,
             escaped_field_name,

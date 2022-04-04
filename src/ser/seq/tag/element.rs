@@ -1,40 +1,29 @@
-mod error;
-mod escaped;
-mod map;
-mod seq;
-mod r#struct;
-mod tuple;
-mod write;
-
-pub use error::{Error, Result};
-
-use escaped::Escaped;
+use crate::ser::{r#struct, tuple, Error, Result, WriteExt};
 use serde::{ser, ser::Impossible, Serialize};
 use std::io::Write;
-use write::WriteExt;
 
-pub struct Serializer<W> {
-    writer: W,
+pub(super) struct Serializer<'a, W> {
+    writer: &'a mut W,
 }
 
-impl<W> Serializer<W> {
-    pub fn new(writer: W) -> Self {
+impl<'a, W> Serializer<'a, W> {
+    pub(super) fn new(writer: &'a mut W) -> Self {
         Self { writer }
     }
 }
 
-impl<'a, W> ser::Serializer for &'a mut Serializer<W>
+impl<'a, W> ser::Serializer for &'a mut Serializer<'a, W>
 where
     W: Write,
 {
     type Ok = ();
     type Error = Error;
-    type SerializeSeq = seq::tag::Serializer<'a, W>;
+    type SerializeSeq = Impossible<Self::Ok, Self::Error>;
     type SerializeTuple = tuple::tag::Serializer<'a, W>;
     type SerializeTupleStruct = tuple::tag::Serializer<'a, W>;
     type SerializeTupleVariant = tuple::Serializer<'a, W>;
     type SerializeMap = Impossible<Self::Ok, Self::Error>;
-    type SerializeStruct = r#struct::Serializer<'a, W>;
+    type SerializeStruct = Impossible<Self::Ok, Self::Error>;
     type SerializeStructVariant = r#struct::Serializer<'a, W>;
 
     fn serialize_bool(self, v: bool) -> Result<Self::Ok> {
@@ -50,6 +39,7 @@ where
         let mut buffer = itoa::Buffer::new();
         let s = buffer.format(v);
         self.writer.write_tag_name_unescaped(s.as_bytes())?;
+
         self.writer.close_tag()
     }
 
@@ -57,6 +47,7 @@ where
         let mut buffer = itoa::Buffer::new();
         let s = buffer.format(v);
         self.writer.write_tag_name_unescaped(s.as_bytes())?;
+
         self.writer.close_tag()
     }
 
@@ -64,6 +55,7 @@ where
         let mut buffer = itoa::Buffer::new();
         let s = buffer.format(v);
         self.writer.write_tag_name_unescaped(s.as_bytes())?;
+
         self.writer.close_tag()
     }
 
@@ -71,6 +63,7 @@ where
         let mut buffer = itoa::Buffer::new();
         let s = buffer.format(v);
         self.writer.write_tag_name_unescaped(s.as_bytes())?;
+
         self.writer.close_tag()
     }
 
@@ -79,6 +72,7 @@ where
         let mut buffer = itoa::Buffer::new();
         let s = buffer.format(v);
         self.writer.write_tag_name_unescaped(s.as_bytes())?;
+
         self.writer.close_tag()
     }
 
@@ -86,6 +80,7 @@ where
         let mut buffer = itoa::Buffer::new();
         let s = buffer.format(v);
         self.writer.write_tag_name_unescaped(s.as_bytes())?;
+
         self.writer.close_tag()
     }
 
@@ -93,6 +88,7 @@ where
         let mut buffer = itoa::Buffer::new();
         let s = buffer.format(v);
         self.writer.write_tag_name_unescaped(s.as_bytes())?;
+
         self.writer.close_tag()
     }
 
@@ -100,6 +96,7 @@ where
         let mut buffer = itoa::Buffer::new();
         let s = buffer.format(v);
         self.writer.write_tag_name_unescaped(s.as_bytes())?;
+
         self.writer.close_tag()
     }
 
@@ -107,6 +104,7 @@ where
         let mut buffer = itoa::Buffer::new();
         let s = buffer.format(v);
         self.writer.write_tag_name_unescaped(s.as_bytes())?;
+
         self.writer.close_tag()
     }
 
@@ -115,6 +113,7 @@ where
         let mut buffer = itoa::Buffer::new();
         let s = buffer.format(v);
         self.writer.write_tag_name_unescaped(s.as_bytes())?;
+
         self.writer.close_tag()
     }
 
@@ -122,6 +121,7 @@ where
         let mut buffer = ryu::Buffer::new();
         let s = buffer.format(v);
         self.writer.write_tag_name_unescaped(s.as_bytes())?;
+
         self.writer.close_tag()
     }
 
@@ -129,6 +129,7 @@ where
         let mut buffer = ryu::Buffer::new();
         let s = buffer.format(v);
         self.writer.write_tag_name_unescaped(s.as_bytes())?;
+
         self.writer.close_tag()
     }
 
@@ -137,21 +138,26 @@ where
         v.encode_utf8(&mut buffer);
         self.writer
             .write_tag_name_escaped(&buffer[..v.len_utf8()])?;
+
         self.writer.close_tag()
     }
 
     fn serialize_str(self, v: &str) -> Result<Self::Ok> {
         self.writer.write_tag_name_escaped(v.as_bytes())?;
+
         self.writer.close_tag()
     }
 
     fn serialize_bytes(self, v: &[u8]) -> Result<Self::Ok> {
         self.writer.write_tag_name_escaped(v)?;
+
         self.writer.close_tag()
     }
 
     fn serialize_none(self) -> Result<Self::Ok> {
-        Ok(())
+        self.writer.write_tag_name_unescaped(b"")?;
+
+        self.writer.close_tag()
     }
 
     fn serialize_some<T>(self, v: &T) -> Result<Self::Ok>
@@ -163,11 +169,13 @@ where
 
     fn serialize_unit(self) -> Result<Self::Ok> {
         self.writer.write_tag_name_unescaped(b"")?;
+
         self.writer.close_tag()
     }
 
     fn serialize_unit_struct(self, _name: &'static str) -> Result<Self::Ok> {
         self.writer.write_tag_name_unescaped(b"")?;
+
         self.writer.close_tag()
     }
 
@@ -178,6 +186,7 @@ where
         variant: &'static str,
     ) -> Result<Self::Ok> {
         self.writer.write_tag_name_escaped(variant.as_bytes())?;
+
         self.writer.close_tag()
     }
 
@@ -198,15 +207,16 @@ where
     where
         T: ?Sized + Serialize,
     {
-        value.serialize(&mut r#struct::field::Serializer::new(&mut self.writer, Escaped::new(variant.as_bytes()).collect::<Vec<_>>()))
+        self.writer.write_tag_name_escaped(variant.as_bytes())?;
+        value.serialize(&mut super::super::element::Serializer::new(self.writer))
     }
 
     fn serialize_seq(self, _len: Option<usize>) -> Result<Self::SerializeSeq> {
-        Ok(seq::tag::Serializer::new(&mut self.writer))
+        Err(Error::UnsupportedType)
     }
 
     fn serialize_tuple(self, _len: usize) -> Result<Self::SerializeTuple> {
-        Ok(tuple::tag::Serializer::new(&mut self.writer))
+        Ok(tuple::tag::Serializer::new(self.writer))
     }
 
     fn serialize_tuple_struct(
@@ -214,7 +224,7 @@ where
         _name: &'static str,
         _len: usize,
     ) -> Result<Self::SerializeTupleStruct> {
-        Ok(tuple::tag::Serializer::new(&mut self.writer))
+        Ok(tuple::tag::Serializer::new(self.writer))
     }
 
     fn serialize_tuple_variant(
@@ -225,7 +235,7 @@ where
         _len: usize,
     ) -> Result<Self::SerializeTupleVariant> {
         self.writer.write_tag_name_escaped(variant.as_bytes())?;
-        Ok(tuple::Serializer::new(&mut self.writer))
+        Ok(tuple::Serializer::new(self.writer))
     }
 
     fn serialize_map(self, _len: Option<usize>) -> Result<Self::SerializeMap> {
@@ -233,7 +243,7 @@ where
     }
 
     fn serialize_struct(self, _name: &'static str, _len: usize) -> Result<Self::SerializeStruct> {
-        Ok(r#struct::Serializer::new(&mut self.writer))
+        Err(Error::UnsupportedType)
     }
 
     fn serialize_struct_variant(
@@ -244,8 +254,9 @@ where
         _len: usize,
     ) -> Result<Self::SerializeStructVariant> {
         self.writer.write_tag_name_escaped(variant.as_bytes())?;
+        self.writer.write_parameter_unescaped(b"")?;
         self.writer.close_tag()?;
-        Ok(r#struct::Serializer::new(&mut self.writer))
+        Ok(r#struct::Serializer::new(self.writer))
     }
 }
 
@@ -253,7 +264,10 @@ where
 mod tests {
     use super::Serializer;
     use claim::assert_ok;
-    use serde::{ser::{SerializeTupleStruct, SerializeTupleVariant}, Serialize};
+    use serde::{
+        ser::{SerializeTupleStruct, SerializeTupleVariant},
+        Serialize,
+    };
     use serde_bytes::Bytes;
     use serde_derive::Serialize;
 
@@ -617,7 +631,7 @@ mod tests {
 
         assert_ok!(Option::<()>::None.serialize(&mut Serializer::new(&mut output)));
 
-        assert_eq!(output, b"");
+        assert_eq!(output, b"#;\n");
     }
 
     #[test]
@@ -641,11 +655,11 @@ mod tests {
     #[test]
     fn unit_struct() {
         #[derive(Serialize)]
-        struct Unit;
+        struct Bar;
 
         let mut output = Vec::new();
 
-        assert_ok!(Unit.serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(Bar.serialize(&mut Serializer::new(&mut output)));
 
         assert_eq!(output, b"#;\n");
     }
@@ -653,125 +667,41 @@ mod tests {
     #[test]
     fn unit_variant() {
         #[derive(Serialize)]
-        enum Unit {
-            Variant,
+        enum Enum {
+            A,
         }
 
         let mut output = Vec::new();
 
-        assert_ok!(Unit::Variant.serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(Enum::A.serialize(&mut Serializer::new(&mut output)));
 
-        assert_eq!(output, b"#Variant;\n");
+        assert_eq!(output, b"#A;\n");
     }
 
     #[test]
     fn newtype_struct() {
         #[derive(Serialize)]
-        struct Foo {
-            bar: usize,
-            baz: Option<()>,
-            qux: Option<&'static str>,
-        }
-        #[derive(Serialize)]
-        struct Newtype(Foo);
+        struct NewtypeStruct(u32);
+
         let mut output = Vec::new();
 
-        assert_ok!(Newtype(Foo {
-            bar: 42,
-            baz: None,
-            qux: Some("test:test"),
-        })
-        .serialize(&mut Serializer::new(&mut output)));
-        assert_eq!(output, b"#bar:42;\n#qux:test\\:test;\n");
+        assert_ok!(NewtypeStruct(42).serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#42;\n");
     }
 
     #[test]
     fn newtype_variant() {
         #[derive(Serialize)]
         enum Newtype {
-            Variant(usize),
+            Variant(u32),
         }
+
         let mut output = Vec::new();
 
-        assert_ok!(Newtype::Variant(42)
-            .serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(Newtype::Variant(42).serialize(&mut Serializer::new(&mut output)));
+
         assert_eq!(output, b"#Variant:42;\n");
-    }
-
-    #[test]
-    fn seq_empty() {
-        let mut output = Vec::new();
-
-        assert_ok!(Vec::<()>::new().serialize(&mut Serializer::new(&mut output)));
-
-        assert_eq!(output, b"");
-    }
-
-    #[test]
-    fn seq_units() {
-        let mut output = Vec::new();
-
-        assert_ok!(vec![(), (), ()].serialize(&mut Serializer::new(&mut output)));
-
-        assert_eq!(output, b"#;\n#;\n#;\n");
-    }
-
-    #[test]
-    fn seq_primitives() {
-        let mut output = Vec::new();
-
-        assert_ok!(vec![1, 2, 3].serialize(&mut Serializer::new(&mut output)));
-
-        assert_eq!(output, b"#1;\n#2;\n#3;\n");
-    }
-
-    #[test]
-    fn seq_tuples() {
-        let mut output = Vec::new();
-
-        assert_ok!(vec![(1, 'a'), (2, 'b'), (3, 'c')]
-            .serialize(&mut Serializer::new(&mut output)));
-
-        assert_eq!(output, b"#1:a;\n#2:b;\n#3:c;\n");
-    }
-
-    #[test]
-    fn seq_struct_variants() {
-        #[derive(Serialize)]
-        enum Struct {
-            Variant {
-                foo: usize,
-                bar: &'static str,
-                baz: (),
-                qux: Option<f32>,
-            },
-        }
-
-        let mut output = Vec::new();
-
-        assert_ok!(vec![
-            Struct::Variant {
-                foo: 1,
-                bar: "abc",
-                baz: (),
-                qux: None
-            },
-            Struct::Variant {
-                foo: 2,
-                bar: "def",
-                baz: (),
-                qux: Some(1.1),
-            },
-            Struct::Variant {
-                foo: 3,
-                bar: "ghi",
-                baz: (),
-                qux: None,
-            }
-        ]
-        .serialize(&mut Serializer::new(&mut output)));
-
-        assert_eq!(output, b"#Variant:;\n#foo:1;\n#bar:abc;\n#baz:;\n#Variant:;\n#foo:2;\n#bar:def;\n#baz:;\n#qux:1.1;\n#Variant:;\n#foo:3;\n#bar:ghi;\n#baz:;\n");
     }
 
     #[test]
@@ -799,17 +729,6 @@ mod tests {
         assert_ok!((42, "bar", (), 1.0).serialize(&mut Serializer::new(&mut output)));
 
         assert_eq!(output, b"#42:bar::1.0;\n");
-    }
-
-    #[test]
-    fn nested_tuple() {
-        let mut output = Vec::new();
-
-        assert_ok!(
-            (1, (2, 3), ((4), 5), 6).serialize(&mut Serializer::new(&mut output))
-        );
-
-        assert_eq!(output, b"#1:2:3:4:5:6;\n");
     }
 
     #[test]
@@ -858,42 +777,40 @@ mod tests {
     }
 
     #[test]
-    fn nested_tuple_struct() {
-        #[derive(Serialize)]
-        struct TupleStruct(usize, (usize, usize), ((usize, usize), usize), usize);
-
-        let mut output = Vec::new();
-
-        assert_ok!(TupleStruct(1, (2, 3), ((4, 5), 6), 7)
-            .serialize(&mut Serializer::new(&mut output)));
-
-        assert_eq!(output, b"#1:2:3:4:5:6:7;\n");
-    }
-
-    #[test]
     fn empty_tuple_variant() {
-        #[derive(Serialize)]
-        enum Tuple {
-            Variant()
+        enum TupleEnum {
+            Variant(),
+        }
+        impl Serialize for TupleEnum {
+            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+            where
+                S: serde::Serializer,
+            {
+                serializer
+                    .serialize_tuple_variant("TupleEnum", 0, "Variant", 0)?
+                    .end()
+            }
         }
 
         let mut output = Vec::new();
 
-        assert_ok!(Tuple::Variant().serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(TupleEnum::Variant().serialize(&mut Serializer::new(&mut output)));
 
         assert_eq!(output, b"#Variant;\n");
     }
 
     #[test]
     fn single_element_tuple_variant() {
-        enum Tuple {Variant(usize) }
-        impl Serialize for Tuple {
+        enum TupleEnum {
+            Variant(usize),
+        }
+        impl Serialize for TupleEnum {
             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
             where
                 S: serde::Serializer,
             {
                 let Self::Variant(inner) = self;
-                let mut tv = serializer.serialize_tuple_variant("TupleStruct", 0, "Variant", 1)?;
+                let mut tv = serializer.serialize_tuple_variant("TupleEnum", 0, "Variant", 1)?;
                 tv.serialize_field(&inner)?;
                 tv.end()
             }
@@ -901,7 +818,7 @@ mod tests {
 
         let mut output = Vec::new();
 
-        assert_ok!(Tuple::Variant(42).serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(TupleEnum::Variant(42).serialize(&mut Serializer::new(&mut output)));
 
         assert_eq!(output, b"#Variant:42;\n");
     }
@@ -909,11 +826,15 @@ mod tests {
     #[test]
     fn multiple_element_tuple_variant() {
         #[derive(Serialize)]
-        enum Tuple {Variant(usize, &'static str, (), f32)}
+        enum TupleEnum {
+            Variant(usize, &'static str, (), f32),
+        }
 
         let mut output = Vec::new();
 
-        assert_ok!(Tuple::Variant(42, "bar", (), 1.0).serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(
+            TupleEnum::Variant(42, "bar", (), 1.0).serialize(&mut Serializer::new(&mut output))
+        );
 
         assert_eq!(output, b"#Variant:42:bar::1.0;\n");
     }
@@ -921,99 +842,40 @@ mod tests {
     #[test]
     fn nested_tuple_variant() {
         #[derive(Serialize)]
-        enum Tuple {Variant(usize, (usize, usize), ((usize, usize), usize), usize)}
+        enum TupleEnum {
+            Variant(usize, (usize, usize), ((usize, usize), usize), usize),
+        }
 
         let mut output = Vec::new();
 
-        assert_ok!(Tuple::Variant(1, (2, 3), ((4, 5), 6), 7)
+        assert_ok!(TupleEnum::Variant(1, (2, 3), ((4, 5), 6), 7)
             .serialize(&mut Serializer::new(&mut output)));
 
         assert_eq!(output, b"#Variant:1:2:3:4:5:6:7;\n");
     }
 
     #[test]
-    fn struct_empty() {
+    fn struct_variant() {
         #[derive(Serialize)]
-        struct Foo {}
-        let mut output = Vec::new();
-
-        assert_ok!(Foo {}.serialize(&mut Serializer::new(&mut output)));
-        assert_eq!(output, b"");
-    }
-
-    #[test]
-    fn struct_single_field() {
-        #[derive(Serialize)]
-        struct Foo {
-            bar: usize,
-        }
-        let mut output = Vec::new();
-
-        assert_ok!(Foo { bar: 42 }.serialize(&mut Serializer::new(&mut output)));
-        assert_eq!(output, b"#bar:42;\n");
-    }
-
-    #[test]
-    fn struct_multiple_fields() {
-        #[derive(Serialize)]
-        struct Foo {
-            bar: usize,
-            baz: Option<()>,
-            qux: Option<&'static str>,
-        }
-        let mut output = Vec::new();
-
-        assert_ok!(Foo {
-            bar: 42,
-            baz: None,
-            qux: Some("test:test"),
-        }
-        .serialize(&mut Serializer::new(&mut output)));
-        assert_eq!(output, b"#bar:42;\n#qux:test\\:test;\n");
-    }
-
-    #[test]
-    fn struct_variant_empty() {
-        #[derive(Serialize)]
-        enum Foo {
-            Variant {},
-        }
-        let mut output = Vec::new();
-
-        assert_ok!(Foo::Variant {}.serialize(&mut Serializer::new(&mut output)));
-        assert_eq!(output, b"#Variant;\n");
-    }
-
-    #[test]
-    fn struct_variant_single_field() {
-        #[derive(Serialize)]
-        enum Foo {
-            Variant { bar: usize },
-        }
-        let mut output = Vec::new();
-
-        assert_ok!(Foo::Variant { bar: 42 }.serialize(&mut Serializer::new(&mut output)));
-        assert_eq!(output, b"#Variant;\n#bar:42;\n");
-    }
-
-    #[test]
-    fn struct_variant_multiple_fields() {
-        #[derive(Serialize)]
-        enum Foo {
+        enum Struct {
             Variant {
-                bar: usize,
-                baz: Option<()>,
-                qux: Option<&'static str>,
+                foo: usize,
+                bar: &'static str,
+                baz: (),
+                qux: Option<f32>,
             },
         }
+
         let mut output = Vec::new();
 
-        assert_ok!(Foo::Variant {
-            bar: 42,
-            baz: None,
-            qux: Some("test:test"),
+        assert_ok!(Struct::Variant {
+            foo: 42,
+            bar: "test",
+            baz: (),
+            qux: None,
         }
         .serialize(&mut Serializer::new(&mut output)));
-        assert_eq!(output, b"#Variant;\n#bar:42;\n#qux:test\\:test;\n");
+
+        assert_eq!(output, b"#Variant:;\n#foo:42;\n#bar:test;\n#baz:;\n");
     }
 }
