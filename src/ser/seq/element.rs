@@ -201,13 +201,14 @@ where
         self,
         _name: &'static str,
         _variant_index: u32,
-        _variant: &'static str,
-        _value: &T,
+        variant: &'static str,
+        value: &T,
     ) -> Result<Self::Ok>
     where
         T: ?Sized + Serialize,
     {
-        Err(Error::UnsupportedType)
+        self.writer.write_parameter_escaped(variant.as_bytes())?;
+        value.serialize(self)
     }
 
     fn serialize_seq(self, _len: Option<usize>) -> Result<Self::SerializeSeq> {
@@ -672,6 +673,48 @@ mod tests {
         assert_ok!(NewtypeStruct(42).serialize(&mut Serializer::new(&mut output)));
 
         assert_eq!(output, b":42;\n");
+    }
+
+    #[test]
+    fn newtype_variant() {
+        #[derive(Serialize)]
+        enum Newtype {
+            Variant(u32),
+        }
+
+        let mut output = Vec::new();
+
+        assert_ok!(Newtype::Variant(42).serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b":Variant:42;\n");
+    }
+
+    #[test]
+    fn newtype_variant_containing_struct() {
+        #[derive(Serialize)]
+        struct Struct {
+            foo: usize,
+            bar: &'static str,
+            baz: (),
+            qux: Option<f32>,
+        }
+
+        #[derive(Serialize)]
+        enum Newtype {
+            Variant(Struct),
+        }
+
+        let mut output = Vec::new();
+
+        assert_ok!(Newtype::Variant(Struct {
+            foo: 42,
+            bar: "test",
+            baz: (),
+            qux: None,
+        })
+        .serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b":Variant:;\n#foo:42;\n#bar:test;\n#baz:;\n");
     }
 
     #[test]
