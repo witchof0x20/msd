@@ -46,54 +46,90 @@ where
         self.writer.close_tag()
     }
 
-    fn serialize_i8(self, _v: i8) -> Result<Self::Ok> {
-        Err(Error::UnsupportedType)
+    fn serialize_i8(self, v: i8) -> Result<Self::Ok> {
+        let mut buffer = itoa::Buffer::new();
+        let s = buffer.format(v);
+        self.writer.write_tag_name_unescaped(s.as_bytes())?;
+        self.writer.close_tag()
     }
 
-    fn serialize_i16(self, _v: i16) -> Result<Self::Ok> {
-        Err(Error::UnsupportedType)
+    fn serialize_i16(self, v: i16) -> Result<Self::Ok> {
+        let mut buffer = itoa::Buffer::new();
+        let s = buffer.format(v);
+        self.writer.write_tag_name_unescaped(s.as_bytes())?;
+        self.writer.close_tag()
     }
 
-    fn serialize_i32(self, _v: i32) -> Result<Self::Ok> {
-        Err(Error::UnsupportedType)
+    fn serialize_i32(self, v: i32) -> Result<Self::Ok> {
+        let mut buffer = itoa::Buffer::new();
+        let s = buffer.format(v);
+        self.writer.write_tag_name_unescaped(s.as_bytes())?;
+        self.writer.close_tag()
     }
 
-    fn serialize_i64(self, _v: i64) -> Result<Self::Ok> {
-        Err(Error::UnsupportedType)
+    fn serialize_i64(self, v: i64) -> Result<Self::Ok> {
+        let mut buffer = itoa::Buffer::new();
+        let s = buffer.format(v);
+        self.writer.write_tag_name_unescaped(s.as_bytes())?;
+        self.writer.close_tag()
     }
 
     #[cfg(has_i128)]
-    fn serialize_i128(self, _v: i128) -> Result<Self::Ok> {
-        Err(Error::UnsupportedType)
+    fn serialize_i128(self, v: i128) -> Result<Self::Ok> {
+        let mut buffer = itoa::Buffer::new();
+        let s = buffer.format(v);
+        self.writer.write_tag_name_unescaped(s.as_bytes())?;
+        self.writer.close_tag()
     }
 
-    fn serialize_u8(self, _v: u8) -> Result<Self::Ok> {
-        Err(Error::UnsupportedType)
+    fn serialize_u8(self, v: u8) -> Result<Self::Ok> {
+        let mut buffer = itoa::Buffer::new();
+        let s = buffer.format(v);
+        self.writer.write_tag_name_unescaped(s.as_bytes())?;
+        self.writer.close_tag()
     }
 
-    fn serialize_u16(self, _v: u16) -> Result<Self::Ok> {
-        Err(Error::UnsupportedType)
+    fn serialize_u16(self, v: u16) -> Result<Self::Ok> {
+        let mut buffer = itoa::Buffer::new();
+        let s = buffer.format(v);
+        self.writer.write_tag_name_unescaped(s.as_bytes())?;
+        self.writer.close_tag()
     }
 
-    fn serialize_u32(self, _v: u32) -> Result<Self::Ok> {
-        Err(Error::UnsupportedType)
+    fn serialize_u32(self, v: u32) -> Result<Self::Ok> {
+        let mut buffer = itoa::Buffer::new();
+        let s = buffer.format(v);
+        self.writer.write_tag_name_unescaped(s.as_bytes())?;
+        self.writer.close_tag()
     }
 
-    fn serialize_u64(self, _v: u64) -> Result<Self::Ok> {
-        Err(Error::UnsupportedType)
+    fn serialize_u64(self, v: u64) -> Result<Self::Ok> {
+        let mut buffer = itoa::Buffer::new();
+        let s = buffer.format(v);
+        self.writer.write_tag_name_unescaped(s.as_bytes())?;
+        self.writer.close_tag()
     }
 
     #[cfg(has_u128)]
-    fn serialize_u128(self, _v: u128) -> Result<Self::Ok> {
-        Err(Error::UnsupportedType)
+    fn serialize_u128(self, v: u128) -> Result<Self::Ok> {
+        let mut buffer = itoa::Buffer::new();
+        let s = buffer.format(v);
+        self.writer.write_tag_name_unescaped(s.as_bytes())?;
+        self.writer.close_tag()
     }
 
-    fn serialize_f32(self, _v: f32) -> Result<Self::Ok> {
-        Err(Error::UnsupportedType)
+    fn serialize_f32(self, v: f32) -> Result<Self::Ok> {
+        let mut buffer = ryu::Buffer::new();
+        let s = buffer.format(v);
+        self.writer.write_tag_name_unescaped(s.as_bytes())?;
+        self.writer.close_tag()
     }
 
-    fn serialize_f64(self, _v: f64) -> Result<Self::Ok> {
-        Err(Error::UnsupportedType)
+    fn serialize_f64(self, v: f64) -> Result<Self::Ok> {
+        let mut buffer = ryu::Buffer::new();
+        let s = buffer.format(v);
+        self.writer.write_tag_name_unescaped(s.as_bytes())?;
+        self.writer.close_tag()
     }
 
     fn serialize_char(self, _v: char) -> Result<Self::Ok> {
@@ -226,6 +262,162 @@ mod tests {
         assert_ok!(false.serialize(&mut Serializer::new(&mut output)));
 
         assert_eq!(output, b"#false;\n");
+    }
+
+    #[test]
+    fn i8() {
+        let mut output = Vec::new();
+
+        assert_ok!(42i8.serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#42;\n");
+    }
+
+    #[test]
+    fn i16() {
+        let mut output = Vec::new();
+
+        assert_ok!(42i16.serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#42;\n");
+    }
+
+    #[test]
+    fn i32() {
+        let mut output = Vec::new();
+
+        assert_ok!(42i32.serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#42;\n");
+    }
+
+    #[test]
+    fn i64() {
+        let mut output = Vec::new();
+
+        assert_ok!(42i64.serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#42;\n");
+    }
+
+    #[test]
+    #[cfg_attr(not(has_i128), ignore)]
+    fn i128() {
+        let mut output = Vec::new();
+
+        assert_ok!(42i128.serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#42;\n");
+    }
+
+    #[test]
+    fn i8_neg() {
+        let mut output = Vec::new();
+
+        assert_ok!((-42i8).serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#-42;\n");
+    }
+
+    #[test]
+    fn i16_neg() {
+        let mut output = Vec::new();
+
+        assert_ok!((-42i16).serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#-42;\n");
+    }
+
+    #[test]
+    fn i32_neg() {
+        let mut output = Vec::new();
+
+        assert_ok!((-42i32).serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#-42;\n");
+    }
+
+    #[test]
+    fn i64_neg() {
+        let mut output = Vec::new();
+
+        assert_ok!((-42i64).serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#-42;\n");
+    }
+
+    #[test]
+    #[cfg_attr(not(has_i128), ignore)]
+    fn i128_neg() {
+        let mut output = Vec::new();
+
+        assert_ok!((-42i128).serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#-42;\n");
+    }
+
+    #[test]
+    fn u8() {
+        let mut output = Vec::new();
+
+        assert_ok!(42u8.serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#42;\n");
+    }
+
+    #[test]
+    fn u16() {
+        let mut output = Vec::new();
+
+        assert_ok!(42u16.serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#42;\n");
+    }
+
+    #[test]
+    fn u32() {
+        let mut output = Vec::new();
+
+        assert_ok!(42u32.serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#42;\n");
+    }
+
+    #[test]
+    fn u64() {
+        let mut output = Vec::new();
+
+        assert_ok!(42u64.serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#42;\n");
+    }
+
+    #[test]
+    #[cfg_attr(not(has_i128), ignore)]
+    fn u128() {
+        let mut output = Vec::new();
+
+        assert_ok!(42u128.serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#42;\n");
+    }
+
+    #[test]
+    fn f32() {
+        let mut output = Vec::new();
+
+        assert_ok!(42f32.serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#42.0;\n");
+    }
+
+    #[test]
+    fn f64() {
+        let mut output = Vec::new();
+
+        assert_ok!(42f64.serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b"#42.0;\n");
     }
 
     #[test]

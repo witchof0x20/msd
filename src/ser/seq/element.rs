@@ -431,6 +431,24 @@ mod tests {
     }
 
     #[test]
+    fn f32() {
+        let mut output = Vec::new();
+
+        assert_ok!(42f32.serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b":42.0;\n");
+    }
+
+    #[test]
+    fn f64() {
+        let mut output = Vec::new();
+
+        assert_ok!(42f64.serialize(&mut Serializer::new(&mut output)));
+
+        assert_eq!(output, b":42.0;\n");
+    }
+
+    #[test]
     fn char() {
         let mut output = Vec::new();
 
