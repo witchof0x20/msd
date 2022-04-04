@@ -7,11 +7,12 @@ use std::io::Write;
 
 pub(in super::super) struct Serializer<'a, W> {
     writer: &'a mut W,
+    written_field: bool,
 }
 
 impl<'a, W> Serializer<'a, W> {
     pub(super) fn new(writer: &'a mut W) -> Self {
-        Self { writer }
+        Self { writer, written_field: false }
     }
 }
 
@@ -26,6 +27,7 @@ where
     where
         T: ?Sized + Serialize,
     {
+        self.written_field = true;
         key.serialize(key::Serializer::new(self.writer))
     }
 
@@ -37,8 +39,11 @@ where
     }
 
     fn end(self) -> Result<Self::Ok> {
-        self.writer.write_tag_name_unescaped(b"END")?;
-        self.writer.close_tag()
+        if !self.written_field {
+            self.writer.close_tag()
+        } else {
+            Ok(())
+        }
     }
 }
 
@@ -54,7 +59,7 @@ mod tests {
         let serializer = Serializer::new(&mut output);
 
         assert_ok!(serializer.end());
-        assert_eq!(output, b"#END;\n");
+        assert_eq!(output, b";\n");
     }
 
     #[test]
@@ -66,7 +71,7 @@ mod tests {
         assert_ok!(serializer.serialize_value(&42));
         assert_ok!(serializer.end());
 
-        assert_eq!(output, b"   foo:42;\n#END;\n");
+        assert_eq!(output, b"   foo:42;\n");
     }
 
     #[test]
@@ -80,6 +85,6 @@ mod tests {
         assert_ok!(serializer.serialize_value(&2));
         assert_ok!(serializer.end());
 
-        assert_eq!(output, b"   foo:1;\n   bar:2;\n#END;\n");
+        assert_eq!(output, b"   foo:1;\n   bar:2;\n");
     }
 }

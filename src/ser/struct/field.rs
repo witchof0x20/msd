@@ -878,7 +878,7 @@ mod tests {
         ]
         .serialize(Serializer::new(&mut output, b"foo".to_vec())));
 
-        assert_eq!(output, b"#foo:\n   a:1;\n   b:2;\n   c:3;\n   d:4;\n#END;\n#foo:\n   e:5;\n   f:6;\n   g:7;\n   h:8;\n#END;\n#foo:\n   i:9;\n   j:10;\n   k:11;\n   l:12;\n#END;\n");
+        assert_eq!(output, b"#foo:\n   a:1;\n   b:2;\n   c:3;\n   d:4;\n#foo:\n   e:5;\n   f:6;\n   g:7;\n   h:8;\n#foo:\n   i:9;\n   j:10;\n   k:11;\n   l:12;\n");
     }
 
     #[test]
@@ -1148,7 +1148,7 @@ mod tests {
 
         assert_ok!(map.serialize(Serializer::new(&mut output, b"foo".to_vec())));
 
-        assert_eq!(output, b"#foo:\n#END;\n");
+        assert_eq!(output, b"#foo:\n;\n");
     }
 
     #[test]
@@ -1160,7 +1160,7 @@ mod tests {
 
         assert_ok!(map.serialize(Serializer::new(&mut output, b"foo".to_vec())));
 
-        assert_eq!(output, b"#foo:\n   abc:1;\n#END;\n");
+        assert_eq!(output, b"#foo:\n   abc:1;\n");
     }
 
     #[test]
@@ -1186,7 +1186,7 @@ mod tests {
 
         assert_eq!(
             output,
-            b"#foo:\n   abc:1;\n   def:2;\n   ghi:3;\n   jkl:4;\n#END;\n"
+            b"#foo:\n   abc:1;\n   def:2;\n   ghi:3;\n   jkl:4;\n"
         );
     }
 }

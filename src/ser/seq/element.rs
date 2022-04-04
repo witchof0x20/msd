@@ -893,7 +893,7 @@ mod tests {
 
         assert_ok!(map.serialize(Serializer::new(&mut output)));
 
-        assert_eq!(output, b":\n#END;\n");
+        assert_eq!(output, b":\n;\n");
     }
 
     #[test]
@@ -905,7 +905,7 @@ mod tests {
 
         assert_ok!(map.serialize(Serializer::new(&mut output)));
 
-        assert_eq!(output, b":\n   abc:1;\n#END;\n");
+        assert_eq!(output, b":\n   abc:1;\n");
     }
 
     #[test]
@@ -931,7 +931,7 @@ mod tests {
 
         assert_eq!(
             output,
-            b":\n   abc:1;\n   def:2;\n   ghi:3;\n   jkl:4;\n#END;\n"
+            b":\n   abc:1;\n   def:2;\n   ghi:3;\n   jkl:4;\n"
         );
     }
 
