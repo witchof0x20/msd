@@ -1,4 +1,4 @@
-use crate::ser::{Error, Result, WriteExt, tuple};
+use crate::ser::{tuple, Error, Result, WriteExt};
 use serde::{ser, ser::Impossible, Serialize};
 use std::io::Write;
 
@@ -221,7 +221,10 @@ where
 mod tests {
     use super::Serializer;
     use claim::assert_ok;
-    use serde::{ser::{SerializeTupleStruct, SerializeTupleVariant}, Serialize};
+    use serde::{
+        ser::{SerializeTupleStruct, SerializeTupleVariant},
+        Serialize,
+    };
     use serde_bytes::Bytes;
     use serde_derive::Serialize;
 
@@ -630,7 +633,7 @@ mod tests {
     fn newtype_variant() {
         #[derive(Serialize)]
         enum Newtype {
-            Variant(u32)
+            Variant(u32),
         }
 
         let mut output = Vec::new();
@@ -746,8 +749,7 @@ mod tests {
                 S: serde::Serializer,
             {
                 let Self::Variant(inner) = self;
-                let mut tv =
-                    serializer.serialize_tuple_variant("TupleEnum", 0, "Variant", 1)?;
+                let mut tv = serializer.serialize_tuple_variant("TupleEnum", 0, "Variant", 1)?;
                 tv.serialize_field(&inner)?;
                 tv.end()
             }

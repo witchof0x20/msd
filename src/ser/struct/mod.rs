@@ -1,6 +1,6 @@
 mod field;
 
-use crate::ser::{Error, Result};
+use crate::ser::{Error, Escaped, Result};
 use serde::{
     ser::{SerializeStruct, SerializeStructVariant},
     Serialize,
@@ -28,7 +28,10 @@ where
     where
         T: ?Sized + Serialize,
     {
-        value.serialize(&mut field::Serializer::new(self.writer, key))
+        value.serialize(&mut field::Serializer::new(
+            self.writer,
+            Escaped::new(key.as_bytes()).collect::<Vec<_>>(),
+        ))
     }
 
     fn end(self) -> Result<Self::Ok> {
@@ -47,7 +50,10 @@ where
     where
         T: ?Sized + Serialize,
     {
-        value.serialize(&mut field::Serializer::new(self.writer, key))
+        value.serialize(&mut field::Serializer::new(
+            self.writer,
+            Escaped::new(key.as_bytes()).collect::<Vec<_>>(),
+        ))
     }
 
     fn end(self) -> Result<Self::Ok> {

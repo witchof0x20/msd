@@ -283,9 +283,7 @@ mod tests {
     fn struct_variant_single_field() {
         #[derive(Serialize)]
         enum Foo {
-            Variant {
-                bar: usize,
-            }
+            Variant { bar: usize },
         }
         let mut output = Vec::new();
 
@@ -296,11 +294,13 @@ mod tests {
     #[test]
     fn struct_variant_multiple_fields() {
         #[derive(Serialize)]
-        enum Foo { Variant {
-            bar: usize,
-            baz: Option<()>,
-            qux: Option<&'static str>,
-        }}
+        enum Foo {
+            Variant {
+                bar: usize,
+                baz: Option<()>,
+                qux: Option<&'static str>,
+            },
+        }
         let mut output = Vec::new();
 
         assert_ok!(Foo::Variant {

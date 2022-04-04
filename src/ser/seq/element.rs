@@ -823,8 +823,7 @@ mod tests {
                 S: serde::Serializer,
             {
                 let Self::Variant(inner) = self;
-                let mut tv =
-                    serializer.serialize_tuple_variant("TupleEnum", 0, "Variant", 1)?;
+                let mut tv = serializer.serialize_tuple_variant("TupleEnum", 0, "Variant", 1)?;
                 tv.serialize_field(&inner)?;
                 tv.end()
             }

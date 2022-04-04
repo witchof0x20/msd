@@ -13,7 +13,10 @@ pub(in super::super) struct Serializer<'a, W> {
 
 impl<'a, W> Serializer<'a, W> {
     pub(in super::super) fn new(writer: &'a mut W) -> Self {
-        Self { writer, written_key: false, }
+        Self {
+            writer,
+            written_key: false,
+        }
     }
 }
 
