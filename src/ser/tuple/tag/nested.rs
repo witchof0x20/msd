@@ -6,14 +6,14 @@ use serde::{
 };
 use std::io::Write;
 
-pub(in super::super) struct Serializer<'a, W> {
+pub(in super::super::super) struct Serializer<'a, W> {
     writer: &'a mut W,
 
     written_first: bool,
 }
 
 impl<'a, W> Serializer<'a, W> {
-    pub(super) fn new(writer: &'a mut W) -> Self {
+    pub(in super::super::super) fn new(writer: &'a mut W) -> Self {
         Self { 
             writer,
 

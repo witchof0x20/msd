@@ -1,19 +1,17 @@
-pub(super) mod key;
-pub(super) mod tag;
+mod key;
 
-mod value;
-
+use super::value;
 use crate::ser::{Error, Result, WriteExt};
 use serde::{ser::SerializeMap, Serialize};
 use std::io::Write;
 
-pub(in super::super) struct Serializer<'a, W> {
+pub struct Serializer<'a, W> {
     writer: &'a mut W,
     written_field: bool,
 }
 
 impl<'a, W> Serializer<'a, W> {
-    pub(super) fn new(writer: &'a mut W) -> Self {
+    pub(in super::super) fn new(writer: &'a mut W) -> Self {
         Self { writer, written_field: false }
     }
 }
@@ -42,6 +40,7 @@ where
 
     fn end(self) -> Result<Self::Ok> {
         if !self.written_field {
+            self.writer.write_tag_name_unescaped(b"")?;
             self.writer.close_tag()
         } else {
             Ok(())
@@ -61,7 +60,7 @@ mod tests {
         let serializer = Serializer::new(&mut output);
 
         assert_ok!(serializer.end());
-        assert_eq!(output, b";\n");
+        assert_eq!(output, b"#;\n");
     }
 
     #[test]
@@ -73,7 +72,7 @@ mod tests {
         assert_ok!(serializer.serialize_value(&42));
         assert_ok!(serializer.end());
 
-        assert_eq!(output, b"   foo:42;\n");
+        assert_eq!(output, b"#foo:42;\n");
     }
 
     #[test]
@@ -87,6 +86,6 @@ mod tests {
         assert_ok!(serializer.serialize_value(&2));
         assert_ok!(serializer.end());
 
-        assert_eq!(output, b"   foo:1;\n   bar:2;\n");
+        assert_eq!(output, b"#foo:1;\n#bar:2;\n");
     }
 }

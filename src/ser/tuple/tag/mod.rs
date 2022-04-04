@@ -1,5 +1,6 @@
+pub(in super::super) mod nested;
+
 mod element;
-mod nested;
 
 use crate::{ser::{Error, Result, WriteExt, tuple}};
 use serde::{
