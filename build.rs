@@ -1,4 +1,7 @@
+use serde::serde_if_integer128;
+
 fn main() {
-    autocfg::new().emit_has_type("i128");
-    autocfg::new().emit_has_type("u128");
+    serde_if_integer128!{
+        println!("cargo:rustc-cfg=i128");
+    }
 }

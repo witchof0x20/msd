@@ -142,7 +142,7 @@ where
         self.writer.close_tag()
     }
 
-    #[cfg(has_u128)]
+    #[cfg(has_i128)]
     fn serialize_u128(self, v: u128) -> Result<Self::Ok> {
         self.writer
             .write_tag_name_unescaped(&self.escaped_field_name)?;

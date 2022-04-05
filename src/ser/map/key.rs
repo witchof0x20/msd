@@ -89,7 +89,7 @@ where
         self.writer.write_key_unescaped(s.as_bytes())
     }
 
-    #[cfg(has_u128)]
+    #[cfg(has_i128)]
     fn serialize_u128(self, v: u128) -> Result<Self::Ok> {
         let mut buffer = itoa::Buffer::new();
         let s = buffer.format(v);
