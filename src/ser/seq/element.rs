@@ -863,9 +863,7 @@ mod tests {
 
         let mut output = Vec::new();
 
-        assert_ok!(
-            TupleEnum::Variant(42, "bar", (), 1.0).serialize(Serializer::new(&mut output))
-        );
+        assert_ok!(TupleEnum::Variant(42, "bar", (), 1.0).serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b":Variant:42:bar::1.0;\n");
     }
@@ -879,8 +877,9 @@ mod tests {
 
         let mut output = Vec::new();
 
-        assert_ok!(TupleEnum::Variant(1, (2, 3), ((4, 5), 6), 7)
-            .serialize(Serializer::new(&mut output)));
+        assert_ok!(
+            TupleEnum::Variant(1, (2, 3), ((4, 5), 6), 7).serialize(Serializer::new(&mut output))
+        );
 
         assert_eq!(output, b":Variant:1:2:3:4:5:6:7;\n");
     }
@@ -929,10 +928,7 @@ mod tests {
 
         assert_ok!(Map.serialize(Serializer::new(&mut output)));
 
-        assert_eq!(
-            output,
-            b":\n   abc:1;\n   def:2;\n   ghi:3;\n   jkl:4;\n"
-        );
+        assert_eq!(output, b":\n   abc:1;\n   def:2;\n   ghi:3;\n   jkl:4;\n");
     }
 
     #[test]

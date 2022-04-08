@@ -37,7 +37,10 @@ mod tests {
 
     #[test]
     fn display_unsupported_type_error() {
-        assert_eq!(format!("{}", Error::UnsupportedType), "unsupported Rust type");
+        assert_eq!(
+            format!("{}", Error::UnsupportedType),
+            "unsupported Rust type"
+        );
     }
 
     #[test]
@@ -47,6 +50,9 @@ mod tests {
 
     #[test]
     fn display_custom_error() {
-        assert_eq!(format!("{}", Error::Custom("custom error message".to_owned())), "custom error message");
+        assert_eq!(
+            format!("{}", Error::Custom("custom error message".to_owned())),
+            "custom error message"
+        );
     }
 }

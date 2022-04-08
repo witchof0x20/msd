@@ -2,7 +2,7 @@ pub(in super::super) mod nested;
 
 mod element;
 
-use crate::{ser::{Error, Result, WriteExt, tuple}};
+use crate::ser::{tuple, Error, Result, WriteExt};
 use serde::{
     ser::{SerializeTuple, SerializeTupleStruct, SerializeTupleVariant},
     Serialize,
@@ -17,7 +17,7 @@ pub struct Serializer<'a, W> {
 
 impl<'a, W> Serializer<'a, W> {
     pub(in super::super) fn new(writer: &'a mut W) -> Self {
-        Self { 
+        Self {
             writer,
 
             written_first: false,

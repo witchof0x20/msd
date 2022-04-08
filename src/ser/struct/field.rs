@@ -256,15 +256,13 @@ where
     where
         T: ?Sized + Serialize,
     {
-        self.escaped_field_name.write_parameter_escaped(variant.as_bytes())?;
+        self.escaped_field_name
+            .write_parameter_escaped(variant.as_bytes())?;
         value.serialize(Serializer::new(self.writer, self.escaped_field_name))
     }
 
     fn serialize_seq(self, _len: Option<usize>) -> Result<Self::SerializeSeq> {
-        Ok(seq::Serializer::new(
-            self.writer,
-            self.escaped_field_name,
-        ))
+        Ok(seq::Serializer::new(self.writer, self.escaped_field_name))
     }
 
     fn serialize_tuple(self, _len: usize) -> Result<Self::SerializeTuple> {
@@ -634,9 +632,7 @@ mod tests {
     fn bytes_escape_number_sign() {
         let mut output = Vec::new();
 
-        assert_ok!(
-            Bytes::new(b"ba#r").serialize(Serializer::new(&mut output, b"foo".to_vec()))
-        );
+        assert_ok!(Bytes::new(b"ba#r").serialize(Serializer::new(&mut output, b"foo".to_vec())));
 
         assert_eq!(output, b"#foo:ba\\#r;\n");
     }
@@ -645,9 +641,7 @@ mod tests {
     fn bytes_escape_colon() {
         let mut output = Vec::new();
 
-        assert_ok!(
-            Bytes::new(b"ba:r").serialize(Serializer::new(&mut output, b"foo".to_vec()))
-        );
+        assert_ok!(Bytes::new(b"ba:r").serialize(Serializer::new(&mut output, b"foo".to_vec())));
 
         assert_eq!(output, b"#foo:ba\\:r;\n");
     }
@@ -656,9 +650,7 @@ mod tests {
     fn bytes_escape_semicolon() {
         let mut output = Vec::new();
 
-        assert_ok!(
-            Bytes::new(b"ba;r").serialize(Serializer::new(&mut output, b"foo".to_vec()))
-        );
+        assert_ok!(Bytes::new(b"ba;r").serialize(Serializer::new(&mut output, b"foo".to_vec())));
 
         assert_eq!(output, b"#foo:ba\\;r;\n");
     }
@@ -667,9 +659,7 @@ mod tests {
     fn bytes_escape_backslash() {
         let mut output = Vec::new();
 
-        assert_ok!(
-            Bytes::new(b"ba\\r").serialize(Serializer::new(&mut output, b"foo".to_vec()))
-        );
+        assert_ok!(Bytes::new(b"ba\\r").serialize(Serializer::new(&mut output, b"foo".to_vec())));
 
         assert_eq!(output, b"#foo:ba\\\\r;\n");
     }
@@ -678,9 +668,7 @@ mod tests {
     fn bytes_escape_double_forwardslash() {
         let mut output = Vec::new();
 
-        assert_ok!(
-            Bytes::new(b"ba//r").serialize(Serializer::new(&mut output, b"foo".to_vec()))
-        );
+        assert_ok!(Bytes::new(b"ba//r").serialize(Serializer::new(&mut output, b"foo".to_vec())));
 
         assert_eq!(output, b"#foo:ba\\/\\/r;\n");
     }
@@ -689,9 +677,7 @@ mod tests {
     fn bytes_do_not_escape_single_forwardslash() {
         let mut output = Vec::new();
 
-        assert_ok!(
-            Bytes::new(b"ba/r").serialize(Serializer::new(&mut output, b"foo".to_vec()))
-        );
+        assert_ok!(Bytes::new(b"ba/r").serialize(Serializer::new(&mut output, b"foo".to_vec())));
 
         assert_eq!(output, b"#foo:ba/r;\n");
     }
@@ -770,9 +756,7 @@ mod tests {
 
         let mut output = Vec::new();
 
-        assert_ok!(
-            Newtype::Variant(42).serialize(Serializer::new(&mut output, b"foo".to_vec()))
-        );
+        assert_ok!(Newtype::Variant(42).serialize(Serializer::new(&mut output, b"foo".to_vec())));
 
         assert_eq!(output, b"#foo:Variant:42;\n");
     }
@@ -982,9 +966,7 @@ mod tests {
     fn multiple_element_tuple() {
         let mut output = Vec::new();
 
-        assert_ok!(
-            (42, "bar", (), 1.0).serialize(Serializer::new(&mut output, b"foo".to_vec()))
-        );
+        assert_ok!((42, "bar", (), 1.0).serialize(Serializer::new(&mut output, b"foo".to_vec())));
 
         assert_eq!(output, b"#foo:42:bar::1.0;\n");
     }
@@ -1077,9 +1059,7 @@ mod tests {
 
         let mut output = Vec::new();
 
-        assert_ok!(
-            TupleEnum::Variant().serialize(Serializer::new(&mut output, b"foo".to_vec()))
-        );
+        assert_ok!(TupleEnum::Variant().serialize(Serializer::new(&mut output, b"foo".to_vec())));
 
         assert_eq!(output, b"#foo:Variant;\n");
     }
@@ -1103,9 +1083,7 @@ mod tests {
 
         let mut output = Vec::new();
 
-        assert_ok!(
-            TupleEnum::Variant(42).serialize(Serializer::new(&mut output, b"foo".to_vec()))
-        );
+        assert_ok!(TupleEnum::Variant(42).serialize(Serializer::new(&mut output, b"foo".to_vec())));
 
         assert_eq!(output, b"#foo:Variant:42;\n");
     }

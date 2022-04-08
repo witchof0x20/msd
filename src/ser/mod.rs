@@ -198,7 +198,10 @@ where
     where
         T: ?Sized + Serialize,
     {
-        value.serialize(r#struct::field::Serializer::new(&mut self.writer, Escaped::new(variant.as_bytes()).collect::<Vec<_>>()))
+        value.serialize(r#struct::field::Serializer::new(
+            &mut self.writer,
+            Escaped::new(variant.as_bytes()).collect::<Vec<_>>(),
+        ))
     }
 
     fn serialize_seq(self, _len: Option<usize>) -> Result<Self::SerializeSeq> {
@@ -253,7 +256,10 @@ where
 mod tests {
     use super::Serializer;
     use claim::assert_ok;
-    use serde::{ser::{SerializeMap, SerializeTupleStruct, SerializeTupleVariant}, Serialize};
+    use serde::{
+        ser::{SerializeMap, SerializeTupleStruct, SerializeTupleVariant},
+        Serialize,
+    };
     use serde_bytes::Bytes;
     use serde_derive::Serialize;
     use std::collections::HashMap;
@@ -694,8 +700,7 @@ mod tests {
         }
         let mut output = Vec::new();
 
-        assert_ok!(Newtype::Variant(42)
-            .serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(Newtype::Variant(42).serialize(&mut Serializer::new(&mut output)));
         assert_eq!(output, b"#Variant:42;\n");
     }
 
@@ -730,8 +735,7 @@ mod tests {
     fn seq_tuples() {
         let mut output = Vec::new();
 
-        assert_ok!(vec![(1, 'a'), (2, 'b'), (3, 'c')]
-            .serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(vec![(1, 'a'), (2, 'b'), (3, 'c')].serialize(&mut Serializer::new(&mut output)));
 
         assert_eq!(output, b"#1:a;\n#2:b;\n#3:c;\n");
     }
@@ -806,9 +810,7 @@ mod tests {
     fn nested_tuple() {
         let mut output = Vec::new();
 
-        assert_ok!(
-            (1, (2, 3), ((4), 5), 6).serialize(&mut Serializer::new(&mut output))
-        );
+        assert_ok!((1, (2, 3), ((4), 5), 6).serialize(&mut Serializer::new(&mut output)));
 
         assert_eq!(output, b"#1:2:3:4:5:6;\n");
     }
@@ -865,8 +867,9 @@ mod tests {
 
         let mut output = Vec::new();
 
-        assert_ok!(TupleStruct(1, (2, 3), ((4, 5), 6), 7)
-            .serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(
+            TupleStruct(1, (2, 3), ((4, 5), 6), 7).serialize(&mut Serializer::new(&mut output))
+        );
 
         assert_eq!(output, b"#1:2:3:4:5:6:7;\n");
     }
@@ -875,7 +878,7 @@ mod tests {
     fn empty_tuple_variant() {
         #[derive(Serialize)]
         enum Tuple {
-            Variant()
+            Variant(),
         }
 
         let mut output = Vec::new();
@@ -887,7 +890,9 @@ mod tests {
 
     #[test]
     fn single_element_tuple_variant() {
-        enum Tuple {Variant(usize) }
+        enum Tuple {
+            Variant(usize),
+        }
         impl Serialize for Tuple {
             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
             where
@@ -910,7 +915,9 @@ mod tests {
     #[test]
     fn multiple_element_tuple_variant() {
         #[derive(Serialize)]
-        enum Tuple {Variant(usize, &'static str, (), f32)}
+        enum Tuple {
+            Variant(usize, &'static str, (), f32),
+        }
 
         let mut output = Vec::new();
 
@@ -922,12 +929,15 @@ mod tests {
     #[test]
     fn nested_tuple_variant() {
         #[derive(Serialize)]
-        enum Tuple {Variant(usize, (usize, usize), ((usize, usize), usize), usize)}
+        enum Tuple {
+            Variant(usize, (usize, usize), ((usize, usize), usize), usize),
+        }
 
         let mut output = Vec::new();
 
-        assert_ok!(Tuple::Variant(1, (2, 3), ((4, 5), 6), 7)
-            .serialize(&mut Serializer::new(&mut output)));
+        assert_ok!(
+            Tuple::Variant(1, (2, 3), ((4, 5), 6), 7).serialize(&mut Serializer::new(&mut output))
+        );
 
         assert_eq!(output, b"#Variant:1:2:3:4:5:6:7;\n");
     }
@@ -976,10 +986,7 @@ mod tests {
 
         assert_ok!(Map.serialize(&mut Serializer::new(&mut output)));
 
-        assert_eq!(
-            output,
-            b"#abc:1;\n#def:2;\n#ghi:3;\n#jkl:4;\n"
-        );
+        assert_eq!(output, b"#abc:1;\n#def:2;\n#ghi:3;\n#jkl:4;\n");
     }
 
     #[test]
