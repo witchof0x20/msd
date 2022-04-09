@@ -11,6 +11,16 @@ pub enum Kind {
     UnexpectedValue,
     EndOfValues,
     ExpectedBool,
+    ExpectedI8,
+    ExpectedI16,
+    ExpectedI32,
+    ExpectedI64,
+    ExpectedI128,
+    ExpectedU8,
+    ExpectedU16,
+    ExpectedU32,
+    ExpectedU64,
+    ExpectedU128,
     Io,
 }
 

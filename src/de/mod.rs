@@ -48,60 +48,146 @@ where
         visitor.visit_bool(parsed)
     }
 
-    fn deserialize_i8<V>(self, _visitor: V) -> Result<V::Value>
+    fn deserialize_i8<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        todo!()
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
+        let value = values.next()?;
+        let parsed = value.parse_i8()?;
+        values.assert_exhausted()?;
+        tag.assert_exhausted()?;
+        self.tags.assert_exhausted()?;
+        visitor.visit_i8(parsed)
     }
 
-    fn deserialize_i16<V>(self, _visitor: V) -> Result<V::Value>
+    fn deserialize_i16<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        todo!()
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
+        let value = values.next()?;
+        let parsed = value.parse_i16()?;
+        values.assert_exhausted()?;
+        tag.assert_exhausted()?;
+        self.tags.assert_exhausted()?;
+        visitor.visit_i16(parsed)
     }
 
-    fn deserialize_i32<V>(self, _visitor: V) -> Result<V::Value>
+    fn deserialize_i32<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        todo!()
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
+        let value = values.next()?;
+        let parsed = value.parse_i32()?;
+        values.assert_exhausted()?;
+        tag.assert_exhausted()?;
+        self.tags.assert_exhausted()?;
+        visitor.visit_i32(parsed)
     }
 
-    fn deserialize_i64<V>(self, _visitor: V) -> Result<V::Value>
+    fn deserialize_i64<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        todo!()
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
+        let value = values.next()?;
+        let parsed = value.parse_i64()?;
+        values.assert_exhausted()?;
+        tag.assert_exhausted()?;
+        self.tags.assert_exhausted()?;
+        visitor.visit_i64(parsed)
     }
 
-    fn deserialize_u8<V>(self, _visitor: V) -> Result<V::Value>
+    #[cfg(has_i128)]
+    fn deserialize_i128<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        todo!()
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
+        let value = values.next()?;
+        let parsed = value.parse_i128()?;
+        values.assert_exhausted()?;
+        tag.assert_exhausted()?;
+        self.tags.assert_exhausted()?;
+        visitor.visit_i128(parsed)
     }
 
-    fn deserialize_u16<V>(self, _visitor: V) -> Result<V::Value>
+    fn deserialize_u8<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        todo!()
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
+        let value = values.next()?;
+        let parsed = value.parse_u8()?;
+        values.assert_exhausted()?;
+        tag.assert_exhausted()?;
+        self.tags.assert_exhausted()?;
+        visitor.visit_u8(parsed)
     }
 
-    fn deserialize_u32<V>(self, _visitor: V) -> Result<V::Value>
+    fn deserialize_u16<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        todo!()
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
+        let value = values.next()?;
+        let parsed = value.parse_u16()?;
+        values.assert_exhausted()?;
+        tag.assert_exhausted()?;
+        self.tags.assert_exhausted()?;
+        visitor.visit_u16(parsed)
     }
 
-    fn deserialize_u64<V>(self, _visitor: V) -> Result<V::Value>
+    fn deserialize_u32<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        todo!()
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
+        let value = values.next()?;
+        let parsed = value.parse_u32()?;
+        values.assert_exhausted()?;
+        tag.assert_exhausted()?;
+        self.tags.assert_exhausted()?;
+        visitor.visit_u32(parsed)
+    }
+
+    fn deserialize_u64<V>(self, visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
+        let value = values.next()?;
+        let parsed = value.parse_u64()?;
+        values.assert_exhausted()?;
+        tag.assert_exhausted()?;
+        self.tags.assert_exhausted()?;
+        visitor.visit_u64(parsed)
+    }
+
+    #[cfg(has_i128)]
+    fn deserialize_u128<V>(self, visitor: V) -> Result<V::Value>
+    where
+        V: Visitor<'de>,
+    {
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
+        let value = values.next()?;
+        let parsed = value.parse_u128()?;
+        values.assert_exhausted()?;
+        tag.assert_exhausted()?;
+        self.tags.assert_exhausted()?;
+        visitor.visit_u128(parsed)
     }
 
     fn deserialize_f32<V>(self, _visitor: V) -> Result<V::Value>
@@ -281,5 +367,355 @@ mod tests {
             bool::deserialize(&mut deserializer),
             Error::new(error::Kind::ExpectedBool, 0, 1)
         );
+    }
+
+    #[test]
+    fn i8_positive() {
+        let mut deserializer = Deserializer::new(b"#42;".as_slice());
+
+        assert_ok_eq!(i8::deserialize(&mut deserializer), 42);
+    }
+
+    #[test]
+    fn i8_negative() {
+        let mut deserializer = Deserializer::new(b"#-42;".as_slice());
+
+        assert_ok_eq!(i8::deserialize(&mut deserializer), -42);
+    }
+
+    #[test]
+    fn i8_zero() {
+        let mut deserializer = Deserializer::new(b"#0;".as_slice());
+
+        assert_ok_eq!(i8::deserialize(&mut deserializer), 0);
+    }
+
+    #[test]
+    fn i8_positive_overflow() {
+        let mut deserializer = Deserializer::new(b"#128;".as_slice());
+
+        assert_err_eq!(i8::deserialize(&mut deserializer), Error::new(error::Kind::ExpectedI8, 0, 1));
+    }
+
+    #[test]
+    fn i8_negative_overflow() {
+        let mut deserializer = Deserializer::new(b"#-129;".as_slice());
+
+        assert_err_eq!(i8::deserialize(&mut deserializer), Error::new(error::Kind::ExpectedI8, 0, 1));
+    }
+
+    #[test]
+    fn i8_invalid() {
+        let mut deserializer = Deserializer::new(b"#invalid;".as_slice());
+
+        assert_err_eq!(i8::deserialize(&mut deserializer), Error::new(error::Kind::ExpectedI8, 0, 1));
+    }
+
+    #[test]
+    fn i16_positive() {
+        let mut deserializer = Deserializer::new(b"#42;".as_slice());
+
+        assert_ok_eq!(i16::deserialize(&mut deserializer), 42);
+    }
+
+    #[test]
+    fn i16_negative() {
+        let mut deserializer = Deserializer::new(b"#-42;".as_slice());
+
+        assert_ok_eq!(i16::deserialize(&mut deserializer), -42);
+    }
+
+    #[test]
+    fn i16_zero() {
+        let mut deserializer = Deserializer::new(b"#0;".as_slice());
+
+        assert_ok_eq!(i16::deserialize(&mut deserializer), 0);
+    }
+
+    #[test]
+    fn i16_positive_overflow() {
+        let mut deserializer = Deserializer::new(b"#32768;".as_slice());
+
+        assert_err_eq!(i16::deserialize(&mut deserializer), Error::new(error::Kind::ExpectedI16, 0, 1));
+    }
+
+    #[test]
+    fn i16_negative_overflow() {
+        let mut deserializer = Deserializer::new(b"#-32769;".as_slice());
+
+        assert_err_eq!(i16::deserialize(&mut deserializer), Error::new(error::Kind::ExpectedI16, 0, 1));
+    }
+
+    #[test]
+    fn i16_invalid() {
+        let mut deserializer = Deserializer::new(b"#invalid;".as_slice());
+
+        assert_err_eq!(i16::deserialize(&mut deserializer), Error::new(error::Kind::ExpectedI16, 0, 1));
+    }
+
+    #[test]
+    fn i32_positive() {
+        let mut deserializer = Deserializer::new(b"#42;".as_slice());
+
+        assert_ok_eq!(i32::deserialize(&mut deserializer), 42);
+    }
+
+    #[test]
+    fn i32_negative() {
+        let mut deserializer = Deserializer::new(b"#-42;".as_slice());
+
+        assert_ok_eq!(i32::deserialize(&mut deserializer), -42);
+    }
+
+    #[test]
+    fn i32_zero() {
+        let mut deserializer = Deserializer::new(b"#0;".as_slice());
+
+        assert_ok_eq!(i32::deserialize(&mut deserializer), 0);
+    }
+
+    #[test]
+    fn i32_positive_overflow() {
+        let mut deserializer = Deserializer::new(b"#2147483648;".as_slice());
+
+        assert_err_eq!(i8::deserialize(&mut deserializer), Error::new(error::Kind::ExpectedI8, 0, 1));
+    }
+
+    #[test]
+    fn i32_negative_overflow() {
+        let mut deserializer = Deserializer::new(b"#-2147483649;".as_slice());
+
+        assert_err_eq!(i8::deserialize(&mut deserializer), Error::new(error::Kind::ExpectedI8, 0, 1));
+    }
+
+    #[test]
+    fn i32_invalid() {
+        let mut deserializer = Deserializer::new(b"#invalid;".as_slice());
+
+        assert_err_eq!(i8::deserialize(&mut deserializer), Error::new(error::Kind::ExpectedI8, 0, 1));
+    }
+
+    #[test]
+    fn i64_positive() {
+        let mut deserializer = Deserializer::new(b"#42;".as_slice());
+
+        assert_ok_eq!(i64::deserialize(&mut deserializer), 42);
+    }
+
+    #[test]
+    fn i64_negative() {
+        let mut deserializer = Deserializer::new(b"#-42;".as_slice());
+
+        assert_ok_eq!(i64::deserialize(&mut deserializer), -42);
+    }
+
+    #[test]
+    fn i64_zero() {
+        let mut deserializer = Deserializer::new(b"#0;".as_slice());
+
+        assert_ok_eq!(i64::deserialize(&mut deserializer), 0);
+    }
+
+    #[test]
+    fn i64_positive_overflow() {
+        let mut deserializer = Deserializer::new(b"#9223372036854775808;".as_slice());
+
+        assert_err_eq!(i64::deserialize(&mut deserializer), Error::new(error::Kind::ExpectedI64, 0, 1));
+    }
+
+    #[test]
+    fn i64_negative_overflow() {
+        let mut deserializer = Deserializer::new(b"#-9223372036854775809;".as_slice());
+
+        assert_err_eq!(i64::deserialize(&mut deserializer), Error::new(error::Kind::ExpectedI64, 0, 1));
+    }
+
+    #[test]
+    fn i64_invalid() {
+        let mut deserializer = Deserializer::new(b"#invalid;".as_slice());
+
+        assert_err_eq!(i64::deserialize(&mut deserializer), Error::new(error::Kind::ExpectedI64, 0, 1));
+    }
+
+    #[test]
+    fn i128_positive() {
+        let mut deserializer = Deserializer::new(b"#42;".as_slice());
+
+        assert_ok_eq!(i128::deserialize(&mut deserializer), 42);
+    }
+
+    #[test]
+    fn i128_negative() {
+        let mut deserializer = Deserializer::new(b"#-42;".as_slice());
+
+        assert_ok_eq!(i128::deserialize(&mut deserializer), -42);
+    }
+
+    #[test]
+    fn i128_zero() {
+        let mut deserializer = Deserializer::new(b"#0;".as_slice());
+
+        assert_ok_eq!(i128::deserialize(&mut deserializer), 0);
+    }
+
+    #[test]
+    fn i128_positive_overflow() {
+        let mut deserializer = Deserializer::new(b"#170141183460469231731687303715884105728;".as_slice());
+
+        assert_err_eq!(i128::deserialize(&mut deserializer), Error::new(error::Kind::ExpectedI128, 0, 1));
+    }
+
+    #[test]
+    fn i128_negative_overflow() {
+        let mut deserializer = Deserializer::new(b"#-170141183460469231731687303715884105729;".as_slice());
+
+        assert_err_eq!(i128::deserialize(&mut deserializer), Error::new(error::Kind::ExpectedI128, 0, 1));
+    }
+
+    #[test]
+    fn i128_invalid() {
+        let mut deserializer = Deserializer::new(b"#invalid;".as_slice());
+
+        assert_err_eq!(i128::deserialize(&mut deserializer), Error::new(error::Kind::ExpectedI128, 0, 1));
+    }
+
+    #[test]
+    fn u8() {
+        let mut deserializer = Deserializer::new(b"#42;".as_slice());
+
+        assert_ok_eq!(u8::deserialize(&mut deserializer), 42);
+    }
+
+    #[test]
+    fn u8_zero() {
+        let mut deserializer = Deserializer::new(b"#0;".as_slice());
+
+        assert_ok_eq!(u8::deserialize(&mut deserializer), 0);
+    }
+
+    #[test]
+    fn u8_overflow() {
+        let mut deserializer = Deserializer::new(b"#256;".as_slice());
+
+        assert_err_eq!(u8::deserialize(&mut deserializer), Error::new(error::Kind::ExpectedU8, 0, 1));
+    }
+
+    #[test]
+    fn u8_invalid() {
+        let mut deserializer = Deserializer::new(b"#invalid;".as_slice());
+
+        assert_err_eq!(u8::deserialize(&mut deserializer), Error::new(error::Kind::ExpectedU8, 0, 1));
+    }
+
+    #[test]
+    fn u16() {
+        let mut deserializer = Deserializer::new(b"#42;".as_slice());
+
+        assert_ok_eq!(u16::deserialize(&mut deserializer), 42);
+    }
+
+    #[test]
+    fn u16_zero() {
+        let mut deserializer = Deserializer::new(b"#0;".as_slice());
+
+        assert_ok_eq!(u16::deserialize(&mut deserializer), 0);
+    }
+
+    #[test]
+    fn u16_overflow() {
+        let mut deserializer = Deserializer::new(b"#65536;".as_slice());
+
+        assert_err_eq!(u16::deserialize(&mut deserializer), Error::new(error::Kind::ExpectedU16, 0, 1));
+    }
+
+    #[test]
+    fn u16_invalid() {
+        let mut deserializer = Deserializer::new(b"#invalid;".as_slice());
+
+        assert_err_eq!(u16::deserialize(&mut deserializer), Error::new(error::Kind::ExpectedU16, 0, 1));
+    }
+
+    #[test]
+    fn u32() {
+        let mut deserializer = Deserializer::new(b"#42;".as_slice());
+
+        assert_ok_eq!(u32::deserialize(&mut deserializer), 42);
+    }
+
+    #[test]
+    fn u32_zero() {
+        let mut deserializer = Deserializer::new(b"#0;".as_slice());
+
+        assert_ok_eq!(u32::deserialize(&mut deserializer), 0);
+    }
+
+    #[test]
+    fn u32_overflow() {
+        let mut deserializer = Deserializer::new(b"#4294967296;".as_slice());
+
+        assert_err_eq!(u32::deserialize(&mut deserializer), Error::new(error::Kind::ExpectedU32, 0, 1));
+    }
+
+    #[test]
+    fn u32_invalid() {
+        let mut deserializer = Deserializer::new(b"#invalid;".as_slice());
+
+        assert_err_eq!(u32::deserialize(&mut deserializer), Error::new(error::Kind::ExpectedU32, 0, 1));
+    }
+
+    #[test]
+    fn u64() {
+        let mut deserializer = Deserializer::new(b"#42;".as_slice());
+
+        assert_ok_eq!(u64::deserialize(&mut deserializer), 42);
+    }
+
+    #[test]
+    fn u64_zero() {
+        let mut deserializer = Deserializer::new(b"#0;".as_slice());
+
+        assert_ok_eq!(u64::deserialize(&mut deserializer), 0);
+    }
+
+    #[test]
+    fn u64_overflow() {
+        let mut deserializer = Deserializer::new(b"#18446744073709551616;".as_slice());
+
+        assert_err_eq!(u64::deserialize(&mut deserializer), Error::new(error::Kind::ExpectedU64, 0, 1));
+    }
+
+    #[test]
+    fn u64_invalid() {
+        let mut deserializer = Deserializer::new(b"#invalid;".as_slice());
+
+        assert_err_eq!(u64::deserialize(&mut deserializer), Error::new(error::Kind::ExpectedU64, 0, 1));
+    }
+
+    #[test]
+    fn u128() {
+        let mut deserializer = Deserializer::new(b"#42;".as_slice());
+
+        assert_ok_eq!(u128::deserialize(&mut deserializer), 42);
+    }
+
+    #[test]
+    fn u128_zero() {
+        let mut deserializer = Deserializer::new(b"#0;".as_slice());
+
+        assert_ok_eq!(u128::deserialize(&mut deserializer), 0);
+    }
+
+    #[test]
+    fn u128_overflow() {
+        let mut deserializer = Deserializer::new(b"#340282366920938463463374607431768211456;".as_slice());
+
+        assert_err_eq!(u128::deserialize(&mut deserializer), Error::new(error::Kind::ExpectedU128, 0, 1));
+    }
+
+    #[test]
+    fn u128_invalid() {
+        let mut deserializer = Deserializer::new(b"#invalid;".as_slice());
+
+        assert_err_eq!(u128::deserialize(&mut deserializer), Error::new(error::Kind::ExpectedU128, 0, 1));
     }
 }
