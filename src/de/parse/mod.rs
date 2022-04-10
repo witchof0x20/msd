@@ -1,5 +1,6 @@
 mod tag;
 mod tags;
+mod utf8_char_width;
 mod value;
 mod values;
 

@@ -1,4 +1,6 @@
+use super::utf8_char_width::utf8_char_width;
 use crate::de::{error, Error, Result};
+use std::str;
 
 fn trim_ascii_whitespace(bytes: &[u8]) -> &[u8] {
     // SAFETY:
@@ -142,6 +144,52 @@ impl<'a> Value<'a> {
             self.line,
             self.column,
         )))
+    }
+
+    pub(in crate::de) fn parse_char(&self) -> Result<char> {
+        if self.bytes.len() == 0 {
+            return Err(Error::new(
+                error::Kind::ExpectedChar,
+                self.line,
+                self.column,
+            ));
+        }
+
+        let bytes = {
+            let trimmed_bytes = trim_ascii_whitespace(self.bytes);
+            if trimmed_bytes.len() > 0 {
+                trimmed_bytes
+            } else {
+                self.bytes
+            }
+        };
+
+        // SAFETY: `bytes` is guaranteed to be nonempty.
+        let first_byte = *unsafe { bytes.get_unchecked(0) };
+        let width = utf8_char_width(first_byte);
+        if width != bytes.len() {
+            // Note that this branch will catch the case of `width = 0`, since `bytes.len()` is
+            // guaranteed to be greater than 0.
+            Err(Error::new(
+                error::Kind::ExpectedChar,
+                self.line,
+                self.column,
+            ))
+        } else if width == 1 {
+            Ok(first_byte as char)
+        } else {
+            Ok(str::from_utf8(bytes)
+                .or(Err(Error::new(
+                    error::Kind::ExpectedChar,
+                    self.line,
+                    self.column,
+                )))
+                .and_then(|s|
+                    // SAFETY: Since `from_utf8()` returned a string, we can guarantee it has exactly
+                    // one value, since the width indicated by the first byte was exactly the length of
+                    // the input and the input was nonempty.
+                    Ok(unsafe { s.chars().next().unwrap_unchecked() }))?)
+        }
     }
 }
 
@@ -782,5 +830,74 @@ mod tests {
         let value = Value::new(b"  42.9 \n", 0, 0);
 
         assert_ok_eq!(value.parse_f64(), 42.9);
+    }
+
+    #[test]
+    fn value_parse_char() {
+        let value = Value::new(b"a", 0, 0);
+
+        assert_ok_eq!(value.parse_char(), 'a');
+    }
+
+    #[test]
+    fn value_parse_char_longer() {
+        let value = Value::new(b"\xF0\x9F\x92\xA3", 0, 0);
+
+        assert_ok_eq!(value.parse_char(), '💣');
+    }
+
+    #[test]
+    fn value_parse_char_surrounded_by_whitespace() {
+        let value = Value::new(b"\n \ta  \t", 0, 0);
+
+        assert_ok_eq!(value.parse_char(), 'a');
+    }
+
+    #[test]
+    fn value_parse_char_whitespace() {
+        let value = Value::new(b"\t", 0, 0);
+
+        assert_ok_eq!(value.parse_char(), '\t');
+    }
+
+    #[test]
+    fn value_parse_char_multiple_whitespaces() {
+        let value = Value::new(b"\t\n", 0, 0);
+
+        // Can't deduce which whitespace character is meant.
+        assert_err_eq!(
+            value.parse_char(),
+            Error::new(error::Kind::ExpectedChar, 0, 0)
+        );
+    }
+
+    #[test]
+    fn value_parse_char_incomplete_char() {
+        let value = Value::new(b"\xF0", 0, 0);
+
+        assert_err_eq!(
+            value.parse_char(),
+            Error::new(error::Kind::ExpectedChar, 0, 0)
+        );
+    }
+
+    #[test]
+    fn value_parse_char_invalid_first_byte() {
+        let value = Value::new(b"\x92", 0, 0);
+
+        assert_err_eq!(
+            value.parse_char(),
+            Error::new(error::Kind::ExpectedChar, 0, 0)
+        );
+    }
+
+    #[test]
+    fn value_parse_char_multiple_chars() {
+        let value = Value::new(b"abc", 0, 0);
+
+        assert_err_eq!(
+            value.parse_char(),
+            Error::new(error::Kind::ExpectedChar, 0, 0)
+        );
     }
 }

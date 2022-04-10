@@ -23,6 +23,7 @@ pub enum Kind {
     ExpectedU128,
     ExpectedF32,
     ExpectedF64,
+    ExpectedChar,
     Io,
 }
 

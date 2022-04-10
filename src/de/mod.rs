@@ -218,11 +218,18 @@ where
         visitor.visit_f64(parsed)
     }
 
-    fn deserialize_char<V>(self, _visitor: V) -> Result<V::Value>
+    fn deserialize_char<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        todo!()
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
+        let value = values.next()?;
+        let parsed = value.parse_char()?;
+        values.assert_exhausted()?;
+        tag.assert_exhausted()?;
+        self.tags.assert_exhausted()?;
+        visitor.visit_char(parsed)
     }
 
     fn deserialize_str<V>(self, _visitor: V) -> Result<V::Value>
@@ -836,20 +843,14 @@ mod tests {
     fn f32_positive_overflow() {
         let mut deserializer = Deserializer::new(b"#3.40282347E+39;".as_slice());
 
-        assert_ok_eq!(
-            f32::deserialize(&mut deserializer),
-            f32::INFINITY,
-        );
+        assert_ok_eq!(f32::deserialize(&mut deserializer), f32::INFINITY,);
     }
 
     #[test]
     fn f32_negative_overflow() {
         let mut deserializer = Deserializer::new(b"#-3.40282347E+39;".as_slice());
 
-        assert_ok_eq!(
-            f32::deserialize(&mut deserializer),
-            f32::NEG_INFINITY
-        );
+        assert_ok_eq!(f32::deserialize(&mut deserializer), f32::NEG_INFINITY);
     }
 
     #[test]
@@ -887,20 +888,14 @@ mod tests {
     fn f64_positive_overflow() {
         let mut deserializer = Deserializer::new(b"#1.7976931348623157E+309;".as_slice());
 
-        assert_ok_eq!(
-            f64::deserialize(&mut deserializer),
-            f64::INFINITY,
-        );
+        assert_ok_eq!(f64::deserialize(&mut deserializer), f64::INFINITY,);
     }
 
     #[test]
     fn f64_negative_overflow() {
         let mut deserializer = Deserializer::new(b"#-1.7976931348623157E+309;".as_slice());
 
-        assert_ok_eq!(
-            f64::deserialize(&mut deserializer),
-            f64::NEG_INFINITY
-        );
+        assert_ok_eq!(f64::deserialize(&mut deserializer), f64::NEG_INFINITY);
     }
 
     #[test]
@@ -910,6 +905,53 @@ mod tests {
         assert_err_eq!(
             f64::deserialize(&mut deserializer),
             Error::new(error::Kind::ExpectedF64, 0, 1)
+        );
+    }
+
+    #[test]
+    fn char() {
+        let mut deserializer = Deserializer::new(b"#a;".as_slice());
+
+        assert_ok_eq!(char::deserialize(&mut deserializer), 'a');
+    }
+
+    #[test]
+    fn char_empty() {
+        let mut deserializer = Deserializer::new(b"".as_slice());
+
+        assert_err_eq!(
+            char::deserialize(&mut deserializer),
+            Error::new(error::Kind::EndOfFile, 0, 0)
+        );
+    }
+
+    #[test]
+    fn char_unexpected_values() {
+        let mut deserializer = Deserializer::new(b"#a;b;".as_slice());
+
+        assert_err_eq!(
+            char::deserialize(&mut deserializer),
+            Error::new(error::Kind::UnexpectedValues, 0, 3)
+        );
+    }
+
+    #[test]
+    fn char_unexpected_value() {
+        let mut deserializer = Deserializer::new(b"#a:b;\n".as_slice());
+
+        assert_err_eq!(
+            char::deserialize(&mut deserializer),
+            Error::new(error::Kind::UnexpectedValue, 0, 3)
+        );
+    }
+
+    #[test]
+    fn char_invalid() {
+        let mut deserializer = Deserializer::new(b"#abc;\n".as_slice());
+
+        assert_err_eq!(
+            char::deserialize(&mut deserializer),
+            Error::new(error::Kind::ExpectedChar, 0, 1),
         );
     }
 }
