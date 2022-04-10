@@ -4,9 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-atoi = "1.0.0"
-itoa = "1.0.1"
-ryu = "1.0.9"
+lexical-core = "0.8.3"
 serde = "1.0.136"
 
 [build-dependencies]

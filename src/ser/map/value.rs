@@ -1,4 +1,5 @@
 use crate::ser::{tuple, Error, Result, WriteExt};
+use lexical_core::{FormattedSize, ToLexical};
 use serde::{ser, ser::Impossible, Serialize};
 use std::io::Write;
 
@@ -36,100 +37,112 @@ where
     }
 
     fn serialize_i8(self, v: i8) -> Result<Self::Ok> {
-        let mut buffer = itoa::Buffer::new();
-        let s = buffer.format(v);
-        self.writer.write_parameter_unescaped(s.as_bytes())?;
-
+        let mut buffer = [0; i8::FORMATTED_SIZE_DECIMAL];
+        self.writer.write_parameter_unescaped(
+            // SAFETY: `buffer` has length at least `FORMATTED_SIZE_DECIMAL`.
+            unsafe { v.to_lexical_unchecked(&mut buffer) },
+        )?;
         self.writer.close_tag()
     }
 
     fn serialize_i16(self, v: i16) -> Result<Self::Ok> {
-        let mut buffer = itoa::Buffer::new();
-        let s = buffer.format(v);
-        self.writer.write_parameter_unescaped(s.as_bytes())?;
-
+        let mut buffer = [0; i16::FORMATTED_SIZE_DECIMAL];
+        self.writer.write_parameter_unescaped(
+            // SAFETY: `buffer` has length at least `FORMATTED_SIZE_DECIMAL`.
+            unsafe { v.to_lexical_unchecked(&mut buffer) },
+        )?;
         self.writer.close_tag()
     }
 
     fn serialize_i32(self, v: i32) -> Result<Self::Ok> {
-        let mut buffer = itoa::Buffer::new();
-        let s = buffer.format(v);
-        self.writer.write_parameter_unescaped(s.as_bytes())?;
-
+        let mut buffer = [0; i32::FORMATTED_SIZE_DECIMAL];
+        self.writer.write_parameter_unescaped(
+            // SAFETY: `buffer` has length at least `FORMATTED_SIZE_DECIMAL`.
+            unsafe { v.to_lexical_unchecked(&mut buffer) },
+        )?;
         self.writer.close_tag()
     }
 
     fn serialize_i64(self, v: i64) -> Result<Self::Ok> {
-        let mut buffer = itoa::Buffer::new();
-        let s = buffer.format(v);
-        self.writer.write_parameter_unescaped(s.as_bytes())?;
-
+        let mut buffer = [0; i64::FORMATTED_SIZE_DECIMAL];
+        self.writer.write_parameter_unescaped(
+            // SAFETY: `buffer` has length at least `FORMATTED_SIZE_DECIMAL`.
+            unsafe { v.to_lexical_unchecked(&mut buffer) },
+        )?;
         self.writer.close_tag()
     }
 
     #[cfg(has_i128)]
     fn serialize_i128(self, v: i128) -> Result<Self::Ok> {
-        let mut buffer = itoa::Buffer::new();
-        let s = buffer.format(v);
-        self.writer.write_parameter_unescaped(s.as_bytes())?;
-
+        let mut buffer = [0; i128::FORMATTED_SIZE_DECIMAL];
+        self.writer.write_parameter_unescaped(
+            // SAFETY: `buffer` has length at least `FORMATTED_SIZE_DECIMAL`.
+            unsafe { v.to_lexical_unchecked(&mut buffer) },
+        )?;
         self.writer.close_tag()
     }
 
     fn serialize_u8(self, v: u8) -> Result<Self::Ok> {
-        let mut buffer = itoa::Buffer::new();
-        let s = buffer.format(v);
-        self.writer.write_parameter_unescaped(s.as_bytes())?;
-
+        let mut buffer = [0; u8::FORMATTED_SIZE_DECIMAL];
+        self.writer.write_parameter_unescaped(
+            // SAFETY: `buffer` has length at least `FORMATTED_SIZE_DECIMAL`.
+            unsafe { v.to_lexical_unchecked(&mut buffer) },
+        )?;
         self.writer.close_tag()
     }
 
     fn serialize_u16(self, v: u16) -> Result<Self::Ok> {
-        let mut buffer = itoa::Buffer::new();
-        let s = buffer.format(v);
-        self.writer.write_parameter_unescaped(s.as_bytes())?;
-
+        let mut buffer = [0; u16::FORMATTED_SIZE_DECIMAL];
+        self.writer.write_parameter_unescaped(
+            // SAFETY: `buffer` has length at least `FORMATTED_SIZE_DECIMAL`.
+            unsafe { v.to_lexical_unchecked(&mut buffer) },
+        )?;
         self.writer.close_tag()
     }
 
     fn serialize_u32(self, v: u32) -> Result<Self::Ok> {
-        let mut buffer = itoa::Buffer::new();
-        let s = buffer.format(v);
-        self.writer.write_parameter_unescaped(s.as_bytes())?;
-
+        let mut buffer = [0; u32::FORMATTED_SIZE_DECIMAL];
+        self.writer.write_parameter_unescaped(
+            // SAFETY: `buffer` has length at least `FORMATTED_SIZE_DECIMAL`.
+            unsafe { v.to_lexical_unchecked(&mut buffer) },
+        )?;
         self.writer.close_tag()
     }
 
     fn serialize_u64(self, v: u64) -> Result<Self::Ok> {
-        let mut buffer = itoa::Buffer::new();
-        let s = buffer.format(v);
-        self.writer.write_parameter_unescaped(s.as_bytes())?;
-
+        let mut buffer = [0; u64::FORMATTED_SIZE_DECIMAL];
+        self.writer.write_parameter_unescaped(
+            // SAFETY: `buffer` has length at least `FORMATTED_SIZE_DECIMAL`.
+            unsafe { v.to_lexical_unchecked(&mut buffer) },
+        )?;
         self.writer.close_tag()
     }
 
     #[cfg(has_i128)]
     fn serialize_u128(self, v: u128) -> Result<Self::Ok> {
-        let mut buffer = itoa::Buffer::new();
-        let s = buffer.format(v);
-        self.writer.write_parameter_unescaped(s.as_bytes())?;
-
+        let mut buffer = [0; u128::FORMATTED_SIZE_DECIMAL];
+        self.writer.write_parameter_unescaped(
+            // SAFETY: `buffer` has length at least `FORMATTED_SIZE_DECIMAL`.
+            unsafe { v.to_lexical_unchecked(&mut buffer) },
+        )?;
         self.writer.close_tag()
     }
 
     fn serialize_f32(self, v: f32) -> Result<Self::Ok> {
-        let mut buffer = ryu::Buffer::new();
-        let s = buffer.format(v);
-        self.writer.write_parameter_unescaped(s.as_bytes())?;
-
+        let mut buffer = [0; f32::FORMATTED_SIZE_DECIMAL];
+        self.writer.write_parameter_unescaped(
+            // SAFETY: `buffer` has length at least `FORMATTED_SIZE_DECIMAL`.
+            unsafe { v.to_lexical_unchecked(&mut buffer) },
+        )?;
         self.writer.close_tag()
     }
 
     fn serialize_f64(self, v: f64) -> Result<Self::Ok> {
-        let mut buffer = ryu::Buffer::new();
-        let s = buffer.format(v);
-        self.writer.write_parameter_unescaped(s.as_bytes())?;
-
+        let mut buffer = [0; f64::FORMATTED_SIZE_DECIMAL];
+        self.writer.write_parameter_unescaped(
+            // SAFETY: `buffer` has length at least `FORMATTED_SIZE_DECIMAL`.
+            unsafe { v.to_lexical_unchecked(&mut buffer) },
+        )?;
         self.writer.close_tag()
     }
 
