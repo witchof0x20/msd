@@ -24,6 +24,7 @@ pub enum Kind {
     ExpectedF32,
     ExpectedF64,
     ExpectedChar,
+    ExpectedString,
     Io,
 }
 

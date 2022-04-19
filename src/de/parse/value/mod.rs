@@ -166,9 +166,7 @@ where
     }
 
     let mut mantissa: u64 = match first_byte {
-        b'0'..=b'9' => {
-            (first_byte - b'0').into()
-        }
+        b'0'..=b'9' => (first_byte - b'0').into(),
         b'.' => {
             state = State::Fraction;
             0
@@ -203,9 +201,21 @@ where
                     mantissa = match mantissa.checked_mul(10) {
                         Some(mantissa) => match mantissa.checked_add((byte - b'0').into()) {
                             Some(mantissa) => mantissa,
-                            None => return Some(if negative {F::infinity()} else {F::neg_infinity()}),
+                            None => {
+                                return Some(if negative {
+                                    F::infinity()
+                                } else {
+                                    F::neg_infinity()
+                                })
+                            }
+                        },
+                        None => {
+                            return Some(if negative {
+                                F::infinity()
+                            } else {
+                                F::neg_infinity()
+                            })
                         }
-                        None => return Some(if negative {F::infinity()} else {F::neg_infinity()}),
                     }
                 }
                 b'.' => {
@@ -229,9 +239,21 @@ where
                     mantissa = match mantissa.checked_mul(10) {
                         Some(mantissa) => match mantissa.checked_add((byte - b'0').into()) {
                             Some(mantissa) => mantissa,
-                            None => return Some(if negative {F::infinity()} else {F::neg_infinity()}),
+                            None => {
+                                return Some(if negative {
+                                    F::infinity()
+                                } else {
+                                    F::neg_infinity()
+                                })
+                            }
+                        },
+                        None => {
+                            return Some(if negative {
+                                F::infinity()
+                            } else {
+                                F::neg_infinity()
+                            })
                         }
-                        None => return Some(if negative {F::infinity()} else {F::neg_infinity()}),
                     };
                     exponent = exponent.saturating_sub(1);
                 }
@@ -252,7 +274,9 @@ where
             first_byte = value_bytes.next()?;
         }
 
-        let exponent_number: i32 = parse_positive_integer_inner(value_bytes, Some((first_byte - b'0').into())).unwrap_or(i32::MAX);
+        let exponent_number: i32 =
+            parse_positive_integer_inner(value_bytes, Some((first_byte - b'0').into()))
+                .unwrap_or(i32::MAX);
         if exponent_negative {
             exponent = exponent.saturating_sub(exponent_number);
         } else {
@@ -262,13 +286,13 @@ where
 
     // SAFETY: The conversion between u64 and F is guaranteed not to fail for any float type, since
     // it uses the `as` keyword under the hood.
-    let mut value = unsafe {F::from(mantissa).unwrap_unchecked()};
+    let mut value = unsafe { F::from(mantissa).unwrap_unchecked() };
     value = if exponent < 0 {
         // SAFETY: Converting f64 to F is infallible.
-        value / unsafe {F::from(10f64.powi(-exponent)).unwrap_unchecked()}
+        value / unsafe { F::from(10f64.powi(-exponent)).unwrap_unchecked() }
     } else {
         // SAFETY: Converting f64 to F is infallible.
-        value * unsafe {F::from(10f64.powi(exponent)).unwrap_unchecked()}
+        value * unsafe { F::from(10f64.powi(exponent)).unwrap_unchecked() }
     };
     if negative {
         value = -value;
@@ -412,19 +436,13 @@ impl<'a> Value<'a> {
     }
 
     pub(in crate::de) fn parse_f32(&self) -> Result<f32> {
-        parse_float(Trim::new(Clean::new(self.bytes)).map(|b| b.to_ascii_lowercase())).ok_or(Error::new(
-            error::Kind::ExpectedF32,
-            self.line,
-            self.column,
-        ))
+        parse_float(Trim::new(Clean::new(self.bytes)).map(|b| b.to_ascii_lowercase()))
+            .ok_or(Error::new(error::Kind::ExpectedF32, self.line, self.column))
     }
 
     pub(in crate::de) fn parse_f64(&self) -> Result<f64> {
-        parse_float(Trim::new(Clean::new(self.bytes)).map(|b| b.to_ascii_lowercase())).ok_or(Error::new(
-            error::Kind::ExpectedF64,
-            self.line,
-            self.column,
-        ))
+        parse_float(Trim::new(Clean::new(self.bytes)).map(|b| b.to_ascii_lowercase()))
+            .ok_or(Error::new(error::Kind::ExpectedF64, self.line, self.column))
     }
 
     pub(in crate::de) fn parse_char(&self) -> Result<char> {
@@ -498,13 +516,21 @@ impl<'a> Value<'a> {
             }
         }
     }
+
+    pub(in crate::de) fn parse_string(&self) -> Result<String> {
+        String::from_utf8(Clean::new(self.bytes).collect::<Vec<u8>>()).or(Err(Error::new(
+            error::Kind::ExpectedString,
+            self.line,
+            self.column,
+        )))
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::Value;
     use crate::de::{error, Error};
-    use claim::{assert_err_eq, assert_ok_eq, assert_ok};
+    use claim::{assert_err_eq, assert_ok, assert_ok_eq};
 
     #[test]
     fn parse_bool_true() {
@@ -1240,6 +1266,46 @@ mod tests {
         assert_err_eq!(
             value.parse_char(),
             Error::new(error::Kind::ExpectedChar, 0, 0)
+        );
+    }
+
+    #[test]
+    fn parse_string() {
+        let value = Value::new(b"foo", 0, 0);
+
+        assert_ok_eq!(
+            value.parse_string(),
+            "foo".to_owned(),
+        );
+    }
+
+    #[test]
+    fn parse_string_escaped() {
+        let value = Value::new(b"\\#foo\\\\bar", 0, 0);
+
+        assert_ok_eq!(
+            value.parse_string(),
+            "#foo\\bar".to_owned(),
+        );
+    }
+
+    #[test]
+    fn parse_string_comment() {
+        let value = Value::new(b"foo\n// comment\nbar", 0, 0);
+
+        assert_ok_eq!(
+            value.parse_string(),
+            "foo\n\nbar".to_owned(),
+        );
+    }
+
+    #[test]
+    fn parse_string_fails() {
+        let value = Value::new(b"\xF0\x9Ffoo", 0, 0);
+
+        assert_err_eq!(
+            value.parse_string(),
+            Error::new(error::Kind::ExpectedString, 0, 0),
         );
     }
 }

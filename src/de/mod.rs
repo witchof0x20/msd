@@ -232,18 +232,33 @@ where
         visitor.visit_char(parsed)
     }
 
-    fn deserialize_str<V>(self, _visitor: V) -> Result<V::Value>
+    fn deserialize_str<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        todo!()
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
+        let value = values.next()?;
+        // Parsed string must be owned, since it removes escaping and comments.
+        let parsed = value.parse_string()?;
+        values.assert_exhausted()?;
+        tag.assert_exhausted()?;
+        self.tags.assert_exhausted()?;
+        visitor.visit_str(&parsed)
     }
 
-    fn deserialize_string<V>(self, _visitor: V) -> Result<V::Value>
+    fn deserialize_string<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        todo!()
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
+        let value = values.next()?;
+        let parsed = value.parse_string()?;
+        values.assert_exhausted()?;
+        tag.assert_exhausted()?;
+        self.tags.assert_exhausted()?;
+        visitor.visit_string(parsed)
     }
 
     fn deserialize_bytes<V>(self, _visitor: V) -> Result<V::Value>
@@ -926,6 +941,16 @@ mod tests {
     }
 
     #[test]
+    fn char_unexpected_tag() {
+        let mut deserializer = Deserializer::new(b"#a;#b;".as_slice());
+
+        assert_err_eq!(
+            char::deserialize(&mut deserializer),
+            Error::new(error::Kind::UnexpectedTag, 0, 3)
+        );
+    }
+
+    #[test]
     fn char_unexpected_values() {
         let mut deserializer = Deserializer::new(b"#a;b;".as_slice());
 
@@ -952,6 +977,56 @@ mod tests {
         assert_err_eq!(
             char::deserialize(&mut deserializer),
             Error::new(error::Kind::ExpectedChar, 0, 1),
+        );
+    }
+
+    #[test]
+    fn string() {
+        let mut deserializer = Deserializer::new(b"#foo;".as_slice());
+
+        assert_ok_eq!(
+            String::deserialize(&mut deserializer),
+            "foo".to_string(),
+        );
+    }
+
+    #[test]
+    fn string_unexpected_tag() {
+        let mut deserializer = Deserializer::new(b"#foo;#bar;".as_slice());
+
+        assert_err_eq!(
+            String::deserialize(&mut deserializer),
+            Error::new(error::Kind::UnexpectedTag, 0, 5)
+        );
+    }
+
+    #[test]
+    fn string_unexpected_values() {
+        let mut deserializer = Deserializer::new(b"#foo;bar;".as_slice());
+
+        assert_err_eq!(
+            String::deserialize(&mut deserializer),
+            Error::new(error::Kind::UnexpectedValues, 0, 5)
+        );
+    }
+
+    #[test]
+    fn string_unexpected_value() {
+        let mut deserializer = Deserializer::new(b"#foo:bar;\n".as_slice());
+
+        assert_err_eq!(
+            String::deserialize(&mut deserializer),
+            Error::new(error::Kind::UnexpectedValue, 0, 5)
+        );
+    }
+
+    #[test]
+    fn string_invalid() {
+        let mut deserializer = Deserializer::new(b"#\xF0\x9Ffoo;\n".as_slice());
+
+        assert_err_eq!(
+            String::deserialize(&mut deserializer),
+            Error::new(error::Kind::ExpectedString, 0, 1),
         );
     }
 }
