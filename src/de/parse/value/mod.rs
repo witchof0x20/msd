@@ -524,6 +524,10 @@ impl<'a> Value<'a> {
             self.column,
         )))
     }
+
+    pub(in crate::de) fn parse_byte_buf(&self) -> Vec<u8> {
+        Clean::new(self.bytes).collect()
+    }
 }
 
 #[cfg(test)]
@@ -1306,6 +1310,46 @@ mod tests {
         assert_err_eq!(
             value.parse_string(),
             Error::new(error::Kind::ExpectedString, 0, 0),
+        );
+    }
+
+    #[test]
+    fn parse_byte_buf() {
+        let value = Value::new(b"foo", 0, 0);
+
+        assert_eq!(
+            value.parse_byte_buf(),
+            b"foo",
+        );
+    }
+
+    #[test]
+    fn parse_byte_buf_escaped() {
+        let value = Value::new(b"\\#foo\\\\bar", 0, 0);
+
+        assert_eq!(
+            value.parse_byte_buf(),
+            b"#foo\\bar",
+        );
+    }
+
+    #[test]
+    fn parse_byte_buf_comment() {
+        let value = Value::new(b"foo\n// comment\nbar", 0, 0);
+
+        assert_eq!(
+            value.parse_byte_buf(),
+            b"foo\n\nbar",
+        );
+    }
+
+    #[test]
+    fn parse_byte_buf_non_ascii() {
+        let value = Value::new(b"\xF0\x9Ffoo", 0, 0);
+
+        assert_eq!(
+            value.parse_byte_buf(),
+            b"\xF0\x9Ffoo",
         );
     }
 }

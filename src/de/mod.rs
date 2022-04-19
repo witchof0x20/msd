@@ -261,18 +261,34 @@ where
         visitor.visit_string(parsed)
     }
 
-    fn deserialize_bytes<V>(self, _visitor: V) -> Result<V::Value>
+    fn deserialize_bytes<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        todo!()
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
+        let value = values.next()?;
+        // Parsed string must be owned, since it removes escaping and comments.
+        let parsed = value.parse_byte_buf();
+        values.assert_exhausted()?;
+        tag.assert_exhausted()?;
+        self.tags.assert_exhausted()?;
+        visitor.visit_bytes(&parsed)
     }
 
-    fn deserialize_byte_buf<V>(self, _visitor: V) -> Result<V::Value>
+    fn deserialize_byte_buf<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        todo!()
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
+        let value = values.next()?;
+        // Parsed string must be owned, since it removes escaping and comments.
+        let parsed = value.parse_byte_buf();
+        values.assert_exhausted()?;
+        tag.assert_exhausted()?;
+        self.tags.assert_exhausted()?;
+        visitor.visit_byte_buf(parsed)
     }
 
     fn deserialize_option<V>(self, _visitor: V) -> Result<V::Value>
@@ -380,6 +396,7 @@ mod tests {
     use super::{error, Deserializer, Error};
     use claim::{assert_err_eq, assert_ok_eq};
     use serde::Deserialize;
+    use serde_bytes::ByteBuf;
 
     #[test]
     fn bool_true() {
@@ -1027,6 +1044,58 @@ mod tests {
         assert_err_eq!(
             String::deserialize(&mut deserializer),
             Error::new(error::Kind::ExpectedString, 0, 1),
+        );
+    }
+
+
+
+    #[test]
+    fn byte_buf() {
+        let mut deserializer = Deserializer::new(b"#foo;".as_slice());
+
+        assert_ok_eq!(
+            ByteBuf::deserialize(&mut deserializer),
+            b"foo",
+        );
+    }
+
+    #[test]
+    fn byte_buf_unexpected_tag() {
+        let mut deserializer = Deserializer::new(b"#foo;#bar;".as_slice());
+
+        assert_err_eq!(
+            ByteBuf::deserialize(&mut deserializer),
+            Error::new(error::Kind::UnexpectedTag, 0, 5)
+        );
+    }
+
+    #[test]
+    fn byte_buf_unexpected_values() {
+        let mut deserializer = Deserializer::new(b"#foo;bar;".as_slice());
+
+        assert_err_eq!(
+            ByteBuf::deserialize(&mut deserializer),
+            Error::new(error::Kind::UnexpectedValues, 0, 5)
+        );
+    }
+
+    #[test]
+    fn byte_buf_unexpected_value() {
+        let mut deserializer = Deserializer::new(b"#foo:bar;\n".as_slice());
+
+        assert_err_eq!(
+            ByteBuf::deserialize(&mut deserializer),
+            Error::new(error::Kind::UnexpectedValue, 0, 5)
+        );
+    }
+
+    #[test]
+    fn byte_buf_non_ascii() {
+        let mut deserializer = Deserializer::new(b"#\xF0\x9Ffoo;\n".as_slice());
+
+        assert_ok_eq!(
+            ByteBuf::deserialize(&mut deserializer),
+            b"\xF0\x9Ffoo",
         );
     }
 }
