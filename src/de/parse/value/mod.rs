@@ -151,22 +151,6 @@ where
     I: Iterator<Item = u8>,
     F: Float,
 {
-    // Good lord, what have I stumbled upon: https://github.com/serde-rs/json/issues/536
-    //
-    // This may be more useful, and matches behavior in stepmania:
-    // https://github.com/ochafik/LibCL/blob/master/src/main/resources/LibCL/strtof.c
-
-    // Of form -I.FE-X. Sign can be -, +, or omitted. I may be omitted. F may be omitted, but if
-    // present it must be preceeded by a `.`. E can be either "E" or "e". Sign exponent may be -,
-    // +, or omitted. X must be present if E is present.
-    // Note that either I or F must be present if there is a leading sign (I think?).
-    // Another form can be -INF or -NaN.
-
-    // Process should be to first parse the sign (if it is present).
-    // Then check the first byte to see if it's either an `e`, `i`, or `n`, or a digit.
-    // For i and n, try to parse inf and nan.
-    // For e, move straight to parsing the exponent.
-
     enum State {
         Whole,
         Fraction,
