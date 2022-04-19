@@ -329,11 +329,11 @@ where
         visitor.visit_unit()
     }
 
-    fn deserialize_newtype_struct<V>(self, _name: &'static str, _visitor: V) -> Result<V::Value>
+    fn deserialize_newtype_struct<V>(self, _name: &'static str, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        todo!()
+        visitor.visit_newtype_struct(self)
     }
 
     fn deserialize_seq<V>(self, _visitor: V) -> Result<V::Value>
@@ -1198,5 +1198,14 @@ mod tests {
         let mut deserializer = Deserializer::new(b"#:;\n".as_slice());
 
         assert_err_eq!(Unit::deserialize(&mut deserializer), Error::new(error::Kind::UnexpectedValue, 0, 2));
+    }
+
+    #[test]
+    fn newtype_struct() {
+        #[derive(Debug, Deserialize, PartialEq)]
+        struct Newtype(u64);
+        let mut deserializer = Deserializer::new(b"#42;\n".as_slice());
+
+        assert_ok_eq!(Newtype::deserialize(&mut deserializer), Newtype(42));
     }
 }
