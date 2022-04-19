@@ -289,6 +289,108 @@ where
         }
     }
 
+    /// Returns whether there will be another tag.
+    ///
+    /// If this returns `true`, then a call to `next()` will return `Some(tag)`.
+    pub(in crate::de) fn has_next(&mut self) -> Result<bool> {
+        // The iterator will only be in the state below if no tags have been returned yet.
+        // Simply find the first tag if it exists.
+        if matches!(self.tag_state, TagState::None) {
+            loop {
+                let byte = match self.reader.next() {
+                    Some(byte) => match byte {
+                        Ok(byte) => byte,
+                        Err(_error) => {
+                            let error =
+                                Error::new(error::Kind::Io, self.current_line, self.current_column);
+                            self.encountered_error = Some(error);
+                            self.exhausted = true;
+                            break;
+                        }
+                    },
+                    None => {
+                        self.exhausted = true;
+                        break;
+                    }
+                };
+
+                // Process byte.
+                if matches!(self.comment_state, CommentState::InComment) {
+                    // Consume bytes until we are on a new line.
+                    if matches!(byte, b'\n') {
+                        self.comment_state = CommentState::None;
+                    }
+                } else {
+                    match byte {
+                        b'#' => {
+                            if matches!(self.comment_state, CommentState::MaybeEnteringComment) {
+                                let error = Error::new(
+                                    error::Kind::ExpectedTag,
+                                    self.current_line,
+                                    self.current_column - 1,
+                                );
+                                self.encountered_error = Some(error);
+                                break;
+                            }
+                            self.tag_state = TagState::InTag;
+                            self.started_line = self.current_line;
+                            self.started_column = self.current_column;
+                            break;
+                        }
+                        b'/' => {
+                            if matches!(self.comment_state, CommentState::MaybeEnteringComment) {
+                                self.comment_state = CommentState::InComment;
+                            } else {
+                                self.comment_state = CommentState::MaybeEnteringComment;
+                            }
+                        }
+                        _ => {
+                            if matches!(self.comment_state, CommentState::MaybeEnteringComment) {
+                                let error = Error::new(
+                                    error::Kind::ExpectedTag,
+                                    self.current_line,
+                                    self.current_column - 1,
+                                );
+                                self.encountered_error = Some(error);
+                                break;
+                            }
+                            // Non-whitespace bytes are not allowed before the first tag.
+                            if !byte.is_ascii_whitespace() {
+                                let error = Error::new(
+                                    error::Kind::ExpectedTag,
+                                    self.current_line,
+                                    self.current_column,
+                                );
+                                self.encountered_error = Some(error);
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if matches!(byte, b'\n') {
+                    self.newline_state = NewlineState::StartingNewline;
+                } else {
+                    self.newline_state = NewlineState::None;
+                }
+
+                if matches!(self.newline_state, NewlineState::StartingNewline) {
+                    self.current_line += 1;
+                    self.current_column = 0;
+                } else {
+                    self.current_column += 1;
+                }
+            }
+        }
+
+        if let Some(err) = self.encountered_error {
+            Err(err)
+        } else {
+            Ok(!self.exhausted
+                && matches!(self.tag_state, TagState::InTag | TagState::MaybeEndingTag))
+        }
+    }
+
     pub(in crate::de) fn assert_exhausted(&self) -> Result<()> {
         if self.exhausted {
             Ok(())
@@ -421,6 +523,40 @@ mod tests {
         let mut tags = Tags::new(input.as_slice());
 
         assert_ok_eq!(tags.next(), Tag::new(b"foo:bar\\;#baz;\n", 0, 0,));
+    }
+
+    #[test]
+    fn has_next() {
+        let input = b"#foo:bar;\n";
+        let mut tags = Tags::new(input.as_slice());
+
+        assert_ok_eq!(tags.has_next(), true);
+    }
+
+    #[test]
+    fn not_has_next() {
+        let input = b"\n\n";
+        let mut tags = Tags::new(input.as_slice());
+
+        assert_ok_eq!(tags.has_next(), false);
+    }
+
+    #[test]
+    fn has_next_then_query_next() {
+        let input = b"#foo:bar;\n";
+        let mut tags = Tags::new(input.as_slice());
+
+        assert_ok_eq!(tags.has_next(), true);
+        assert_ok_eq!(tags.next(), Tag::new(b"foo:bar;\n", 0, 0));
+    }
+
+    #[test]
+    fn has_next_then_query_next_after_comment() {
+        let input = b"//This is a comment# \n #foo:bar;\n";
+        let mut tags = Tags::new(input.as_slice());
+
+        assert_ok_eq!(tags.has_next(), true);
+        assert_ok_eq!(tags.next(), Tag::new(b"foo:bar;\n", 1, 1));
     }
 
     #[test]

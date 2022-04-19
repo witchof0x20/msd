@@ -1277,30 +1277,21 @@ mod tests {
     fn parse_string() {
         let value = Value::new(b"foo", 0, 0);
 
-        assert_ok_eq!(
-            value.parse_string(),
-            "foo".to_owned(),
-        );
+        assert_ok_eq!(value.parse_string(), "foo".to_owned(),);
     }
 
     #[test]
     fn parse_string_escaped() {
         let value = Value::new(b"\\#foo\\\\bar", 0, 0);
 
-        assert_ok_eq!(
-            value.parse_string(),
-            "#foo\\bar".to_owned(),
-        );
+        assert_ok_eq!(value.parse_string(), "#foo\\bar".to_owned(),);
     }
 
     #[test]
     fn parse_string_comment() {
         let value = Value::new(b"foo\n// comment\nbar", 0, 0);
 
-        assert_ok_eq!(
-            value.parse_string(),
-            "foo\n\nbar".to_owned(),
-        );
+        assert_ok_eq!(value.parse_string(), "foo\n\nbar".to_owned(),);
     }
 
     #[test]
@@ -1317,39 +1308,27 @@ mod tests {
     fn parse_byte_buf() {
         let value = Value::new(b"foo", 0, 0);
 
-        assert_eq!(
-            value.parse_byte_buf(),
-            b"foo",
-        );
+        assert_eq!(value.parse_byte_buf(), b"foo",);
     }
 
     #[test]
     fn parse_byte_buf_escaped() {
         let value = Value::new(b"\\#foo\\\\bar", 0, 0);
 
-        assert_eq!(
-            value.parse_byte_buf(),
-            b"#foo\\bar",
-        );
+        assert_eq!(value.parse_byte_buf(), b"#foo\\bar",);
     }
 
     #[test]
     fn parse_byte_buf_comment() {
         let value = Value::new(b"foo\n// comment\nbar", 0, 0);
 
-        assert_eq!(
-            value.parse_byte_buf(),
-            b"foo\n\nbar",
-        );
+        assert_eq!(value.parse_byte_buf(), b"foo\n\nbar",);
     }
 
     #[test]
     fn parse_byte_buf_non_ascii() {
         let value = Value::new(b"\xF0\x9Ffoo", 0, 0);
 
-        assert_eq!(
-            value.parse_byte_buf(),
-            b"\xF0\x9Ffoo",
-        );
+        assert_eq!(value.parse_byte_buf(), b"\xF0\x9Ffoo",);
     }
 }

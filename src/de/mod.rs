@@ -291,11 +291,15 @@ where
         visitor.visit_byte_buf(parsed)
     }
 
-    fn deserialize_option<V>(self, _visitor: V) -> Result<V::Value>
+    fn deserialize_option<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        todo!()
+        if self.tags.has_next()? {
+            visitor.visit_some(self)
+        } else {
+            visitor.visit_none()
+        }
     }
 
     fn deserialize_unit<V>(self, _visitor: V) -> Result<V::Value>
@@ -1001,10 +1005,7 @@ mod tests {
     fn string() {
         let mut deserializer = Deserializer::new(b"#foo;".as_slice());
 
-        assert_ok_eq!(
-            String::deserialize(&mut deserializer),
-            "foo".to_string(),
-        );
+        assert_ok_eq!(String::deserialize(&mut deserializer), "foo".to_string(),);
     }
 
     #[test]
@@ -1047,16 +1048,11 @@ mod tests {
         );
     }
 
-
-
     #[test]
     fn byte_buf() {
         let mut deserializer = Deserializer::new(b"#foo;".as_slice());
 
-        assert_ok_eq!(
-            ByteBuf::deserialize(&mut deserializer),
-            b"foo",
-        );
+        assert_ok_eq!(ByteBuf::deserialize(&mut deserializer), b"foo",);
     }
 
     #[test]
@@ -1093,9 +1089,20 @@ mod tests {
     fn byte_buf_non_ascii() {
         let mut deserializer = Deserializer::new(b"#\xF0\x9Ffoo;\n".as_slice());
 
-        assert_ok_eq!(
-            ByteBuf::deserialize(&mut deserializer),
-            b"\xF0\x9Ffoo",
-        );
+        assert_ok_eq!(ByteBuf::deserialize(&mut deserializer), b"\xF0\x9Ffoo",);
+    }
+
+    #[test]
+    fn none() {
+        let mut deserializer = Deserializer::new(b"\n\n".as_slice());
+
+        assert_ok_eq!(Option::<()>::deserialize(&mut deserializer), None);
+    }
+
+    #[test]
+    fn some_integer() {
+        let mut deserializer = Deserializer::new(b"#42;\n".as_slice());
+
+        assert_ok_eq!(Option::<u64>::deserialize(&mut deserializer), Some(42));
     }
 }
