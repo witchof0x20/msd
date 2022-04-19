@@ -4,7 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+arrayvec = "0.7.2"
+either = "1.6.1"
 lexical-core = "0.8.3"
+num-traits = "0.2.14"
 serde = "1.0.136"
 
 [build-dependencies]
