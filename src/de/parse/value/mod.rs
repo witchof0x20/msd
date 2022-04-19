@@ -507,21 +507,21 @@ mod tests {
     use claim::{assert_err_eq, assert_ok_eq};
 
     #[test]
-    fn value_parse_bool_true() {
+    fn parse_bool_true() {
         let value = Value::new(b"true", 0, 0);
 
         assert_ok_eq!(value.parse_bool(), true);
     }
 
     #[test]
-    fn value_parse_bool_false() {
+    fn parse_bool_false() {
         let value = Value::new(b"false", 0, 0);
 
         assert_ok_eq!(value.parse_bool(), false);
     }
 
     #[test]
-    fn value_parse_bool_invalid() {
+    fn parse_bool_invalid() {
         let value = Value::new(b"not a bool", 0, 0);
 
         assert_err_eq!(
@@ -531,77 +531,77 @@ mod tests {
     }
 
     #[test]
-    fn value_parse_i8_positive() {
+    fn parse_i8_positive() {
         let value = Value::new(b"42", 0, 0);
 
         assert_ok_eq!(value.parse_i8(), 42);
     }
 
     #[test]
-    fn value_parse_i8_negative() {
+    fn parse_i8_negative() {
         let value = Value::new(b"-42", 0, 0);
 
         assert_ok_eq!(value.parse_i8(), -42);
     }
 
     #[test]
-    fn value_parse_i8_zero() {
+    fn parse_i8_zero() {
         let value = Value::new(b"0", 0, 0);
 
         assert_ok_eq!(value.parse_i8(), 0);
     }
 
     #[test]
-    fn value_parse_i8_positive_overflow() {
+    fn parse_i8_positive_overflow() {
         let value = Value::new(b"128", 0, 0);
 
         assert_err_eq!(value.parse_i8(), Error::new(error::Kind::ExpectedI8, 0, 0));
     }
 
     #[test]
-    fn value_parse_i8_negative_overflow() {
+    fn parse_i8_negative_overflow() {
         let value = Value::new(b"-129", 0, 0);
 
         assert_err_eq!(value.parse_i8(), Error::new(error::Kind::ExpectedI8, 0, 0));
     }
 
     #[test]
-    fn value_parse_i8_invalid() {
+    fn parse_i8_invalid() {
         let value = Value::new(b"invalid", 0, 0);
 
         assert_err_eq!(value.parse_i8(), Error::new(error::Kind::ExpectedI8, 0, 0));
     }
 
     #[test]
-    fn value_parse_i8_whitespace() {
+    fn parse_i8_whitespace() {
         let value = Value::new(b"  42 \n", 0, 0);
 
         assert_ok_eq!(value.parse_i8(), 42);
     }
 
     #[test]
-    fn value_parse_i16_positive() {
+    fn parse_i16_positive() {
         let value = Value::new(b"42", 0, 0);
 
         assert_ok_eq!(value.parse_i16(), 42);
     }
 
     #[test]
-    fn value_parse_i16_negative() {
+    fn parse_i16_negative() {
         let value = Value::new(b"-42", 0, 0);
 
         assert_ok_eq!(value.parse_i16(), -42);
     }
 
     #[test]
-    fn value_parse_i16_zero() {
+    fn parse_i16_zero() {
         let value = Value::new(b"0", 0, 0);
 
         assert_ok_eq!(value.parse_i16(), 0);
     }
 
     #[test]
-    fn value_parse_i16_positive_overflow() {
+    fn parse_i16_positive_overflow() {
         let value = Value::new(b"32768", 0, 0);
 
         assert_err_eq!(
@@ -611,7 +611,7 @@ mod tests {
     }
 
     #[test]
-    fn value_parse_i16_negative_overflow() {
+    fn parse_i16_negative_overflow() {
         let value = Value::new(b"-32769", 0, 0);
 
         assert_err_eq!(
@@ -621,7 +621,7 @@ mod tests {
     }
 
     #[test]
-    fn value_parse_i16_invalid() {
+    fn parse_i16_invalid() {
         let value = Value::new(b"invalid", 0, 0);
 
         assert_err_eq!(
@@ -631,35 +631,35 @@ mod tests {
     }
 
     #[test]
-    fn value_parse_i16_whitespace() {
+    fn parse_i16_whitespace() {
         let value = Value::new(b"  42 \n", 0, 0);
 
         assert_ok_eq!(value.parse_i16(), 42);
     }
 
     #[test]
-    fn value_parse_i32_positive() {
+    fn parse_i32_positive() {
         let value = Value::new(b"42", 0, 0);
 
         assert_ok_eq!(value.parse_i32(), 42);
     }
 
     #[test]
-    fn value_parse_i32_negative() {
+    fn parse_i32_negative() {
         let value = Value::new(b"-42", 0, 0);
 
         assert_ok_eq!(value.parse_i32(), -42);
     }
 
     #[test]
-    fn value_parse_i32_zero() {
+    fn parse_i32_zero() {
         let value = Value::new(b"0", 0, 0);
 
         assert_ok_eq!(value.parse_i32(), 0);
     }
 
     #[test]
-    fn value_parse_i32_positive_overflow() {
+    fn parse_i32_positive_overflow() {
         let value = Value::new(b"2147483648", 0, 0);
 
         assert_err_eq!(
@@ -669,7 +669,7 @@ mod tests {
     }
 
     #[test]
-    fn value_parse_i32_negative_overflow() {
+    fn parse_i32_negative_overflow() {
         let value = Value::new(b"-2147483649", 0, 0);
 
         assert_err_eq!(
@@ -679,7 +679,7 @@ mod tests {
     }
 
     #[test]
-    fn value_parse_i32_invalid() {
+    fn parse_i32_invalid() {
         let value = Value::new(b"invalid", 0, 0);
 
         assert_err_eq!(
@@ -689,35 +689,35 @@ mod tests {
     }
 
     #[test]
-    fn value_parse_i32_whitespace() {
+    fn parse_i32_whitespace() {
         let value = Value::new(b"  42 \n", 0, 0);
 
         assert_ok_eq!(value.parse_i32(), 42);
     }
 
     #[test]
-    fn value_parse_i64_positive() {
+    fn parse_i64_positive() {
         let value = Value::new(b"42", 0, 0);
 
         assert_ok_eq!(value.parse_i64(), 42);
     }
 
     #[test]
-    fn value_parse_i64_negative() {
+    fn parse_i64_negative() {
         let value = Value::new(b"-42", 0, 0);
 
         assert_ok_eq!(value.parse_i64(), -42);
     }
 
     #[test]
-    fn value_parse_i64_zero() {
+    fn parse_i64_zero() {
         let value = Value::new(b"0", 0, 0);
 
         assert_ok_eq!(value.parse_i64(), 0);
     }
 
     #[test]
-    fn value_parse_i64_positive_overflow() {
+    fn parse_i64_positive_overflow() {
         let value = Value::new(b"9223372036854775808", 0, 0);
 
         assert_err_eq!(
@@ -727,7 +727,7 @@ mod tests {
     }
 
     #[test]
-    fn value_parse_i64_negative_overflow() {
+    fn parse_i64_negative_overflow() {
         let value = Value::new(b"-9223372036854775809", 0, 0);
 
         assert_err_eq!(
@@ -737,7 +737,7 @@ mod tests {
     }
 
     #[test]
-    fn value_parse_i64_invalid() {
+    fn parse_i64_invalid() {
         let value = Value::new(b"invalid", 0, 0);
 
         assert_err_eq!(
@@ -747,35 +747,35 @@ mod tests {
     }
 
     #[test]
-    fn value_parse_i64_whitespace() {
+    fn parse_i64_whitespace() {
         let value = Value::new(b"  42 \n", 0, 0);
 
         assert_ok_eq!(value.parse_i64(), 42);
     }
 
     #[test]
-    fn value_parse_i128_positive() {
+    fn parse_i128_positive() {
         let value = Value::new(b"42", 0, 0);
 
         assert_ok_eq!(value.parse_i128(), 42);
     }
 
     #[test]
-    fn value_parse_i128_negative() {
+    fn parse_i128_negative() {
         let value = Value::new(b"-42", 0, 0);
 
         assert_ok_eq!(value.parse_i128(), -42);
     }
 
     #[test]
-    fn value_parse_i128_zero() {
+    fn parse_i128_zero() {
         let value = Value::new(b"0", 0, 0);
 
         assert_ok_eq!(value.parse_i128(), 0);
     }
 
     #[test]
-    fn value_parse_i128_positive_overflow() {
+    fn parse_i128_positive_overflow() {
         let value = Value::new(b"170141183460469231731687303715884105728", 0, 0);
 
         assert_err_eq!(
@@ -785,7 +785,7 @@ mod tests {
     }
 
     #[test]
-    fn value_parse_i128_negative_overflow() {
+    fn parse_i128_negative_overflow() {
         let value = Value::new(b"-170141183460469231731687303715884105729", 0, 0);
 
         assert_err_eq!(
@@ -795,7 +795,7 @@ mod tests {
     }
 
     #[test]
-    fn value_parse_i128_invalid() {
+    fn parse_i128_invalid() {
         let value = Value::new(b"invalid", 0, 0);
 
         assert_err_eq!(
@@ -805,63 +805,63 @@ mod tests {
     }
 
     #[test]
-    fn value_parse_i128_whitespace() {
+    fn parse_i128_whitespace() {
         let value = Value::new(b"  42 \n", 0, 0);
 
         assert_ok_eq!(value.parse_i128(), 42);
     }
 
     #[test]
-    fn value_parse_u8() {
+    fn parse_u8() {
         let value = Value::new(b"42", 0, 0);
 
         assert_ok_eq!(value.parse_u8(), 42);
     }
 
     #[test]
-    fn value_parse_u8_zero() {
+    fn parse_u8_zero() {
         let value = Value::new(b"0", 0, 0);
 
         assert_ok_eq!(value.parse_u8(), 0);
     }
 
     #[test]
-    fn value_parse_u8_overflow() {
+    fn parse_u8_overflow() {
         let value = Value::new(b"256", 0, 0);
 
         assert_err_eq!(value.parse_u8(), Error::new(error::Kind::ExpectedU8, 0, 0));
     }
 
     #[test]
-    fn value_parse_u8_invalid() {
+    fn parse_u8_invalid() {
         let value = Value::new(b"invalid", 0, 0);
 
         assert_err_eq!(value.parse_u8(), Error::new(error::Kind::ExpectedU8, 0, 0));
     }
 
     #[test]
-    fn value_parse_u8_whitespace() {
+    fn parse_u8_whitespace() {
         let value = Value::new(b"  42 \n", 0, 0);
 
         assert_ok_eq!(value.parse_u8(), 42);
     }
 
     #[test]
-    fn value_parse_u16() {
+    fn parse_u16() {
         let value = Value::new(b"42", 0, 0);
 
         assert_ok_eq!(value.parse_u16(), 42);
     }
 
     #[test]
-    fn value_parse_u16_zero() {
+    fn parse_u16_zero() {
         let value = Value::new(b"0", 0, 0);
 
         assert_ok_eq!(value.parse_u16(), 0);
     }
 
     #[test]
-    fn value_parse_u16_overflow() {
+    fn parse_u16_overflow() {
         let value = Value::new(b"65536", 0, 0);
 
         assert_err_eq!(
@@ -871,7 +871,7 @@ mod tests {
     }
 
     #[test]
-    fn value_parse_u16_invalid() {
+    fn parse_u16_invalid() {
         let value = Value::new(b"invalid", 0, 0);
 
         assert_err_eq!(
@@ -881,28 +881,28 @@ mod tests {
     }
 
     #[test]
-    fn value_parse_u16_whitespace() {
+    fn parse_u16_whitespace() {
         let value = Value::new(b"  42 \n", 0, 0);
 
         assert_ok_eq!(value.parse_u16(), 42);
     }
 
     #[test]
-    fn value_parse_u32() {
+    fn parse_u32() {
         let value = Value::new(b"42", 0, 0);
 
         assert_ok_eq!(value.parse_u32(), 42);
     }
 
     #[test]
-    fn value_parse_u32_zero() {
+    fn parse_u32_zero() {
         let value = Value::new(b"0", 0, 0);
 
         assert_ok_eq!(value.parse_u32(), 0);
     }
 
     #[test]
-    fn value_parse_u32_overflow() {
+    fn parse_u32_overflow() {
         let value = Value::new(b"4294967296", 0, 0);
 
         assert_err_eq!(
@@ -912,7 +912,7 @@ mod tests {
     }
 
     #[test]
-    fn value_parse_u32_invalid() {
+    fn parse_u32_invalid() {
         let value = Value::new(b"invalid", 0, 0);
 
         assert_err_eq!(
@@ -922,28 +922,28 @@ mod tests {
     }
 
     #[test]
-    fn value_parse_u32_whitespace() {
+    fn parse_u32_whitespace() {
         let value = Value::new(b"  42 \n", 0, 0);
 
         assert_ok_eq!(value.parse_u32(), 42);
     }
 
     #[test]
-    fn value_parse_u64() {
+    fn parse_u64() {
         let value = Value::new(b"42", 0, 0);
 
         assert_ok_eq!(value.parse_u64(), 42);
     }
 
     #[test]
-    fn value_parse_u64_zero() {
+    fn parse_u64_zero() {
         let value = Value::new(b"0", 0, 0);
 
         assert_ok_eq!(value.parse_u64(), 0);
     }
 
     #[test]
-    fn value_parse_u64_overflow() {
+    fn parse_u64_overflow() {
         let value = Value::new(b"18446744073709551616", 0, 0);
 
         assert_err_eq!(
@@ -953,7 +953,7 @@ mod tests {
     }
 
     #[test]
-    fn value_parse_u64_invalid() {
+    fn parse_u64_invalid() {
         let value = Value::new(b"invalid", 0, 0);
 
         assert_err_eq!(
@@ -963,28 +963,28 @@ mod tests {
     }
 
     #[test]
-    fn value_parse_u64_whitespace() {
+    fn parse_u64_whitespace() {
         let value = Value::new(b"  42 \n", 0, 0);
 
         assert_ok_eq!(value.parse_u64(), 42);
     }
 
     #[test]
-    fn value_parse_u128() {
+    fn parse_u128() {
         let value = Value::new(b"42", 0, 0);
 
         assert_ok_eq!(value.parse_u128(), 42);
     }
 
     #[test]
-    fn value_parse_u128_zero() {
+    fn parse_u128_zero() {
         let value = Value::new(b"0", 0, 0);
 
         assert_ok_eq!(value.parse_u128(), 0);
     }
 
     #[test]
-    fn value_parse_u128_overflow() {
+    fn parse_u128_overflow() {
         let value = Value::new(b"340282366920938463463374607431768211456", 0, 0);
 
         assert_err_eq!(
@@ -994,7 +994,7 @@ mod tests {
     }
 
     #[test]
-    fn value_parse_u128_invalid() {
+    fn parse_u128_invalid() {
         let value = Value::new(b"invalid", 0, 0);
 
         assert_err_eq!(
@@ -1004,49 +1004,49 @@ mod tests {
     }
 
     #[test]
-    fn value_parse_u128_whitespace() {
+    fn parse_u128_whitespace() {
         let value = Value::new(b"  42 \n", 0, 0);
 
         assert_ok_eq!(value.parse_u128(), 42);
     }
 
     #[test]
-    fn value_parse_f32_positive() {
+    fn parse_f32_positive() {
         let value = Value::new(b"42.9", 0, 0);
 
         assert_ok_eq!(value.parse_f32(), 42.9);
     }
 
     #[test]
-    fn value_parse_f32_negative() {
+    fn parse_f32_negative() {
         let value = Value::new(b"-42.9", 0, 0);
 
         assert_ok_eq!(value.parse_f32(), -42.9);
     }
 
     #[test]
-    fn value_parse_f32_zero() {
+    fn parse_f32_zero() {
         let value = Value::new(b"0", 0, 0);
 
         assert_ok_eq!(value.parse_f32(), 0.0);
     }
 
     #[test]
-    fn value_parse_f32_positive_overflow() {
+    fn parse_f32_positive_overflow() {
         let value = Value::new(b"3.40282347E+39", 0, 0);
 
         assert_ok_eq!(value.parse_f32(), f32::INFINITY,);
     }
 
     #[test]
-    fn value_parse_f32_negative_overflow() {
+    fn parse_f32_negative_overflow() {
         let value = Value::new(b"-3.40282347E+39", 0, 0);
 
         assert_ok_eq!(value.parse_f32(), f32::NEG_INFINITY,);
     }
 
     #[test]
-    fn value_parse_f32_invalid() {
+    fn parse_f32_invalid() {
         let value = Value::new(b"invalid", 0, 0);
 
         assert_err_eq!(
@@ -1056,49 +1056,49 @@ mod tests {
     }
 
     #[test]
-    fn value_parse_f32_whitespace() {
+    fn parse_f32_whitespace() {
         let value = Value::new(b"  42.9 \n", 0, 0);
 
         assert_ok_eq!(value.parse_f32(), 42.9);
     }
 
     #[test]
-    fn value_parse_f64_positive() {
+    fn parse_f64_positive() {
         let value = Value::new(b"42.9", 0, 0);
 
         assert_ok_eq!(value.parse_f64(), 42.9);
     }
 
     #[test]
-    fn value_parse_f64_negative() {
+    fn parse_f64_negative() {
         let value = Value::new(b"-42.9", 0, 0);
 
         assert_ok_eq!(value.parse_f64(), -42.9);
     }
 
     #[test]
-    fn value_parse_f64_zero() {
+    fn parse_f64_zero() {
         let value = Value::new(b"0", 0, 0);
 
         assert_ok_eq!(value.parse_f64(), 0.0);
     }
 
     #[test]
-    fn value_parse_f64_positive_overflow() {
+    fn parse_f64_positive_overflow() {
         let value = Value::new(b"1.7976931348623157E+309", 0, 0);
 
         assert_ok_eq!(value.parse_f64(), f64::INFINITY,);
     }
 
     #[test]
-    fn value_parse_f64_negative_overflow() {
+    fn parse_f64_negative_overflow() {
         let value = Value::new(b"-1.7976931348623157E+309", 0, 0);
 
         assert_ok_eq!(value.parse_f64(), f64::NEG_INFINITY,);
     }
 
     #[test]
-    fn value_parse_f64_invalid() {
+    fn parse_f64_invalid() {
         let value = Value::new(b"invalid", 0, 0);
 
         assert_err_eq!(
@@ -1108,42 +1108,42 @@ mod tests {
     }
 
     #[test]
-    fn value_parse_f64_whitespace() {
+    fn parse_f64_whitespace() {
         let value = Value::new(b"  42.9 \n", 0, 0);
 
         assert_ok_eq!(value.parse_f64(), 42.9);
     }
 
     #[test]
-    fn value_parse_char() {
+    fn parse_char() {
         let value = Value::new(b"a", 0, 0);
 
         assert_ok_eq!(value.parse_char(), 'a');
     }
 
     #[test]
-    fn value_parse_char_longer() {
+    fn parse_char_longer() {
         let value = Value::new(b"\xF0\x9F\x92\xA3", 0, 0);
 
         assert_ok_eq!(value.parse_char(), '💣');
     }
 
     #[test]
-    fn value_parse_char_surrounded_by_whitespace() {
+    fn parse_char_surrounded_by_whitespace() {
         let value = Value::new(b"\n \ta  \t", 0, 0);
 
         assert_ok_eq!(value.parse_char(), 'a');
     }
 
     #[test]
-    fn value_parse_char_whitespace() {
+    fn parse_char_whitespace() {
         let value = Value::new(b"\t", 0, 0);
 
         assert_ok_eq!(value.parse_char(), '\t');
     }
 
     #[test]
-    fn value_parse_char_multiple_whitespaces() {
+    fn parse_char_multiple_whitespaces() {
         let value = Value::new(b"\t\n", 0, 0);
 
         // Can't deduce which whitespace character is meant.
@@ -1154,7 +1154,7 @@ mod tests {
     }
 
     #[test]
-    fn value_parse_char_incomplete_char() {
+    fn parse_char_incomplete_char() {
         let value = Value::new(b"\xF0", 0, 0);
 
         assert_err_eq!(
@@ -1164,7 +1164,7 @@ mod tests {
     }
 
     #[test]
-    fn value_parse_char_invalid_first_byte() {
+    fn parse_char_invalid_first_byte() {
         let value = Value::new(b"\x92", 0, 0);
 
         assert_err_eq!(
@@ -1174,7 +1174,7 @@ mod tests {
     }
 
     #[test]
-    fn value_parse_char_multiple_chars() {
+    fn parse_char_multiple_chars() {
         let value = Value::new(b"abc", 0, 0);
 
         assert_err_eq!(
