@@ -268,7 +268,7 @@ where
         let mut tag = self.tags.next()?;
         let mut values = tag.next()?;
         let value = values.next()?;
-        // Parsed string must be owned, since it removes escaping and comments.
+        // Parsed bytes must be owned, since it removes escaping and comments.
         let parsed = value.parse_byte_buf();
         values.assert_exhausted()?;
         tag.assert_exhausted()?;
@@ -283,7 +283,6 @@ where
         let mut tag = self.tags.next()?;
         let mut values = tag.next()?;
         let value = values.next()?;
-        // Parsed string must be owned, since it removes escaping and comments.
         let parsed = value.parse_byte_buf();
         values.assert_exhausted()?;
         tag.assert_exhausted()?;
@@ -302,18 +301,32 @@ where
         }
     }
 
-    fn deserialize_unit<V>(self, _visitor: V) -> Result<V::Value>
+    fn deserialize_unit<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        todo!()
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
+        let value = values.next()?;
+        value.parse_unit()?;
+        values.assert_exhausted()?;
+        tag.assert_exhausted()?;
+        self.tags.assert_exhausted()?;
+        visitor.visit_unit()
     }
 
-    fn deserialize_unit_struct<V>(self, _name: &'static str, _visitor: V) -> Result<V::Value>
+    fn deserialize_unit_struct<V>(self, _name: &'static str, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        todo!()
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
+        let value = values.next()?;
+        value.parse_unit()?;
+        values.assert_exhausted()?;
+        tag.assert_exhausted()?;
+        self.tags.assert_exhausted()?;
+        visitor.visit_unit()
     }
 
     fn deserialize_newtype_struct<V>(self, _name: &'static str, _visitor: V) -> Result<V::Value>
@@ -401,6 +414,7 @@ mod tests {
     use claim::{assert_err_eq, assert_ok_eq};
     use serde::Deserialize;
     use serde_bytes::ByteBuf;
+    use serde_derive::Deserialize;
 
     #[test]
     fn bool_true() {
@@ -1104,5 +1118,85 @@ mod tests {
         let mut deserializer = Deserializer::new(b"#42;\n".as_slice());
 
         assert_ok_eq!(Option::<u64>::deserialize(&mut deserializer), Some(42));
+    }
+
+    #[test]
+    fn unit() {
+        let mut deserializer = Deserializer::new(b"#;".as_slice());
+
+        assert_ok_eq!(<()>::deserialize(&mut deserializer), ());
+    }
+
+    #[test]
+    fn unit_invalid() {
+        let mut deserializer = Deserializer::new(b"#invalid;".as_slice());
+
+        assert_err_eq!(<()>::deserialize(&mut deserializer), Error::new(error::Kind::ExpectedUnit, 0, 1));
+    }
+
+    #[test]
+    fn unit_unexpected_tag() {
+        let mut deserializer = Deserializer::new(b"#;\n#;".as_slice());
+
+        assert_err_eq!(<()>::deserialize(&mut deserializer), Error::new(error::Kind::UnexpectedTag, 1, 0));
+    }
+
+    #[test]
+    fn unit_unexpected_values() {
+        let mut deserializer = Deserializer::new(b"#;\n;".as_slice());
+
+        assert_err_eq!(<()>::deserialize(&mut deserializer), Error::new(error::Kind::UnexpectedValues, 1, 0));
+    }
+
+    #[test]
+    fn unit_unexpected_value() {
+        let mut deserializer = Deserializer::new(b"#:;\n".as_slice());
+
+        assert_err_eq!(<()>::deserialize(&mut deserializer), Error::new(error::Kind::UnexpectedValue, 0, 2));
+    }
+
+    #[test]
+    fn unit_struct() {
+        #[derive(Debug, Deserialize, PartialEq)]
+        struct Unit;
+        let mut deserializer = Deserializer::new(b"#;".as_slice());
+
+        assert_ok_eq!(Unit::deserialize(&mut deserializer), Unit);
+    }
+
+    #[test]
+    fn unit_struct_invalid() {
+        #[derive(Debug, Deserialize)]
+        struct Unit;
+        let mut deserializer = Deserializer::new(b"#invalid;".as_slice());
+
+        assert_err_eq!(Unit::deserialize(&mut deserializer), Error::new(error::Kind::ExpectedUnit, 0, 1));
+    }
+
+    #[test]
+    fn unit_struct_unexpected_tag() {
+        #[derive(Debug, Deserialize)]
+        struct Unit;
+        let mut deserializer = Deserializer::new(b"#;\n#;".as_slice());
+
+        assert_err_eq!(Unit::deserialize(&mut deserializer), Error::new(error::Kind::UnexpectedTag, 1, 0));
+    }
+
+    #[test]
+    fn unit_struct_unexpected_values() {
+        #[derive(Debug, Deserialize)]
+        struct Unit;
+        let mut deserializer = Deserializer::new(b"#;\n;".as_slice());
+
+        assert_err_eq!(Unit::deserialize(&mut deserializer), Error::new(error::Kind::UnexpectedValues, 1, 0));
+    }
+
+    #[test]
+    fn unit_struct_unexpected_value() {
+        #[derive(Debug, Deserialize)]
+        struct Unit;
+        let mut deserializer = Deserializer::new(b"#:;\n".as_slice());
+
+        assert_err_eq!(Unit::deserialize(&mut deserializer), Error::new(error::Kind::UnexpectedValue, 0, 2));
     }
 }

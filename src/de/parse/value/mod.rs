@@ -528,6 +528,15 @@ impl<'a> Value<'a> {
     pub(in crate::de) fn parse_byte_buf(&self) -> Vec<u8> {
         Clean::new(self.bytes).collect()
     }
+
+    pub(in crate::de) fn parse_unit(&self) -> Result<()> {
+        // A unit must contain only whitespace and comments.
+        if Clean::new(self.bytes).all(|b| b.is_ascii_whitespace()) {
+            Ok(())
+        } else {
+            Err(Error::new(error::Kind::ExpectedUnit, self.line, self.column))
+        }
+    }
 }
 
 #[cfg(test)]
@@ -1330,5 +1339,33 @@ mod tests {
         let value = Value::new(b"\xF0\x9Ffoo", 0, 0);
 
         assert_eq!(value.parse_byte_buf(), b"\xF0\x9Ffoo",);
+    }
+
+    #[test]
+    fn parse_unit() {
+        let value = Value::new(b"", 0, 0);
+
+        assert_ok!(value.parse_unit());
+    }
+
+    #[test]
+    fn parse_unit_fails() {
+        let value = Value::new(b"foo", 0, 0);
+
+        assert_err_eq!(value.parse_unit(), Error::new(error::Kind::ExpectedUnit, 0, 0));
+    }
+
+    #[test]
+    fn parse_unit_ignores_whitespace() {
+        let value = Value::new(b"  \n\t ", 0, 0);
+
+        assert_ok!(value.parse_unit());
+    }
+
+    #[test]
+    fn parse_unit_ignores_comments() {
+        let value = Value::new(b"//comment\n", 0, 0);
+
+        assert_ok!(value.parse_unit());
     }
 }
