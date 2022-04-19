@@ -504,7 +504,7 @@ impl<'a> Value<'a> {
 mod tests {
     use super::Value;
     use crate::de::{error, Error};
-    use claim::{assert_err_eq, assert_ok_eq};
+    use claim::{assert_err_eq, assert_ok_eq, assert_ok};
 
     #[test]
     fn parse_bool_true() {
@@ -1056,6 +1056,36 @@ mod tests {
     }
 
     #[test]
+    fn parse_f32_nan() {
+        let value = Value::new(b"NaN", 0, 0);
+
+        let result = assert_ok!(value.parse_f32());
+        assert!(result.is_nan());
+    }
+
+    #[test]
+    fn parse_f32_negative_nan() {
+        let value = Value::new(b"-NaN", 0, 0);
+
+        let result = assert_ok!(value.parse_f32());
+        assert!(result.is_nan());
+    }
+
+    #[test]
+    fn parse_f32_infinity() {
+        let value = Value::new(b"INF", 0, 0);
+
+        assert_ok_eq!(value.parse_f32(), f32::INFINITY);
+    }
+
+    #[test]
+    fn parse_f32_negative_infinity() {
+        let value = Value::new(b"-infinity", 0, 0);
+
+        assert_ok_eq!(value.parse_f32(), f32::NEG_INFINITY);
+    }
+
+    #[test]
     fn parse_f32_whitespace() {
         let value = Value::new(b"  42.9 \n", 0, 0);
 
@@ -1112,6 +1142,36 @@ mod tests {
         let value = Value::new(b"  42.9 \n", 0, 0);
 
         assert_ok_eq!(value.parse_f64(), 42.9);
+    }
+
+    #[test]
+    fn parse_f64_nan() {
+        let value = Value::new(b"NaN", 0, 0);
+
+        let result = assert_ok!(value.parse_f64());
+        assert!(result.is_nan());
+    }
+
+    #[test]
+    fn parse_f64_negative_nan() {
+        let value = Value::new(b"-NaN", 0, 0);
+
+        let result = assert_ok!(value.parse_f64());
+        assert!(result.is_nan());
+    }
+
+    #[test]
+    fn parse_f64_infinity() {
+        let value = Value::new(b"INF", 0, 0);
+
+        assert_ok_eq!(value.parse_f64(), f64::INFINITY);
+    }
+
+    #[test]
+    fn parse_f64_negative_infinity() {
+        let value = Value::new(b"-infinity", 0, 0);
+
+        assert_ok_eq!(value.parse_f64(), f64::NEG_INFINITY);
     }
 
     #[test]
