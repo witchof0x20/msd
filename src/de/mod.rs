@@ -406,11 +406,19 @@ where
         todo!()
     }
 
-    fn deserialize_identifier<V>(self, _visitor: V) -> Result<V::Value>
+    fn deserialize_identifier<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        todo!()
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
+        let value = values.next()?;
+        // Parsed string must be owned, since it removes escaping and comments.
+        let parsed = value.parse_identifier()?;
+        values.assert_exhausted()?;
+        tag.assert_exhausted()?;
+        self.tags.assert_exhausted()?;
+        visitor.visit_str(&parsed)
     }
 
     fn deserialize_ignored_any<V>(self, _visitor: V) -> Result<V::Value>
@@ -425,9 +433,10 @@ where
 mod tests {
     use super::{error, Deserializer, Error};
     use claim::{assert_err_eq, assert_ok_eq};
-    use serde::Deserialize;
+    use serde::{de, de::Visitor, Deserialize};
     use serde_bytes::ByteBuf;
     use serde_derive::Deserialize;
+    use std::fmt;
 
     #[test]
     fn bool_true() {
@@ -1377,6 +1386,83 @@ mod tests {
         assert_err_eq!(
             TupleStruct::deserialize(&mut deserializer),
             Error::new(error::Kind::UnexpectedTag, 1, 0)
+        );
+    }
+
+    #[derive(Debug, PartialEq)]
+    struct Identifier(String);
+
+    impl<'de> Deserialize<'de> for Identifier {
+        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: de::Deserializer<'de> {
+            struct IdentifierVisitor;
+
+            impl<'de> Visitor<'de> for IdentifierVisitor {
+                type Value = Identifier;
+
+                fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                    formatter.write_str("identifier")
+                }
+
+                fn visit_str<E>(self, value: &str) -> Result<Self::Value, E> where E: de::Error {
+                    Ok(Identifier(value.to_owned()))
+                }
+            }
+
+            deserializer.deserialize_identifier(IdentifierVisitor)
+        }
+    }
+
+    #[test]
+    fn identifier() {
+        let mut deserializer = Deserializer::new(b"#foo;".as_slice());
+
+        assert_ok_eq!(Identifier::deserialize(&mut deserializer), Identifier("foo".to_string()));
+    }
+
+    #[test]
+    fn identifier_whitespace() {
+        let mut deserializer = Deserializer::new(b"#   foo  ;".as_slice());
+
+        assert_ok_eq!(Identifier::deserialize(&mut deserializer), Identifier("foo".to_string()));
+    }
+
+    #[test]
+    fn identifier_unexpected_tag() {
+        let mut deserializer = Deserializer::new(b"#foo;#bar;".as_slice());
+
+        assert_err_eq!(
+            String::deserialize(&mut deserializer),
+            Error::new(error::Kind::UnexpectedTag, 0, 5)
+        );
+    }
+
+    #[test]
+    fn identifier_unexpected_values() {
+        let mut deserializer = Deserializer::new(b"#foo;bar;".as_slice());
+
+        assert_err_eq!(
+            Identifier::deserialize(&mut deserializer),
+            Error::new(error::Kind::UnexpectedValues, 0, 5)
+        );
+    }
+
+    #[test]
+    fn identifier_unexpected_value() {
+        let mut deserializer = Deserializer::new(b"#foo:bar;\n".as_slice());
+
+        assert_err_eq!(
+            Identifier::deserialize(&mut deserializer),
+            Error::new(error::Kind::UnexpectedValue, 0, 5)
+        );
+    }
+
+    #[test]
+    fn identifier_invalid() {
+        let mut deserializer = Deserializer::new(b"#\xF0\x9Ffoo;\n".as_slice());
+
+        assert_err_eq!(
+            Identifier::deserialize(&mut deserializer),
+            Error::new(error::Kind::ExpectedIdentifier, 0, 1),
         );
     }
 }

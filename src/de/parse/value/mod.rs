@@ -541,6 +541,14 @@ impl<'a> Value<'a> {
             ))
         }
     }
+
+    pub(in crate::de) fn parse_identifier(&self) -> Result<String> {
+        String::from_utf8(Trim::new(Clean::new(self.bytes)).collect::<Vec<u8>>()).or(Err(Error::new(
+            error::Kind::ExpectedIdentifier,
+            self.line,
+            self.column,
+        )))
+    }
 }
 
 #[cfg(test)]
@@ -1374,5 +1382,47 @@ mod tests {
         let value = Value::new(b"//comment\n", 0, 0);
 
         assert_ok!(value.parse_unit());
+    }
+
+    #[test]
+    fn parse_identifier() {
+        let value = Value::new(b"foo", 0, 0);
+
+        assert_ok_eq!(value.parse_identifier(), "foo".to_owned());
+    }
+
+    #[test]
+    fn parse_identifier_escaped() {
+        let value = Value::new(b"foo\\:", 0, 0);
+
+        assert_ok_eq!(value.parse_identifier(), "foo:".to_owned());
+    }
+
+    #[test]
+    fn parse_identifier_comment() {
+        let value = Value::new(b"foo//comment", 0, 0);
+
+        assert_ok_eq!(value.parse_identifier(), "foo".to_owned());
+    }
+
+    #[test]
+    fn parse_identifier_trim_whitespace() {
+        let value = Value::new(b" \t foo\n   \n", 0, 0);
+
+        assert_ok_eq!(value.parse_identifier(), "foo".to_owned());
+    }
+
+    #[test]
+    fn parse_identifier_whitespace_and_comment() {
+        let value = Value::new(b"foo   //comment", 0, 0);
+
+        assert_ok_eq!(value.parse_identifier(), "foo".to_owned());
+    }
+
+    #[test]
+    fn parse_identifier_invalid() {
+        let value = Value::new(b"\xF0\x9Ffoo", 0, 0);
+
+        assert_err_eq!(value.parse_identifier(), Error::new(error::Kind::ExpectedIdentifier, 0, 0));
     }
 }
