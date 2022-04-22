@@ -534,7 +534,11 @@ impl<'a> Value<'a> {
         if Clean::new(self.bytes).all(|b| b.is_ascii_whitespace()) {
             Ok(())
         } else {
-            Err(Error::new(error::Kind::ExpectedUnit, self.line, self.column))
+            Err(Error::new(
+                error::Kind::ExpectedUnit,
+                self.line,
+                self.column,
+            ))
         }
     }
 }
@@ -1352,7 +1356,10 @@ mod tests {
     fn parse_unit_fails() {
         let value = Value::new(b"foo", 0, 0);
 
-        assert_err_eq!(value.parse_unit(), Error::new(error::Kind::ExpectedUnit, 0, 0));
+        assert_err_eq!(
+            value.parse_unit(),
+            Error::new(error::Kind::ExpectedUnit, 0, 0)
+        );
     }
 
     #[test]

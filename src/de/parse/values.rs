@@ -32,7 +32,7 @@ pub(in crate::de) struct Values<'a> {
 }
 
 impl<'a> Values<'a> {
-    pub(super) fn new(bytes: &'a [u8], line: usize, column: usize) -> Self {
+    pub(in crate::de) fn new(bytes: &'a [u8], line: usize, column: usize) -> Self {
         Self {
             bytes,
 

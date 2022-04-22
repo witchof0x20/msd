@@ -1,5 +1,6 @@
 mod error;
 mod parse;
+mod tuple;
 
 pub use error::{Error, Result};
 
@@ -343,23 +344,35 @@ where
         todo!()
     }
 
-    fn deserialize_tuple<V>(self, _len: usize, _visitor: V) -> Result<V::Value>
+    fn deserialize_tuple<V>(self, len: usize, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        todo!()
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
+        let result = visitor.visit_seq(tuple::Access::new(&mut values, len))?;
+        values.assert_exhausted()?;
+        tag.assert_exhausted()?;
+        self.tags.assert_exhausted()?;
+        Ok(result)
     }
 
     fn deserialize_tuple_struct<V>(
         self,
         _name: &'static str,
-        _len: usize,
-        _visitor: V,
+        len: usize,
+        visitor: V,
     ) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        todo!()
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
+        let result = visitor.visit_seq(tuple::Access::new(&mut values, len))?;
+        values.assert_exhausted()?;
+        tag.assert_exhausted()?;
+        self.tags.assert_exhausted()?;
+        Ok(result)
     }
 
     fn deserialize_map<V>(self, _visitor: V) -> Result<V::Value>
@@ -1131,28 +1144,40 @@ mod tests {
     fn unit_invalid() {
         let mut deserializer = Deserializer::new(b"#invalid;".as_slice());
 
-        assert_err_eq!(<()>::deserialize(&mut deserializer), Error::new(error::Kind::ExpectedUnit, 0, 1));
+        assert_err_eq!(
+            <()>::deserialize(&mut deserializer),
+            Error::new(error::Kind::ExpectedUnit, 0, 1)
+        );
     }
 
     #[test]
     fn unit_unexpected_tag() {
         let mut deserializer = Deserializer::new(b"#;\n#;".as_slice());
 
-        assert_err_eq!(<()>::deserialize(&mut deserializer), Error::new(error::Kind::UnexpectedTag, 1, 0));
+        assert_err_eq!(
+            <()>::deserialize(&mut deserializer),
+            Error::new(error::Kind::UnexpectedTag, 1, 0)
+        );
     }
 
     #[test]
     fn unit_unexpected_values() {
         let mut deserializer = Deserializer::new(b"#;\n;".as_slice());
 
-        assert_err_eq!(<()>::deserialize(&mut deserializer), Error::new(error::Kind::UnexpectedValues, 1, 0));
+        assert_err_eq!(
+            <()>::deserialize(&mut deserializer),
+            Error::new(error::Kind::UnexpectedValues, 1, 0)
+        );
     }
 
     #[test]
     fn unit_unexpected_value() {
         let mut deserializer = Deserializer::new(b"#:;\n".as_slice());
 
-        assert_err_eq!(<()>::deserialize(&mut deserializer), Error::new(error::Kind::UnexpectedValue, 0, 2));
+        assert_err_eq!(
+            <()>::deserialize(&mut deserializer),
+            Error::new(error::Kind::UnexpectedValue, 0, 2)
+        );
     }
 
     #[test]
@@ -1170,7 +1195,10 @@ mod tests {
         struct Unit;
         let mut deserializer = Deserializer::new(b"#invalid;".as_slice());
 
-        assert_err_eq!(Unit::deserialize(&mut deserializer), Error::new(error::Kind::ExpectedUnit, 0, 1));
+        assert_err_eq!(
+            Unit::deserialize(&mut deserializer),
+            Error::new(error::Kind::ExpectedUnit, 0, 1)
+        );
     }
 
     #[test]
@@ -1179,7 +1207,10 @@ mod tests {
         struct Unit;
         let mut deserializer = Deserializer::new(b"#;\n#;".as_slice());
 
-        assert_err_eq!(Unit::deserialize(&mut deserializer), Error::new(error::Kind::UnexpectedTag, 1, 0));
+        assert_err_eq!(
+            Unit::deserialize(&mut deserializer),
+            Error::new(error::Kind::UnexpectedTag, 1, 0)
+        );
     }
 
     #[test]
@@ -1188,7 +1219,10 @@ mod tests {
         struct Unit;
         let mut deserializer = Deserializer::new(b"#;\n;".as_slice());
 
-        assert_err_eq!(Unit::deserialize(&mut deserializer), Error::new(error::Kind::UnexpectedValues, 1, 0));
+        assert_err_eq!(
+            Unit::deserialize(&mut deserializer),
+            Error::new(error::Kind::UnexpectedValues, 1, 0)
+        );
     }
 
     #[test]
@@ -1197,7 +1231,10 @@ mod tests {
         struct Unit;
         let mut deserializer = Deserializer::new(b"#:;\n".as_slice());
 
-        assert_err_eq!(Unit::deserialize(&mut deserializer), Error::new(error::Kind::UnexpectedValue, 0, 2));
+        assert_err_eq!(
+            Unit::deserialize(&mut deserializer),
+            Error::new(error::Kind::UnexpectedValue, 0, 2)
+        );
     }
 
     #[test]
@@ -1207,5 +1244,139 @@ mod tests {
         let mut deserializer = Deserializer::new(b"#42;\n".as_slice());
 
         assert_ok_eq!(Newtype::deserialize(&mut deserializer), Newtype(42));
+    }
+
+    #[test]
+    fn tuple_single_value() {
+        let mut deserializer = Deserializer::new(b"#foo;\n".as_slice());
+
+        assert_ok_eq!(
+            <(String,)>::deserialize(&mut deserializer),
+            ("foo".to_owned(),)
+        );
+    }
+
+    #[test]
+    fn tuple_multiple_values() {
+        let mut deserializer = Deserializer::new(b"#foo:42::1.2;\n".as_slice());
+
+        assert_ok_eq!(
+            <(String, u64, (), f64)>::deserialize(&mut deserializer),
+            ("foo".to_owned(), 42, (), 1.2)
+        );
+    }
+
+    #[test]
+    fn tuple_nested_values() {
+        let mut deserializer = Deserializer::new(b"#foo:42::1.2;\n".as_slice());
+
+        assert_ok_eq!(
+            <(String, (u64, ()), f64)>::deserialize(&mut deserializer),
+            ("foo".to_owned(), (42, ()), 1.2)
+        );
+    }
+
+    #[test]
+    fn tuple_too_many_values() {
+        let mut deserializer = Deserializer::new(b"#foo:42::1.2;\n".as_slice());
+
+        assert_err_eq!(
+            <(String, u64, ())>::deserialize(&mut deserializer),
+            Error::new(error::Kind::UnexpectedValue, 0, 9)
+        );
+    }
+
+    #[test]
+    fn tuple_unexpected_values() {
+        let mut deserializer = Deserializer::new(b"#foo:42::1.2;\nbar:100;\n".as_slice());
+
+        assert_err_eq!(
+            <(String, u64, (), f64)>::deserialize(&mut deserializer),
+            Error::new(error::Kind::UnexpectedValues, 1, 0)
+        );
+    }
+
+    #[test]
+    fn tuple_unexpected_tag() {
+        let mut deserializer = Deserializer::new(b"#foo:42::1.2;\n#bar:100;\n".as_slice());
+
+        assert_err_eq!(
+            <(String, u64, (), f64)>::deserialize(&mut deserializer),
+            Error::new(error::Kind::UnexpectedTag, 1, 0)
+        );
+    }
+
+    #[test]
+    fn tuple_struct_single_value() {
+        #[derive(Debug, Deserialize, PartialEq)]
+        struct TupleStruct(String,);
+        let mut deserializer = Deserializer::new(b"#foo;\n".as_slice());
+
+        assert_ok_eq!(
+            TupleStruct::deserialize(&mut deserializer),
+            TupleStruct("foo".to_owned(),)
+        );
+    }
+
+    #[test]
+    fn tuple_struct_multiple_values() {
+        #[derive(Debug, Deserialize, PartialEq)]
+        struct TupleStruct(String, u64, (), f64);
+        let mut deserializer = Deserializer::new(b"#foo:42::1.2;\n".as_slice());
+
+        assert_ok_eq!(
+            TupleStruct::deserialize(&mut deserializer),
+            TupleStruct("foo".to_owned(), 42, (), 1.2)
+        );
+    }
+
+    #[test]
+    fn tuple_struct_nested_values() {
+        #[derive(Debug, Deserialize, PartialEq)]
+        struct NestedTupleStruct(u64, ());
+        #[derive(Debug, Deserialize, PartialEq)]
+        struct TupleStruct(String, NestedTupleStruct, f64);
+        let mut deserializer = Deserializer::new(b"#foo:42::1.2;\n".as_slice());
+
+        assert_ok_eq!(
+            TupleStruct::deserialize(&mut deserializer),
+            TupleStruct("foo".to_owned(), NestedTupleStruct(42, ()), 1.2)
+        );
+    }
+
+    #[test]
+    fn tuple_struct_too_many_values() {
+        #[derive(Debug, Deserialize, PartialEq)]
+        struct TupleStruct(String, u64, ());
+        let mut deserializer = Deserializer::new(b"#foo:42::1.2;\n".as_slice());
+
+        assert_err_eq!(
+            TupleStruct::deserialize(&mut deserializer),
+            Error::new(error::Kind::UnexpectedValue, 0, 9)
+        );
+    }
+
+    #[test]
+    fn tuple_struct_unexpected_values() {
+        #[derive(Debug, Deserialize, PartialEq)]
+        struct TupleStruct(String, u64, (), f64);
+        let mut deserializer = Deserializer::new(b"#foo:42::1.2;\nbar:100;\n".as_slice());
+
+        assert_err_eq!(
+            TupleStruct::deserialize(&mut deserializer),
+            Error::new(error::Kind::UnexpectedValues, 1, 0)
+        );
+    }
+
+    #[test]
+    fn tuple_struct_unexpected_tag() {
+        #[derive(Debug, Deserialize, PartialEq)]
+        struct TupleStruct(String, u64, (), f64);
+        let mut deserializer = Deserializer::new(b"#foo:42::1.2;\n#bar:100;\n".as_slice());
+
+        assert_err_eq!(
+            TupleStruct::deserialize(&mut deserializer),
+            Error::new(error::Kind::UnexpectedTag, 1, 0)
+        );
     }
 }
