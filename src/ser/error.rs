@@ -1,7 +1,7 @@
 use serde::ser;
 use std::{fmt, fmt::Display};
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Error {
     UnsupportedType,
     Io,
