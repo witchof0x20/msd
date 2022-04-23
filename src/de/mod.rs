@@ -1,3 +1,4 @@
+mod r#enum;
 mod error;
 mod parse;
 mod tuple;
@@ -398,12 +399,18 @@ where
         self,
         _name: &'static str,
         _variants: &'static [&'static str],
-        _visitor: V,
+        visitor: V,
     ) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        todo!()
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
+        let result = visitor.visit_enum(r#enum::Access::new(&mut values))?;
+        values.assert_exhausted()?;
+        tag.assert_exhausted()?;
+        self.tags.assert_exhausted()?;
+        Ok(result)
     }
 
     fn deserialize_identifier<V>(self, visitor: V) -> Result<V::Value>
@@ -1318,7 +1325,7 @@ mod tests {
     #[test]
     fn tuple_struct_single_value() {
         #[derive(Debug, Deserialize, PartialEq)]
-        struct TupleStruct(String,);
+        struct TupleStruct(String);
         let mut deserializer = Deserializer::new(b"#foo;\n".as_slice());
 
         assert_ok_eq!(
@@ -1389,11 +1396,179 @@ mod tests {
         );
     }
 
+    #[test]
+    fn enum_unit_variant() {
+        #[derive(Debug, Deserialize, PartialEq)]
+        enum Unit {
+            Variant,
+        }
+        let mut deserializer = Deserializer::new(b"#Variant;\n".as_slice());
+
+        assert_ok_eq!(Unit::deserialize(&mut deserializer), Unit::Variant);
+    }
+
+    #[test]
+    fn enum_unit_variant_too_many_values() {
+        #[derive(Debug, Deserialize, PartialEq)]
+        enum Unit {
+            Variant,
+        }
+        let mut deserializer = Deserializer::new(b"#Variant:42;\n".as_slice());
+
+        assert_err_eq!(
+            Unit::deserialize(&mut deserializer),
+            Error::new(error::Kind::UnexpectedValue, 0, 9)
+        );
+    }
+
+    #[test]
+    fn enum_unit_variant_unexpected_values() {
+        #[derive(Debug, Deserialize, PartialEq)]
+        enum Unit {
+            Variant,
+        }
+        let mut deserializer = Deserializer::new(b"#Variant;42;\n".as_slice());
+
+        assert_err_eq!(
+            Unit::deserialize(&mut deserializer),
+            Error::new(error::Kind::UnexpectedValues, 0, 9)
+        );
+    }
+
+    #[test]
+    fn enum_unit_variant_unexpected_tag() {
+        #[derive(Debug, Deserialize, PartialEq)]
+        enum Unit {
+            Variant,
+        }
+        let mut deserializer = Deserializer::new(b"#Variant;\n#42;\n".as_slice());
+
+        assert_err_eq!(
+            Unit::deserialize(&mut deserializer),
+            Error::new(error::Kind::UnexpectedTag, 1, 0)
+        );
+    }
+
+    #[test]
+    fn enum_newtype_variant() {
+        #[derive(Debug, Deserialize, PartialEq)]
+        enum Newtype {
+            Variant(u64),
+        }
+        let mut deserializer = Deserializer::new(b"#Variant:42;\n".as_slice());
+
+        assert_ok_eq!(
+            Newtype::deserialize(&mut deserializer),
+            Newtype::Variant(42),
+        );
+    }
+
+    #[test]
+    fn enum_newtype_variant_too_many_values() {
+        #[derive(Debug, Deserialize, PartialEq)]
+        enum Newtype {
+            Variant(u64),
+        }
+        let mut deserializer = Deserializer::new(b"#Variant:42:foo;\n".as_slice());
+
+        assert_err_eq!(
+            Newtype::deserialize(&mut deserializer),
+            Error::new(error::Kind::UnexpectedValue, 0, 12)
+        );
+    }
+
+    #[test]
+    fn enum_newtype_variant_unexpected_values() {
+        #[derive(Debug, Deserialize, PartialEq)]
+        enum Newtype {
+            Variant(u64),
+        }
+        let mut deserializer = Deserializer::new(b"#Variant:42;foo;\n".as_slice());
+
+        assert_err_eq!(
+            Newtype::deserialize(&mut deserializer),
+            Error::new(error::Kind::UnexpectedValues, 0, 12)
+        );
+    }
+
+    #[test]
+    fn enum_newtype_variant_unexpected_tag() {
+        #[derive(Debug, Deserialize, PartialEq)]
+        enum Newtype {
+            Variant(u64),
+        }
+        let mut deserializer = Deserializer::new(b"#Variant:42;\n#foo;\n".as_slice());
+
+        assert_err_eq!(
+            Newtype::deserialize(&mut deserializer),
+            Error::new(error::Kind::UnexpectedTag, 1, 0)
+        );
+    }
+
+    #[test]
+    fn enum_tuple_variant() {
+        #[derive(Debug, Deserialize, PartialEq)]
+        enum Tuple {
+            Variant(u64, String, (), f64),
+        }
+        let mut deserializer = Deserializer::new(b"#Variant:42:foo::1.2;\n".as_slice());
+
+        assert_ok_eq!(
+            Tuple::deserialize(&mut deserializer),
+            Tuple::Variant(42, "foo".to_owned(), (), 1.2),
+        );
+    }
+
+    #[test]
+    fn enum_tuple_variant_too_many_values() {
+        #[derive(Debug, Deserialize, PartialEq)]
+        enum Tuple {
+            Variant(u64, String, (), f64),
+        }
+        let mut deserializer = Deserializer::new(b"#Variant:42:foo::1.2:bar;\n".as_slice());
+
+        assert_err_eq!(
+            Tuple::deserialize(&mut deserializer),
+            Error::new(error::Kind::UnexpectedValue, 0, 21)
+        );
+    }
+
+    #[test]
+    fn enum_tuple_variant_unexpected_values() {
+        #[derive(Debug, Deserialize, PartialEq)]
+        enum Tuple {
+            Variant(u64, String, (), f64),
+        }
+        let mut deserializer = Deserializer::new(b"#Variant:42:foo::1.2;bar;\n".as_slice());
+
+        assert_err_eq!(
+            Tuple::deserialize(&mut deserializer),
+            Error::new(error::Kind::UnexpectedValues, 0, 21)
+        );
+    }
+
+    #[test]
+    fn enum_tuple_variant_unexpected_tag() {
+        #[derive(Debug, Deserialize, PartialEq)]
+        enum Tuple {
+            Variant(u64, String, (), f64),
+        }
+        let mut deserializer = Deserializer::new(b"#Variant:42:foo::1.2;\n#bar;\n".as_slice());
+
+        assert_err_eq!(
+            Tuple::deserialize(&mut deserializer),
+            Error::new(error::Kind::UnexpectedTag, 1, 0)
+        );
+    }
+
     #[derive(Debug, PartialEq)]
     struct Identifier(String);
 
     impl<'de> Deserialize<'de> for Identifier {
-        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: de::Deserializer<'de> {
+        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where
+            D: de::Deserializer<'de>,
+        {
             struct IdentifierVisitor;
 
             impl<'de> Visitor<'de> for IdentifierVisitor {
@@ -1403,7 +1578,10 @@ mod tests {
                     formatter.write_str("identifier")
                 }
 
-                fn visit_str<E>(self, value: &str) -> Result<Self::Value, E> where E: de::Error {
+                fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+                where
+                    E: de::Error,
+                {
                     Ok(Identifier(value.to_owned()))
                 }
             }
@@ -1416,14 +1594,20 @@ mod tests {
     fn identifier() {
         let mut deserializer = Deserializer::new(b"#foo;".as_slice());
 
-        assert_ok_eq!(Identifier::deserialize(&mut deserializer), Identifier("foo".to_string()));
+        assert_ok_eq!(
+            Identifier::deserialize(&mut deserializer),
+            Identifier("foo".to_string())
+        );
     }
 
     #[test]
     fn identifier_whitespace() {
         let mut deserializer = Deserializer::new(b"#   foo  ;".as_slice());
 
-        assert_ok_eq!(Identifier::deserialize(&mut deserializer), Identifier("foo".to_string()));
+        assert_ok_eq!(
+            Identifier::deserialize(&mut deserializer),
+            Identifier("foo".to_string())
+        );
     }
 
     #[test]

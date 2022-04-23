@@ -1,4 +1,4 @@
-mod element;
+pub(in crate::de) mod element;
 
 use super::{parse::Values, Error, Result};
 use serde::de::{DeserializeSeed, SeqAccess};

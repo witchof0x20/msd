@@ -1,12 +1,12 @@
 use crate::de::{parse::Values, Error, Result};
 use serde::de::Visitor;
 
-pub(super) struct Deserializer<'a, 'b> {
+pub(in crate::de) struct Deserializer<'a, 'b> {
     values: &'a mut Values<'b>,
 }
 
 impl<'a, 'b> Deserializer<'a, 'b> {
-    pub(super) fn new(values: &'a mut Values<'b>) -> Self {
+    pub(in crate::de) fn new(values: &'a mut Values<'b>) -> Self {
         Self { values }
     }
 }

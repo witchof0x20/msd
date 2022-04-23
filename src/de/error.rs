@@ -28,6 +28,7 @@ pub enum Kind {
     ExpectedUnit,
     ExpectedIdentifier,
     Io,
+    Custom,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -48,7 +49,12 @@ impl de::Error for Error {
     where
         T: Display,
     {
-        todo!()
+        // TODO: FIX THIS!
+        // Need a way to provide the position to the user-provided error messages.
+        // Perhaps injecting the position into the error after it is returned from user code?
+        // Also need a way to include the custom error messages. That doesn't jive with this struct
+        // being Copy.
+        Self::new(Kind::Custom, 0, 0)
     }
 }
 
