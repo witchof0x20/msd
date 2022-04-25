@@ -1,5 +1,5 @@
 use super::Tag;
-use crate::de::{error, Error, Result};
+use crate::de::{error, parse::StoredTag, Error, Result};
 use std::io::{Bytes, Read};
 
 struct Position {
@@ -46,6 +46,8 @@ pub(in crate::de) struct Tags<R> {
 
     encountered_error: Option<Error>,
     exhausted: bool,
+
+    revisit: Option<StoredTag>,
 }
 
 impl<R> Tags<R>
@@ -70,6 +72,8 @@ where
 
             encountered_error: None,
             exhausted: false,
+
+            revisit: None,
         }
     }
 
@@ -82,6 +86,13 @@ where
     pub(in crate::de) fn next<'buffer>(&'buffer mut self) -> Result<Tag<'buffer>> {
         if let Some(error) = self.encountered_error {
             return Err(error);
+        }
+
+        if let Some(revisit) = self.revisit.take() {
+            return Ok(
+                // `revisit` is guaranteed to point to valid contents on the currently buffer.
+                unsafe { revisit.into_tag() },
+            );
         }
 
         // Reuse the same buffer.
@@ -391,8 +402,19 @@ where
         }
     }
 
+    // SAFETY: `tag` must reference this struct's buffer.
+    pub(in crate::de) unsafe fn revisit(&mut self, tag: StoredTag) {
+        self.revisit = Some(tag)
+    }
+
     pub(in crate::de) fn assert_exhausted(&self) -> Result<()> {
-        if self.exhausted {
+        if let Some(revisit) = self.revisit.as_ref() {
+            Err(Error::new(
+                error::Kind::UnexpectedTag,
+                revisit.origin_line(),
+                revisit.origin_column(),
+            ))
+        } else if self.exhausted {
             Ok(())
         } else {
             Err(Error::new(
@@ -560,6 +582,16 @@ mod tests {
     }
 
     #[test]
+    fn revisit() {
+        let input = b"#foo;\n";
+        let mut tags = Tags::new(input.as_slice());
+
+        let tag = assert_ok!(tags.next()).into_stored();
+        unsafe { tags.revisit(tag) };
+        assert_ok_eq!(tags.next(), Tag::new(b"foo;\n", 0, 0));
+    }
+
+    #[test]
     fn exhausted() {
         let input = b"#foo;\n";
         let mut tags = Tags::new(input.as_slice());
@@ -579,6 +611,20 @@ mod tests {
         assert_err_eq!(
             tags.assert_exhausted(),
             Error::new(error::Kind::UnexpectedTag, 1, 0)
+        );
+    }
+
+    #[test]
+    fn not_exhausted_after_revisit() {
+        let input = b"#foo;\n";
+        let mut tags = Tags::new(input.as_slice());
+
+        let tag = assert_ok!(tags.next()).into_stored();
+        assert_ok!(tags.assert_exhausted());
+        unsafe { tags.revisit(tag) };
+        assert_err_eq!(
+            tags.assert_exhausted(),
+            Error::new(error::Kind::UnexpectedTag, 0, 0)
         );
     }
 }

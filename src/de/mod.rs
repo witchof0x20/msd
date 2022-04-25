@@ -1,6 +1,7 @@
 mod r#enum;
 mod error;
 mod parse;
+mod r#struct;
 mod tuple;
 
 pub use error::{Error, Result};
@@ -386,13 +387,15 @@ where
     fn deserialize_struct<V>(
         self,
         _name: &'static str,
-        _fields: &'static [&'static str],
-        _visitor: V,
+        fields: &'static [&'static str],
+        visitor: V,
     ) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        todo!()
+        let result = visitor.visit_map(r#struct::Access::new(&mut self.tags, fields))?;
+        self.tags.assert_exhausted()?;
+        Ok(result)
     }
 
     fn deserialize_enum<V>(
@@ -1393,6 +1396,94 @@ mod tests {
         assert_err_eq!(
             TupleStruct::deserialize(&mut deserializer),
             Error::new(error::Kind::UnexpectedTag, 1, 0)
+        );
+    }
+
+    #[test]
+    fn r#struct() {
+        #[derive(Debug, Deserialize, PartialEq)]
+        struct Struct {
+            foo: String,
+            bar: u64,
+            baz: (),
+            qux: f64,
+        }
+        let mut deserializer = Deserializer::new(b"#foo:text;\n#bar:42;\n#baz:;\n#qux:1.2;\n".as_slice());
+
+        assert_ok_eq!(
+            Struct::deserialize(&mut deserializer),
+            Struct {
+                foo: "text".to_owned(),
+                bar: 42,
+                baz: (),
+                qux: 1.2,
+            }
+        );
+    }
+
+    #[test]
+    fn struct_optional_field_present() {
+        #[derive(Debug, Deserialize, PartialEq)]
+        struct Struct {
+            foo: String,
+            bar: Option<u64>,
+            baz: (),
+            qux: f64,
+        }
+        let mut deserializer = Deserializer::new(b"#foo:text;\n#bar:42;\n#baz:;\n#qux:1.2;\n".as_slice());
+
+        assert_ok_eq!(
+            Struct::deserialize(&mut deserializer),
+            Struct {
+                foo: "text".to_owned(),
+                bar: Some(42),
+                baz: (),
+                qux: 1.2,
+            }
+        );
+    }
+
+    #[test]
+    fn struct_optional_field_missing() {
+        #[derive(Debug, Deserialize, PartialEq)]
+        struct Struct {
+            foo: String,
+            bar: Option<u64>,
+            baz: (),
+            qux: f64,
+        }
+        let mut deserializer = Deserializer::new(b"#foo:text;\n#baz:;\n#qux:1.2;\n".as_slice());
+
+        assert_ok_eq!(
+            Struct::deserialize(&mut deserializer),
+            Struct {
+                foo: "text".to_owned(),
+                bar: None,
+                baz: (),
+                qux: 1.2,
+            }
+        );
+    }
+
+    #[test]
+    fn struct_order_does_not_matter() {
+        #[derive(Debug, Deserialize, PartialEq)]
+        struct Struct {
+            foo: String,
+            bar: u64,
+            baz: (),
+            qux: f64,
+        }
+        let mut deserializer = Deserializer::new(b"#bar:42;\n#foo:text;\n#qux:1.2;\n#baz:;\n".as_slice());
+
+        assert_ok_eq!(
+            Struct::deserialize(&mut deserializer),
+            Struct {
+                foo: "text".to_owned(),
+                bar: 42,
+                baz: (),
+                qux: 1.2,
+            }
         );
     }
 

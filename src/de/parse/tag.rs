@@ -1,5 +1,6 @@
 use super::Values;
 use crate::de::{error, Error, Result};
+use std::slice;
 
 #[derive(Debug, PartialEq)]
 enum CommentState {
@@ -12,6 +13,58 @@ enum CommentState {
 enum EscapingState {
     Escaping,
     None,
+}
+
+// Tag without the lifetime. Used when storing within an Access.
+#[derive(Debug)]
+pub(in crate::de) struct StoredTag {
+    byte_ptr: *const u8,
+    byte_len: usize,
+
+    first_values: bool,
+
+    current_byte_index: usize,
+    current_line: usize,
+    current_column: usize,
+
+    origin_line: usize,
+    origin_column: usize,
+}
+
+impl StoredTag {
+    // # Safety
+    // The caller must guarantee that the buffer referenced by the returned `Tag` does not outlive
+    // the returned `Tag`. In other words, this returned `Tag` must outlive the `Tags` from which
+    // it was originally created.
+    pub(in crate::de) unsafe fn into_tag<'a>(self) -> Tag<'a> {
+        Tag {
+            // SAFETY: The lifetime of this slice is guaranteed by the caller.
+            bytes: unsafe { slice::from_raw_parts(self.byte_ptr, self.byte_len) },
+
+            comment_state: CommentState::None,
+            escaping_state: EscapingState::None,
+            first_values: self.first_values,
+
+            started_byte_index: self.current_byte_index,
+            started_line: self.current_line,
+            started_column: self.current_column,
+
+            current_byte_index: self.current_byte_index,
+            current_line: self.current_line,
+            current_column: self.current_column,
+
+            origin_line: self.origin_line,
+            origin_column: self.origin_column,
+        }
+    }
+
+    pub(in crate::de) fn origin_line(&self) -> usize {
+        self.origin_line
+    }
+
+    pub(in crate::de) fn origin_column(&self) -> usize {
+        self.origin_column
+    }
 }
 
 #[derive(Debug, PartialEq)]
@@ -37,7 +90,7 @@ pub(in crate::de) struct Tag<'a> {
 }
 
 impl<'a> Tag<'a> {
-    pub(super) fn new(bytes: &'a [u8], line: usize, column: usize) -> Self {
+    pub(in crate::de) fn new(bytes: &'a [u8], line: usize, column: usize) -> Self {
         Self {
             bytes,
 
@@ -155,6 +208,15 @@ impl<'a> Tag<'a> {
         }
     }
 
+    pub(in crate::de) fn reset(&mut self) {
+        self.first_values = true;
+        self.started_line = self.origin_line;
+        self.started_column = self.origin_column + 1;
+        self.current_byte_index = 0;
+        self.current_line = self.origin_line;
+        self.current_column = self.origin_column + 1;
+    }
+
     pub(in crate::de) fn assert_exhausted(&self) -> Result<()> {
         let mut current_line = self.current_line;
         let mut current_column = self.current_column;
@@ -174,6 +236,22 @@ impl<'a> Tag<'a> {
             }
         }
         Ok(())
+    }
+
+    pub(in crate::de) fn into_stored(self) -> StoredTag {
+        StoredTag {
+            byte_ptr: self.bytes.as_ptr(),
+            byte_len: self.bytes.len(),
+
+            first_values: self.first_values,
+
+            current_byte_index: self.current_byte_index,
+            current_line: self.current_line,
+            current_column: self.current_column,
+
+            origin_line: self.origin_line,
+            origin_column: self.origin_column,
+        }
     }
 }
 
@@ -250,6 +328,18 @@ mod tests {
     }
 
     #[test]
+    fn reset() {
+        let mut tag = Tag::new(b"foo;\n", 0, 0);
+
+        assert_ok!(tag.next());
+        assert_ok!(tag.assert_exhausted());
+
+        tag.reset();
+
+        assert_ok_eq!(tag.next(), Values::new(b"foo", 0, 1));
+    }
+
+    #[test]
     fn exhausted() {
         let mut tag = Tag::new(b"foo;\n", 0, 0);
 
@@ -268,5 +358,46 @@ mod tests {
             tag.assert_exhausted(),
             Error::new(error::Kind::UnexpectedValues, 1, 0)
         );
+    }
+
+    #[test]
+    fn into_stored() {
+        let buffer = b"foo;";
+        let tag = Tag::new(buffer, 0, 0);
+        let stored = tag.into_stored();
+        let mut unstored_tag = unsafe { stored.into_tag() };
+
+        assert_ok_eq!(unstored_tag.next(), Values::new(b"foo", 0, 1));
+        assert_err_eq!(unstored_tag.next(), Error::new(error::Kind::EndOfTag, 0, 5));
+    }
+
+    #[test]
+    fn into_stored_after_iteration() {
+        let buffer = b"foo;bar;";
+        let mut tag = Tag::new(buffer, 0, 0);
+        assert_ok!(tag.next());
+        let stored = tag.into_stored();
+        let mut unstored_tag = unsafe { stored.into_tag() };
+
+        assert_ok_eq!(unstored_tag.next(), Values::new(b"bar", 0, 5));
+        assert_err_eq!(unstored_tag.next(), Error::new(error::Kind::EndOfTag, 0, 9));
+    }
+
+    #[test]
+    fn stored_origin_line() {
+        let buffer = b"foo;bar;";
+        let mut tag = Tag::new(buffer, 1, 2);
+        assert_ok!(tag.next());
+
+        assert_eq!(tag.into_stored().origin_line(), 1);
+    }
+
+    #[test]
+    fn stored_origin_column() {
+        let buffer = b"foo;bar;";
+        let mut tag = Tag::new(buffer, 1, 2);
+        assert_ok!(tag.next());
+
+        assert_eq!(tag.into_stored().origin_column(), 2);
     }
 }
