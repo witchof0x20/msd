@@ -1,5 +1,6 @@
 mod r#enum;
 mod error;
+mod map;
 mod parse;
 mod r#struct;
 mod tuple;
@@ -377,11 +378,13 @@ where
         Ok(result)
     }
 
-    fn deserialize_map<V>(self, _visitor: V) -> Result<V::Value>
+    fn deserialize_map<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        todo!()
+        let result = visitor.visit_map(map::root::Access::new(&mut self.tags))?;
+        self.tags.assert_exhausted()?;
+        Ok(result)
     }
 
     fn deserialize_struct<V>(
@@ -446,7 +449,7 @@ mod tests {
     use serde::{de, de::Visitor, Deserialize};
     use serde_bytes::ByteBuf;
     use serde_derive::Deserialize;
-    use std::fmt;
+    use std::{collections::HashMap, fmt};
 
     #[test]
     fn bool_true() {
@@ -1397,6 +1400,18 @@ mod tests {
             TupleStruct::deserialize(&mut deserializer),
             Error::new(error::Kind::UnexpectedTag, 1, 0)
         );
+    }
+
+    #[test]
+    fn map() {
+        let mut deserializer = Deserializer::new(b"#foo:1;\n#bar:2;\n#baz:3;\n#qux:4;\n".as_slice());
+
+        let mut expected = HashMap::new();
+        expected.insert("foo".to_owned(), 1);
+        expected.insert("bar".to_owned(), 2);
+        expected.insert("baz".to_owned(), 3);
+        expected.insert("qux".to_owned(), 4);
+        assert_ok_eq!(HashMap::<String, u64>::deserialize(&mut deserializer), expected);
     }
 
     #[test]

@@ -197,4 +197,31 @@ mod tests {
         assert_none!(assert_ok!(access.next_key::<Identifier>()));
         let _ = access.next_value::<u64>();
     }
+
+    #[test]
+    fn next_entry() {
+        let mut tags = Tags::new(b"#foo:42;\n".as_slice());
+        let mut access = Access::new(&mut tags, &["foo"]);
+
+        assert_some_eq!(assert_ok!(access.next_entry::<Identifier, u64>()), (Identifier("foo".to_owned()), 42));
+    }
+
+    #[test]
+    fn next_entry_none() {
+        let mut tags = Tags::new(b"".as_slice());
+        let mut access = Access::new(&mut tags, &["foo"]);
+
+        assert_none!(assert_ok!(access.next_entry::<Identifier, u64>()));
+    }
+
+    #[test]
+    fn next_entry_not_in_field_list() {
+        let mut tags = Tags::new(b"#bar:42;\n".as_slice());
+        let mut access = Access::new(&mut tags, &["foo"]);
+
+        assert_none!(assert_ok!(access.next_entry::<Identifier, u64>()));
+
+        // Should also revisit the tag.
+        assert_ok_eq!(tags.next(), Tag::new(b"bar:42;\n", 0, 0));
+    }
 }
