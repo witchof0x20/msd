@@ -1,6 +1,7 @@
 use crate::de::{
-    parse::{Tag, Values}, r#enum,
-    tuple, Error, Result,
+    map,
+    parse::{Tag, Values},
+    r#enum, tuple, Error, Result,
 };
 use serde::{de, de::Visitor};
 
@@ -273,7 +274,7 @@ impl<'a, 'de> de::Deserializer<'de> for Deserializer<'a> {
     where
         V: Visitor<'de>,
     {
-        let result =  visitor.visit_seq(tuple::Access::new(&mut self.values, len))?;
+        let result = visitor.visit_seq(tuple::Access::new(&mut self.values, len))?;
         self.values.assert_exhausted()?;
         self.tag.assert_exhausted()?;
         Ok(result)
@@ -288,17 +289,21 @@ impl<'a, 'de> de::Deserializer<'de> for Deserializer<'a> {
     where
         V: Visitor<'de>,
     {
-        let result =  visitor.visit_seq(tuple::Access::new(&mut self.values, len))?;
+        let result = visitor.visit_seq(tuple::Access::new(&mut self.values, len))?;
         self.values.assert_exhausted()?;
         self.tag.assert_exhausted()?;
         Ok(result)
     }
 
-    fn deserialize_map<V>(self, _visitor: V) -> Result<V::Value>
+    fn deserialize_map<V>(mut self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        todo!()
+        // SAFETY: `self.values` references the same buffer that `self.tag` references.
+        unsafe { self.tag.revisit(self.values) };
+        let result = visitor.visit_map(map::field::Access::new(&mut self.tag))?;
+        self.tag.assert_exhausted()?;
+        Ok(result)
     }
 
     fn deserialize_struct<V>(
@@ -322,7 +327,7 @@ impl<'a, 'de> de::Deserializer<'de> for Deserializer<'a> {
     where
         V: Visitor<'de>,
     {
-        let result =  visitor.visit_enum(r#enum::Access::new(&mut self.values))?;
+        let result = visitor.visit_enum(r#enum::Access::new(&mut self.values))?;
         self.values.assert_exhausted()?;
         self.tag.assert_exhausted()?;
         Ok(result)
@@ -355,7 +360,7 @@ mod tests {
     use serde::{de, de::Visitor, Deserialize};
     use serde_bytes::ByteBuf;
     use serde_derive::Deserialize;
-    use std::fmt;
+    use std::{collections::HashMap, fmt};
 
     #[test]
     fn bool_true() {
@@ -1268,6 +1273,20 @@ mod tests {
     }
 
     #[test]
+    fn map() {
+        let mut tag = Tag::new(b"foo:1;bar:2;baz:3;qux:4;", 0, 0);
+        let values = assert_ok!(tag.next());
+        let deserializer = Deserializer::new(tag, values);
+
+        let mut expected = HashMap::new();
+        expected.insert("foo".to_owned(), 1);
+        expected.insert("bar".to_owned(), 2);
+        expected.insert("baz".to_owned(), 3);
+        expected.insert("qux".to_owned(), 4);
+        assert_ok_eq!(HashMap::<String, u64>::deserialize(deserializer), expected,);
+    }
+
+    #[test]
     fn enum_unit_variant() {
         #[derive(Debug, Deserialize, PartialEq)]
         enum Unit {
@@ -1367,7 +1386,10 @@ mod tests {
         let values = assert_ok!(tag.next());
         let deserializer = Deserializer::new(tag, values);
 
-        assert_ok_eq!(Tuple::deserialize(deserializer), Tuple::Variant(42, "foo".to_owned(), (), 1.2));
+        assert_ok_eq!(
+            Tuple::deserialize(deserializer),
+            Tuple::Variant(42, "foo".to_owned(), (), 1.2)
+        );
     }
 
     #[test]
@@ -1437,7 +1459,10 @@ mod tests {
         let values = assert_ok!(tag.next());
         let deserializer = Deserializer::new(tag, values);
 
-        assert_ok_eq!(Identifier::deserialize(deserializer), Identifier("foo".to_owned()));
+        assert_ok_eq!(
+            Identifier::deserialize(deserializer),
+            Identifier("foo".to_owned())
+        );
     }
 
     #[test]

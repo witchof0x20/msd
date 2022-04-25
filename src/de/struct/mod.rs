@@ -47,7 +47,7 @@ where
         };
         let mut values = tag.next()?;
         let field = values.next()?.parse_identifier()?;
-        
+
         // Only return the result if the field is in the list of possible fields for the struct.
         if self.fields.take(field.as_str()).is_some() {
             let result = seed.deserialize(field::Deserializer::new(&field))?;
@@ -89,7 +89,15 @@ where
         seed.deserialize(value::Deserializer::new(tag, values))
     }
 
-    fn next_entry_seed<K, V>(&mut self, key_seed: K, value_seed: V) -> Result<Option<(K::Value, V::Value)>> where K: DeserializeSeed<'de>, V: DeserializeSeed<'de> {
+    fn next_entry_seed<K, V>(
+        &mut self,
+        key_seed: K,
+        value_seed: V,
+    ) -> Result<Option<(K::Value, V::Value)>>
+    where
+        K: DeserializeSeed<'de>,
+        V: DeserializeSeed<'de>,
+    {
         let mut tag = match self.tags.next() {
             Ok(tag) => tag,
             Err(_) => return Ok(None),
@@ -108,16 +116,20 @@ where
             // SAFETY: `stored_tag` references the buffer still active in `self.tags`.
             unsafe { self.tags.revisit(stored_tag) };
             Ok(None)
-        }   
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::Access;
-    use crate::de::parse::{Tags, Tag};
+    use crate::de::parse::{Tag, Tags};
     use claim::{assert_none, assert_ok, assert_ok_eq, assert_some_eq};
-    use serde::{de, de::{Visitor, MapAccess}, Deserialize};
+    use serde::{
+        de,
+        de::{MapAccess, Visitor},
+        Deserialize,
+    };
     use std::fmt;
 
     #[derive(Debug, PartialEq)]
@@ -154,7 +166,10 @@ mod tests {
         let mut tags = Tags::new(b"#foo:42;\n".as_slice());
         let mut access = Access::new(&mut tags, &["foo"]);
 
-        assert_some_eq!(assert_ok!(access.next_key::<Identifier>()), Identifier("foo".to_owned()));
+        assert_some_eq!(
+            assert_ok!(access.next_key::<Identifier>()),
+            Identifier("foo".to_owned())
+        );
         assert_ok_eq!(access.next_value::<u64>(), 42);
     }
 
@@ -203,7 +218,10 @@ mod tests {
         let mut tags = Tags::new(b"#foo:42;\n".as_slice());
         let mut access = Access::new(&mut tags, &["foo"]);
 
-        assert_some_eq!(assert_ok!(access.next_entry::<Identifier, u64>()), (Identifier("foo".to_owned()), 42));
+        assert_some_eq!(
+            assert_ok!(access.next_entry::<Identifier, u64>()),
+            (Identifier("foo".to_owned()), 42)
+        );
     }
 
     #[test]

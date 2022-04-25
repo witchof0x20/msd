@@ -1,4 +1,4 @@
-use super::Values;
+use super::{StoredValues, Values};
 use crate::de::{error, Error, Result};
 use std::slice;
 
@@ -16,7 +16,6 @@ enum EscapingState {
 }
 
 // Tag without the lifetime. Used when storing within an Access.
-#[derive(Debug)]
 pub(in crate::de) struct StoredTag {
     byte_ptr: *const u8,
     byte_len: usize,
@@ -29,6 +28,8 @@ pub(in crate::de) struct StoredTag {
 
     origin_line: usize,
     origin_column: usize,
+
+    revisit: Option<StoredValues>,
 }
 
 impl StoredTag {
@@ -55,6 +56,9 @@ impl StoredTag {
 
             origin_line: self.origin_line,
             origin_column: self.origin_column,
+
+            // The revisit is guaranteed to have the same lifetime as the containing `Tag`.
+            revisit: unsafe { self.revisit.map(|stored| stored.into_values()) },
         }
     }
 
@@ -87,6 +91,8 @@ pub(in crate::de) struct Tag<'a> {
 
     origin_line: usize,
     origin_column: usize,
+
+    revisit: Option<Values<'a>>,
 }
 
 impl<'a> Tag<'a> {
@@ -108,10 +114,16 @@ impl<'a> Tag<'a> {
 
             origin_line: line,
             origin_column: column,
+
+            revisit: None,
         }
     }
 
     pub(in crate::de) fn next(&mut self) -> Result<Values<'a>> {
+        if let Some(revisit) = self.revisit.take() {
+            return Ok(revisit);
+        }
+
         let mut values = None;
         self.started_byte_index = self.current_byte_index;
         self.started_line = self.current_line;
@@ -217,6 +229,12 @@ impl<'a> Tag<'a> {
         self.current_column = self.origin_column + 1;
     }
 
+    // SAFETY: `values` must reference the same buffer referenced by this tag. In other words,
+    // `values` should have been created by a call to this tag's `next()` method.
+    pub(in crate::de) unsafe fn revisit(&mut self, values: Values<'a>) {
+        self.revisit = Some(values);
+    }
+
     pub(in crate::de) fn assert_exhausted(&self) -> Result<()> {
         let mut current_line = self.current_line;
         let mut current_column = self.current_column;
@@ -251,6 +269,8 @@ impl<'a> Tag<'a> {
 
             origin_line: self.origin_line,
             origin_column: self.origin_column,
+
+            revisit: self.revisit.map(|values| values.into_stored()),
         }
     }
 }
@@ -336,6 +356,15 @@ mod tests {
 
         tag.reset();
 
+        assert_ok_eq!(tag.next(), Values::new(b"foo", 0, 1));
+    }
+
+    #[test]
+    fn revisit() {
+        let mut tag = Tag::new(b"foo;", 0, 0);
+
+        let values = assert_ok!(tag.next());
+        unsafe { tag.revisit(values) };
         assert_ok_eq!(tag.next(), Values::new(b"foo", 0, 1));
     }
 

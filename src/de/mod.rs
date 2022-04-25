@@ -1404,14 +1404,18 @@ mod tests {
 
     #[test]
     fn map() {
-        let mut deserializer = Deserializer::new(b"#foo:1;\n#bar:2;\n#baz:3;\n#qux:4;\n".as_slice());
+        let mut deserializer =
+            Deserializer::new(b"#foo:1;\n#bar:2;\n#baz:3;\n#qux:4;\n".as_slice());
 
         let mut expected = HashMap::new();
         expected.insert("foo".to_owned(), 1);
         expected.insert("bar".to_owned(), 2);
         expected.insert("baz".to_owned(), 3);
         expected.insert("qux".to_owned(), 4);
-        assert_ok_eq!(HashMap::<String, u64>::deserialize(&mut deserializer), expected);
+        assert_ok_eq!(
+            HashMap::<String, u64>::deserialize(&mut deserializer),
+            expected
+        );
     }
 
     #[test]
@@ -1423,7 +1427,8 @@ mod tests {
             baz: (),
             qux: f64,
         }
-        let mut deserializer = Deserializer::new(b"#foo:text;\n#bar:42;\n#baz:;\n#qux:1.2;\n".as_slice());
+        let mut deserializer =
+            Deserializer::new(b"#foo:text;\n#bar:42;\n#baz:;\n#qux:1.2;\n".as_slice());
 
         assert_ok_eq!(
             Struct::deserialize(&mut deserializer),
@@ -1445,7 +1450,8 @@ mod tests {
             baz: (),
             qux: f64,
         }
-        let mut deserializer = Deserializer::new(b"#foo:text;\n#bar:42;\n#baz:;\n#qux:1.2;\n".as_slice());
+        let mut deserializer =
+            Deserializer::new(b"#foo:text;\n#bar:42;\n#baz:;\n#qux:1.2;\n".as_slice());
 
         assert_ok_eq!(
             Struct::deserialize(&mut deserializer),
@@ -1481,6 +1487,34 @@ mod tests {
     }
 
     #[test]
+    fn struct_containing_map() {
+        #[derive(Debug, Deserialize, PartialEq)]
+        struct Struct {
+            foo: String,
+            bar: u64,
+            baz: (),
+            qux: HashMap<String, u64>,
+        }
+        let mut deserializer =
+            Deserializer::new(b"#foo:text;\n#bar:42;\n#baz:;\n#qux:a:1;b:2;c:3;d:4;\n".as_slice());
+
+        let mut expected = HashMap::new();
+        expected.insert("a".to_owned(), 1);
+        expected.insert("b".to_owned(), 2);
+        expected.insert("c".to_owned(), 3);
+        expected.insert("d".to_owned(), 4);
+        assert_ok_eq!(
+            Struct::deserialize(&mut deserializer),
+            Struct {
+                foo: "text".to_owned(),
+                bar: 42,
+                baz: (),
+                qux: expected,
+            }
+        );
+    }
+
+    #[test]
     fn struct_order_does_not_matter() {
         #[derive(Debug, Deserialize, PartialEq)]
         struct Struct {
@@ -1489,7 +1523,8 @@ mod tests {
             baz: (),
             qux: f64,
         }
-        let mut deserializer = Deserializer::new(b"#bar:42;\n#foo:text;\n#qux:1.2;\n#baz:;\n".as_slice());
+        let mut deserializer =
+            Deserializer::new(b"#bar:42;\n#foo:text;\n#qux:1.2;\n#baz:;\n".as_slice());
 
         assert_ok_eq!(
             Struct::deserialize(&mut deserializer),
