@@ -2,6 +2,7 @@ mod r#enum;
 mod error;
 mod map;
 mod parse;
+mod seq;
 mod r#struct;
 mod tuple;
 
@@ -340,11 +341,13 @@ where
         visitor.visit_newtype_struct(self)
     }
 
-    fn deserialize_seq<V>(self, _visitor: V) -> Result<V::Value>
+    fn deserialize_seq<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        todo!()
+        let result = visitor.visit_seq(seq::root::Access::new(&mut self.tags))?;
+        self.tags.assert_exhausted()?;
+        Ok(result)
     }
 
     fn deserialize_tuple<V>(self, len: usize, visitor: V) -> Result<V::Value>
@@ -1266,6 +1269,16 @@ mod tests {
         let mut deserializer = Deserializer::new(b"#42;\n".as_slice());
 
         assert_ok_eq!(Newtype::deserialize(&mut deserializer), Newtype(42));
+    }
+
+    #[test]
+    fn seq() {
+        let mut deserializer = Deserializer::new(b"#foo;#bar;#baz;".as_slice());
+
+        assert_ok_eq!(
+            Vec::<String>::deserialize(&mut deserializer),
+            vec!["foo".to_owned(), "bar".to_owned(), "baz".to_owned()]
+        );
     }
 
     #[test]
