@@ -74,15 +74,18 @@ where
     {
         // SAFETY: `self.tags` is not modified here, so this `Tag` will live longer than the
         // referenced buffer.
-        let tag =
-            self.tag
-                .take()
-                .expect("call to `next_value()` not preceeded by successful call to `next_key()`");
-        let values =
-            self.values
-                .take()
-                .expect("call to `next_value()` not preceeded by successful call to `next_key()`");
-        let field = self.field.take().expect("call to `next_value()` not preceeded by successful call to `next_key()`");
+        let tag = self
+            .tag
+            .take()
+            .expect("call to `next_value()` not preceeded by successful call to `next_key()`");
+        let values = self
+            .values
+            .take()
+            .expect("call to `next_value()` not preceeded by successful call to `next_key()`");
+        let field = self
+            .field
+            .take()
+            .expect("call to `next_value()` not preceeded by successful call to `next_key()`");
 
         seed.deserialize(value::Deserializer::new(field, self.tags, tag, values))
     }
@@ -108,7 +111,12 @@ where
             let key = key_seed.deserialize(field::Deserializer::new(&field))?;
             let stored_tag = tag.into_stored();
             let stored_values = values.into_stored();
-            let value = value_seed.deserialize(value::Deserializer::new(static_field, self.tags, stored_tag, stored_values))?;
+            let value = value_seed.deserialize(value::Deserializer::new(
+                static_field,
+                self.tags,
+                stored_tag,
+                stored_values,
+            ))?;
             Ok(Some((key, value)))
         } else {
             tag.reset();

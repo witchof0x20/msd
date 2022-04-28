@@ -1,17 +1,21 @@
-use crate::de::{map, parse::Tag, r#enum, tuple, Error, Result};
+use crate::de::{map, parse::Tags, r#enum, r#struct, tuple, Error, Result};
 use serde::{de, de::Visitor};
+use std::io::Read;
 
-pub(in crate::de) struct Deserializer<'a> {
-    tag: Tag<'a>,
+pub(in crate::de) struct Deserializer<'a, R> {
+    tags: &'a mut Tags<R>,
 }
 
-impl<'a> Deserializer<'a> {
-    pub(in crate::de) fn new(tag: Tag<'a>) -> Self {
-        Self { tag }
+impl<'a, R> Deserializer<'a, R> {
+    pub(in crate::de) fn new(tags: &'a mut Tags<R>) -> Self {
+        Self { tags }
     }
 }
 
-impl<'de, 'a> de::Deserializer<'de> for Deserializer<'a> {
+impl<'de, 'a, R> de::Deserializer<'de> for Deserializer<'a, R>
+where
+    R: Read,
+{
     type Error = Error;
 
     fn deserialize_any<V>(self, _visitor: V) -> Result<V::Value>
@@ -21,223 +25,241 @@ impl<'de, 'a> de::Deserializer<'de> for Deserializer<'a> {
         todo!()
     }
 
-    fn deserialize_bool<V>(mut self, visitor: V) -> Result<V::Value>
+    fn deserialize_bool<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        let mut values = self.tag.next()?;
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
         let value = values.next()?;
         let parsed = value.parse_bool()?;
         values.assert_exhausted()?;
-        self.tag.assert_exhausted()?;
+        tag.assert_exhausted()?;
         visitor.visit_bool(parsed)
     }
 
-    fn deserialize_i8<V>(mut self, visitor: V) -> Result<V::Value>
+    fn deserialize_i8<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        let mut values = self.tag.next()?;
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
         let value = values.next()?;
         let parsed = value.parse_i8()?;
         values.assert_exhausted()?;
-        self.tag.assert_exhausted()?;
+        tag.assert_exhausted()?;
         visitor.visit_i8(parsed)
     }
 
-    fn deserialize_i16<V>(mut self, visitor: V) -> Result<V::Value>
+    fn deserialize_i16<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        let mut values = self.tag.next()?;
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
         let value = values.next()?;
         let parsed = value.parse_i16()?;
         values.assert_exhausted()?;
-        self.tag.assert_exhausted()?;
+        tag.assert_exhausted()?;
         visitor.visit_i16(parsed)
     }
 
-    fn deserialize_i32<V>(mut self, visitor: V) -> Result<V::Value>
+    fn deserialize_i32<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        let mut values = self.tag.next()?;
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
         let value = values.next()?;
         let parsed = value.parse_i32()?;
         values.assert_exhausted()?;
-        self.tag.assert_exhausted()?;
+        tag.assert_exhausted()?;
         visitor.visit_i32(parsed)
     }
 
-    fn deserialize_i64<V>(mut self, visitor: V) -> Result<V::Value>
+    fn deserialize_i64<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        let mut values = self.tag.next()?;
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
         let value = values.next()?;
         let parsed = value.parse_i64()?;
         values.assert_exhausted()?;
-        self.tag.assert_exhausted()?;
+        tag.assert_exhausted()?;
         visitor.visit_i64(parsed)
     }
 
     #[cfg(has_i128)]
-    fn deserialize_i128<V>(mut self, visitor: V) -> Result<V::Value>
+    fn deserialize_i128<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        let mut values = self.tag.next()?;
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
         let value = values.next()?;
         let parsed = value.parse_i128()?;
         values.assert_exhausted()?;
-        self.tag.assert_exhausted()?;
+        tag.assert_exhausted()?;
         visitor.visit_i128(parsed)
     }
 
-    fn deserialize_u8<V>(mut self, visitor: V) -> Result<V::Value>
+    fn deserialize_u8<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        let mut values = self.tag.next()?;
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
         let value = values.next()?;
         let parsed = value.parse_u8()?;
         values.assert_exhausted()?;
-        self.tag.assert_exhausted()?;
+        tag.assert_exhausted()?;
         visitor.visit_u8(parsed)
     }
 
-    fn deserialize_u16<V>(mut self, visitor: V) -> Result<V::Value>
+    fn deserialize_u16<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        let mut values = self.tag.next()?;
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
         let value = values.next()?;
         let parsed = value.parse_u16()?;
         values.assert_exhausted()?;
-        self.tag.assert_exhausted()?;
+        tag.assert_exhausted()?;
         visitor.visit_u16(parsed)
     }
 
-    fn deserialize_u32<V>(mut self, visitor: V) -> Result<V::Value>
+    fn deserialize_u32<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        let mut values = self.tag.next()?;
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
         let value = values.next()?;
         let parsed = value.parse_u32()?;
         values.assert_exhausted()?;
-        self.tag.assert_exhausted()?;
+        tag.assert_exhausted()?;
         visitor.visit_u32(parsed)
     }
 
-    fn deserialize_u64<V>(mut self, visitor: V) -> Result<V::Value>
+    fn deserialize_u64<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        let mut values = self.tag.next()?;
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
         let value = values.next()?;
         let parsed = value.parse_u64()?;
         values.assert_exhausted()?;
-        self.tag.assert_exhausted()?;
+        tag.assert_exhausted()?;
         visitor.visit_u64(parsed)
     }
 
     #[cfg(has_i128)]
-    fn deserialize_u128<V>(mut self, visitor: V) -> Result<V::Value>
+    fn deserialize_u128<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        let mut values = self.tag.next()?;
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
         let value = values.next()?;
         let parsed = value.parse_u128()?;
         values.assert_exhausted()?;
-        self.tag.assert_exhausted()?;
+        tag.assert_exhausted()?;
         visitor.visit_u128(parsed)
     }
 
-    fn deserialize_f32<V>(mut self, visitor: V) -> Result<V::Value>
+    fn deserialize_f32<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        let mut values = self.tag.next()?;
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
         let value = values.next()?;
         let parsed = value.parse_f32()?;
         values.assert_exhausted()?;
-        self.tag.assert_exhausted()?;
+        tag.assert_exhausted()?;
         visitor.visit_f32(parsed)
     }
 
-    fn deserialize_f64<V>(mut self, visitor: V) -> Result<V::Value>
+    fn deserialize_f64<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        let mut values = self.tag.next()?;
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
         let value = values.next()?;
         let parsed = value.parse_f64()?;
         values.assert_exhausted()?;
-        self.tag.assert_exhausted()?;
+        tag.assert_exhausted()?;
         visitor.visit_f64(parsed)
     }
 
-    fn deserialize_char<V>(mut self, visitor: V) -> Result<V::Value>
+    fn deserialize_char<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        let mut values = self.tag.next()?;
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
         let value = values.next()?;
         let parsed = value.parse_char()?;
         values.assert_exhausted()?;
-        self.tag.assert_exhausted()?;
+        tag.assert_exhausted()?;
         visitor.visit_char(parsed)
     }
 
-    fn deserialize_str<V>(mut self, visitor: V) -> Result<V::Value>
+    fn deserialize_str<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        let mut values = self.tag.next()?;
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
         let value = values.next()?;
         // Parsed string must be owned, since it removes escaping and comments.
         let parsed = value.parse_string()?;
         values.assert_exhausted()?;
-        self.tag.assert_exhausted()?;
+        tag.assert_exhausted()?;
         visitor.visit_str(&parsed)
     }
 
-    fn deserialize_string<V>(mut self, visitor: V) -> Result<V::Value>
+    fn deserialize_string<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        let mut values = self.tag.next()?;
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
         let value = values.next()?;
         let parsed = value.parse_string()?;
         values.assert_exhausted()?;
-        self.tag.assert_exhausted()?;
+        tag.assert_exhausted()?;
         visitor.visit_string(parsed)
     }
 
-    fn deserialize_bytes<V>(mut self, visitor: V) -> Result<V::Value>
+    fn deserialize_bytes<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        let mut values = self.tag.next()?;
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
         let value = values.next()?;
         // Parsed bytes must be owned, since it removes escaping and comments.
         let parsed = value.parse_byte_buf();
         values.assert_exhausted()?;
-        self.tag.assert_exhausted()?;
+        tag.assert_exhausted()?;
         visitor.visit_bytes(&parsed)
     }
 
-    fn deserialize_byte_buf<V>(mut self, visitor: V) -> Result<V::Value>
+    fn deserialize_byte_buf<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        let mut values = self.tag.next()?;
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
         let value = values.next()?;
         let parsed = value.parse_byte_buf();
         values.assert_exhausted()?;
-        self.tag.assert_exhausted()?;
+        tag.assert_exhausted()?;
         visitor.visit_byte_buf(parsed)
     }
 
@@ -248,27 +270,29 @@ impl<'de, 'a> de::Deserializer<'de> for Deserializer<'a> {
         todo!()
     }
 
-    fn deserialize_unit<V>(mut self, visitor: V) -> Result<V::Value>
+    fn deserialize_unit<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        let mut values = self.tag.next()?;
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
         let value = values.next()?;
         value.parse_unit()?;
         values.assert_exhausted()?;
-        self.tag.assert_exhausted()?;
+        tag.assert_exhausted()?;
         visitor.visit_unit()
     }
 
-    fn deserialize_unit_struct<V>(mut self, _name: &'static str, visitor: V) -> Result<V::Value>
+    fn deserialize_unit_struct<V>(self, _name: &'static str, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        let mut values = self.tag.next()?;
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
         let value = values.next()?;
         value.parse_unit()?;
         values.assert_exhausted()?;
-        self.tag.assert_exhausted()?;
+        tag.assert_exhausted()?;
         visitor.visit_unit()
     }
 
@@ -286,19 +310,20 @@ impl<'de, 'a> de::Deserializer<'de> for Deserializer<'a> {
         todo!()
     }
 
-    fn deserialize_tuple<V>(mut self, len: usize, visitor: V) -> Result<V::Value>
+    fn deserialize_tuple<V>(self, len: usize, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        let mut values = self.tag.next()?;
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
         let result = visitor.visit_seq(tuple::Access::new(&mut values, len))?;
         values.assert_exhausted()?;
-        self.tag.assert_exhausted()?;
+        tag.assert_exhausted()?;
         Ok(result)
     }
 
     fn deserialize_tuple_struct<V>(
-        mut self,
+        self,
         _name: &'static str,
         len: usize,
         visitor: V,
@@ -306,36 +331,44 @@ impl<'de, 'a> de::Deserializer<'de> for Deserializer<'a> {
     where
         V: Visitor<'de>,
     {
-        let mut values = self.tag.next()?;
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
         let result = visitor.visit_seq(tuple::Access::new(&mut values, len))?;
         values.assert_exhausted()?;
-        self.tag.assert_exhausted()?;
+        tag.assert_exhausted()?;
         Ok(result)
     }
 
-    fn deserialize_map<V>(mut self, visitor: V) -> Result<V::Value>
+    fn deserialize_map<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        let result = visitor.visit_map(map::field::Access::new(&mut self.tag))?;
-        self.tag.assert_exhausted()?;
+        let mut tag = self.tags.next()?;
+        let result = visitor.visit_map(map::field::Access::new(&mut tag))?;
+        tag.assert_exhausted()?;
         Ok(result)
     }
 
     fn deserialize_struct<V>(
-        self,
+        mut self,
         _name: &'static str,
-        _fields: &'static [&'static str],
-        _visitor: V,
+        fields: &'static [&'static str],
+        visitor: V,
     ) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        todo!()
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
+        let value = values.next()?;
+        value.parse_unit()?;
+        values.assert_exhausted()?;
+        tag.assert_exhausted()?;
+        visitor.visit_map(r#struct::Access::new(&mut self.tags, fields))
     }
 
     fn deserialize_enum<V>(
-        mut self,
+        self,
         _name: &'static str,
         _variants: &'static [&'static str],
         visitor: V,
@@ -343,23 +376,25 @@ impl<'de, 'a> de::Deserializer<'de> for Deserializer<'a> {
     where
         V: Visitor<'de>,
     {
-        let mut values = self.tag.next()?;
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
         let result = visitor.visit_enum(r#enum::Access::new(&mut values))?;
         values.assert_exhausted()?;
-        self.tag.assert_exhausted()?;
+        tag.assert_exhausted()?;
         Ok(result)
     }
 
-    fn deserialize_identifier<V>(mut self, visitor: V) -> Result<V::Value>
+    fn deserialize_identifier<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        let mut values = self.tag.next()?;
+        let mut tag = self.tags.next()?;
+        let mut values = tag.next()?;
         let value = values.next()?;
         // Parsed string must be owned, since it removes escaping and comments.
         let parsed = value.parse_identifier()?;
         values.assert_exhausted()?;
-        self.tag.assert_exhausted()?;
+        tag.assert_exhausted()?;
         visitor.visit_str(&parsed)
     }
 
@@ -374,7 +409,7 @@ impl<'de, 'a> de::Deserializer<'de> for Deserializer<'a> {
 #[cfg(test)]
 mod tests {
     use super::Deserializer;
-    use crate::de::{error, parse::Tag, Error};
+    use crate::de::{error, parse::Tags, Error};
     use claim::{assert_err_eq, assert_ok_eq};
     use serde::{de, de::Visitor, Deserialize};
     use serde_bytes::ByteBuf;
@@ -383,24 +418,24 @@ mod tests {
 
     #[test]
     fn bool_true() {
-        let tag = Tag::new(b"true;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#true;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_ok_eq!(bool::deserialize(deserializer), true);
     }
 
     #[test]
     fn bool_false() {
-        let tag = Tag::new(b"false;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#false;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_ok_eq!(bool::deserialize(deserializer), false);
     }
 
     #[test]
     fn bool_invalid() {
-        let tag = Tag::new(b"invalid;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#invalid;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             bool::deserialize(deserializer),
@@ -410,16 +445,16 @@ mod tests {
 
     #[test]
     fn i8() {
-        let tag = Tag::new(b"42;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_ok_eq!(i8::deserialize(deserializer), 42);
     }
 
     #[test]
     fn i8_invalid() {
-        let tag = Tag::new(b"invalid;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#invalid;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             i8::deserialize(deserializer),
@@ -429,8 +464,8 @@ mod tests {
 
     #[test]
     fn i8_too_many_values() {
-        let tag = Tag::new(b"42:100;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42:100;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             i8::deserialize(deserializer),
@@ -440,8 +475,8 @@ mod tests {
 
     #[test]
     fn i8_unexpected_values() {
-        let tag = Tag::new(b"42;100;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42;100;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             i8::deserialize(deserializer),
@@ -451,16 +486,16 @@ mod tests {
 
     #[test]
     fn i16() {
-        let tag = Tag::new(b"42;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_ok_eq!(i16::deserialize(deserializer), 42);
     }
 
     #[test]
     fn i16_invalid() {
-        let tag = Tag::new(b"invalid;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#invalid;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             i16::deserialize(deserializer),
@@ -470,8 +505,8 @@ mod tests {
 
     #[test]
     fn i16_too_many_values() {
-        let tag = Tag::new(b"42:100;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42:100;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             i16::deserialize(deserializer),
@@ -481,8 +516,8 @@ mod tests {
 
     #[test]
     fn i16_unexpected_values() {
-        let tag = Tag::new(b"42;100;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42;100;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             i16::deserialize(deserializer),
@@ -492,16 +527,16 @@ mod tests {
 
     #[test]
     fn i32() {
-        let tag = Tag::new(b"42;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_ok_eq!(i32::deserialize(deserializer), 42);
     }
 
     #[test]
     fn i32_invalid() {
-        let tag = Tag::new(b"invalid;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#invalid;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             i32::deserialize(deserializer),
@@ -511,8 +546,8 @@ mod tests {
 
     #[test]
     fn i32_too_many_values() {
-        let tag = Tag::new(b"42:100;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42:100;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             i32::deserialize(deserializer),
@@ -522,8 +557,8 @@ mod tests {
 
     #[test]
     fn i32_unexpected_values() {
-        let tag = Tag::new(b"42;100;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42;100;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             i32::deserialize(deserializer),
@@ -533,16 +568,16 @@ mod tests {
 
     #[test]
     fn i64() {
-        let tag = Tag::new(b"42;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_ok_eq!(i64::deserialize(deserializer), 42);
     }
 
     #[test]
     fn i64_invalid() {
-        let tag = Tag::new(b"invalid;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#invalid;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             i64::deserialize(deserializer),
@@ -552,8 +587,8 @@ mod tests {
 
     #[test]
     fn i64_too_many_values() {
-        let tag = Tag::new(b"42:100;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42:100;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             i64::deserialize(deserializer),
@@ -563,8 +598,8 @@ mod tests {
 
     #[test]
     fn i64_unexpected_values() {
-        let tag = Tag::new(b"42;100;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42;100;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             i64::deserialize(deserializer),
@@ -575,8 +610,8 @@ mod tests {
     #[test]
     #[cfg_attr(not(has_i128), ignore)]
     fn i128() {
-        let tag = Tag::new(b"42;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_ok_eq!(i128::deserialize(deserializer), 42);
     }
@@ -584,8 +619,8 @@ mod tests {
     #[test]
     #[cfg_attr(not(has_i128), ignore)]
     fn i128_invalid() {
-        let tag = Tag::new(b"invalid;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#invalid;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             i128::deserialize(deserializer),
@@ -596,8 +631,8 @@ mod tests {
     #[test]
     #[cfg_attr(not(has_i128), ignore)]
     fn i128_too_many_values() {
-        let tag = Tag::new(b"42:100;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42:100;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             i128::deserialize(deserializer),
@@ -608,8 +643,8 @@ mod tests {
     #[test]
     #[cfg_attr(not(has_i128), ignore)]
     fn i128_unexpected_values() {
-        let tag = Tag::new(b"42;100;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42;100;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             i128::deserialize(deserializer),
@@ -619,16 +654,16 @@ mod tests {
 
     #[test]
     fn u8() {
-        let tag = Tag::new(b"42;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_ok_eq!(u8::deserialize(deserializer), 42);
     }
 
     #[test]
     fn u8_invalid() {
-        let tag = Tag::new(b"invalid;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#invalid;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             u8::deserialize(deserializer),
@@ -638,8 +673,8 @@ mod tests {
 
     #[test]
     fn u8_too_many_values() {
-        let tag = Tag::new(b"42:100;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42:100;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             u8::deserialize(deserializer),
@@ -649,8 +684,8 @@ mod tests {
 
     #[test]
     fn u8_unexpected_values() {
-        let tag = Tag::new(b"42;100;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42;100;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             u8::deserialize(deserializer),
@@ -660,16 +695,16 @@ mod tests {
 
     #[test]
     fn u16() {
-        let tag = Tag::new(b"42;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_ok_eq!(u16::deserialize(deserializer), 42);
     }
 
     #[test]
     fn u16_invalid() {
-        let tag = Tag::new(b"invalid;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#invalid;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             u16::deserialize(deserializer),
@@ -679,8 +714,8 @@ mod tests {
 
     #[test]
     fn u16_too_many_values() {
-        let tag = Tag::new(b"42:100;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42:100;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             u16::deserialize(deserializer),
@@ -690,8 +725,8 @@ mod tests {
 
     #[test]
     fn u16_unexpected_values() {
-        let tag = Tag::new(b"42;100;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42;100;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             u16::deserialize(deserializer),
@@ -701,16 +736,16 @@ mod tests {
 
     #[test]
     fn u32() {
-        let tag = Tag::new(b"42;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_ok_eq!(u32::deserialize(deserializer), 42);
     }
 
     #[test]
     fn u32_invalid() {
-        let tag = Tag::new(b"invalid;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#invalid;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             u32::deserialize(deserializer),
@@ -720,8 +755,8 @@ mod tests {
 
     #[test]
     fn u32_too_many_values() {
-        let tag = Tag::new(b"42:100;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42:100;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             u32::deserialize(deserializer),
@@ -731,8 +766,8 @@ mod tests {
 
     #[test]
     fn u32_unexpected_values() {
-        let tag = Tag::new(b"42;100;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42;100;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             u32::deserialize(deserializer),
@@ -742,16 +777,16 @@ mod tests {
 
     #[test]
     fn u64() {
-        let tag = Tag::new(b"42;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_ok_eq!(u64::deserialize(deserializer), 42);
     }
 
     #[test]
     fn u64_invalid() {
-        let tag = Tag::new(b"invalid;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#invalid;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             u64::deserialize(deserializer),
@@ -761,8 +796,8 @@ mod tests {
 
     #[test]
     fn u64_too_many_values() {
-        let tag = Tag::new(b"42:100;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42:100;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             u64::deserialize(deserializer),
@@ -772,8 +807,8 @@ mod tests {
 
     #[test]
     fn u64_unexpected_values() {
-        let tag = Tag::new(b"42;100;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42;100;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             u64::deserialize(deserializer),
@@ -784,8 +819,8 @@ mod tests {
     #[test]
     #[cfg_attr(not(has_i128), ignore)]
     fn u128() {
-        let tag = Tag::new(b"42;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_ok_eq!(u128::deserialize(deserializer), 42);
     }
@@ -793,8 +828,8 @@ mod tests {
     #[test]
     #[cfg_attr(not(has_i128), ignore)]
     fn u128_invalid() {
-        let tag = Tag::new(b"invalid;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#invalid;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             u128::deserialize(deserializer),
@@ -805,8 +840,8 @@ mod tests {
     #[test]
     #[cfg_attr(not(has_i128), ignore)]
     fn u128_too_many_values() {
-        let tag = Tag::new(b"42:100;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42:100;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             u128::deserialize(deserializer),
@@ -817,8 +852,8 @@ mod tests {
     #[test]
     #[cfg_attr(not(has_i128), ignore)]
     fn u128_unexpected_values() {
-        let tag = Tag::new(b"42;100;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42;100;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             u128::deserialize(deserializer),
@@ -828,16 +863,16 @@ mod tests {
 
     #[test]
     fn f32() {
-        let tag = Tag::new(b"42.9;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42.9;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_ok_eq!(f32::deserialize(deserializer), 42.9);
     }
 
     #[test]
     fn f32_invalid() {
-        let tag = Tag::new(b"invalid;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#invalid;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             f32::deserialize(deserializer),
@@ -847,8 +882,8 @@ mod tests {
 
     #[test]
     fn f32_too_many_values() {
-        let tag = Tag::new(b"42.9:1.2;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42.9:1.2;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             f32::deserialize(deserializer),
@@ -858,8 +893,8 @@ mod tests {
 
     #[test]
     fn f32_unexpected_values() {
-        let tag = Tag::new(b"42.9;1.2;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42.9;1.2;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             f32::deserialize(deserializer),
@@ -869,16 +904,16 @@ mod tests {
 
     #[test]
     fn f64() {
-        let tag = Tag::new(b"42.9;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42.9;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_ok_eq!(f64::deserialize(deserializer), 42.9);
     }
 
     #[test]
     fn f64_invalid() {
-        let tag = Tag::new(b"invalid;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#invalid;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             f64::deserialize(deserializer),
@@ -888,8 +923,8 @@ mod tests {
 
     #[test]
     fn f64_too_many_values() {
-        let tag = Tag::new(b"42.9:1.2;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42.9:1.2;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             f64::deserialize(deserializer),
@@ -899,8 +934,8 @@ mod tests {
 
     #[test]
     fn f64_unexpected_values() {
-        let tag = Tag::new(b"42.9;1.2;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42.9;1.2;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             f64::deserialize(deserializer),
@@ -910,16 +945,16 @@ mod tests {
 
     #[test]
     fn char() {
-        let tag = Tag::new(b"a;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#a;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_ok_eq!(char::deserialize(deserializer), 'a');
     }
 
     #[test]
     fn char_invalid() {
-        let tag = Tag::new(b"invalid;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#invalid;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             char::deserialize(deserializer),
@@ -929,8 +964,8 @@ mod tests {
 
     #[test]
     fn char_too_many_values() {
-        let tag = Tag::new(b"a:b;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#a:b;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             char::deserialize(deserializer),
@@ -940,8 +975,8 @@ mod tests {
 
     #[test]
     fn char_unexpected_values() {
-        let tag = Tag::new(b"a;b;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#a;b;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             char::deserialize(deserializer),
@@ -951,16 +986,16 @@ mod tests {
 
     #[test]
     fn string() {
-        let tag = Tag::new(b"foo;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#foo;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_ok_eq!(String::deserialize(deserializer), "foo".to_owned());
     }
 
     #[test]
     fn string_invalid() {
-        let tag = Tag::new(b"\xF0\x9Ffoo;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#\xF0\x9Ffoo;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             String::deserialize(deserializer),
@@ -970,8 +1005,8 @@ mod tests {
 
     #[test]
     fn string_too_many_values() {
-        let tag = Tag::new(b"foo:bar;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#foo:bar;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             String::deserialize(deserializer),
@@ -981,8 +1016,8 @@ mod tests {
 
     #[test]
     fn string_unexpected_values() {
-        let tag = Tag::new(b"foo;bar;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#foo;bar;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             String::deserialize(deserializer),
@@ -992,16 +1027,16 @@ mod tests {
 
     #[test]
     fn byte_buf() {
-        let tag = Tag::new(b"foo;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#foo;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_ok_eq!(ByteBuf::deserialize(deserializer), b"foo");
     }
 
     #[test]
     fn byte_buf_too_many_values() {
-        let tag = Tag::new(b"foo:bar;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#foo:bar;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             ByteBuf::deserialize(deserializer),
@@ -1011,8 +1046,8 @@ mod tests {
 
     #[test]
     fn byte_buf_unexpected_values() {
-        let tag = Tag::new(b"foo;bar;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#foo;bar;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             ByteBuf::deserialize(deserializer),
@@ -1022,16 +1057,16 @@ mod tests {
 
     #[test]
     fn unit() {
-        let tag = Tag::new(b";", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_ok_eq!(<()>::deserialize(deserializer), ());
     }
 
     #[test]
     fn unit_invalid() {
-        let tag = Tag::new(b"invalid;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#invalid;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             <()>::deserialize(deserializer),
@@ -1041,8 +1076,8 @@ mod tests {
 
     #[test]
     fn unit_too_many_values() {
-        let tag = Tag::new(b":;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#:;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             <()>::deserialize(deserializer),
@@ -1052,8 +1087,8 @@ mod tests {
 
     #[test]
     fn unit_unexpected_values() {
-        let tag = Tag::new(b";;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#;;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             <()>::deserialize(deserializer),
@@ -1065,8 +1100,8 @@ mod tests {
     fn unit_struct() {
         #[derive(Debug, Deserialize, PartialEq)]
         struct Unit;
-        let tag = Tag::new(b";", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_ok_eq!(Unit::deserialize(deserializer), Unit);
     }
@@ -1075,8 +1110,8 @@ mod tests {
     fn unit_struct_invalid() {
         #[derive(Debug, Deserialize, PartialEq)]
         struct Unit;
-        let tag = Tag::new(b"invalid;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#invalid;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             Unit::deserialize(deserializer),
@@ -1088,8 +1123,8 @@ mod tests {
     fn unit_struct_too_many_values() {
         #[derive(Debug, Deserialize, PartialEq)]
         struct Unit;
-        let tag = Tag::new(b":;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#:;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             Unit::deserialize(deserializer),
@@ -1101,8 +1136,8 @@ mod tests {
     fn unit_struct_unexpected_values() {
         #[derive(Debug, Deserialize, PartialEq)]
         struct Unit;
-        let tag = Tag::new(b";;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#;;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             Unit::deserialize(deserializer),
@@ -1114,16 +1149,16 @@ mod tests {
     fn newtype_struct() {
         #[derive(Debug, Deserialize, PartialEq)]
         struct Newtype(u64);
-        let tag = Tag::new(b"42;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_ok_eq!(Newtype::deserialize(deserializer), Newtype(42));
     }
 
     #[test]
     fn tuple() {
-        let tag = Tag::new(b"42:foo::1.2;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42:foo::1.2;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_ok_eq!(
             <(u64, String, (), f64)>::deserialize(deserializer),
@@ -1133,8 +1168,8 @@ mod tests {
 
     #[test]
     fn tuple_too_many_values() {
-        let tag = Tag::new(b"42:foo::1.2:bar;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42:foo::1.2:bar;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             <(u64, String, (), f64)>::deserialize(deserializer),
@@ -1144,8 +1179,8 @@ mod tests {
 
     #[test]
     fn tuple_unexpected_values() {
-        let tag = Tag::new(b"42:foo::1.2;bar;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42:foo::1.2;bar;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             <(u64, String, (), f64)>::deserialize(deserializer),
@@ -1157,8 +1192,8 @@ mod tests {
     fn tuple_struct() {
         #[derive(Debug, Deserialize, PartialEq)]
         struct TupleStruct(u64, String, (), f64);
-        let tag = Tag::new(b"42:foo::1.2;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42:foo::1.2;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_ok_eq!(
             TupleStruct::deserialize(deserializer),
@@ -1170,8 +1205,8 @@ mod tests {
     fn tuple_struct_too_many_values() {
         #[derive(Debug, Deserialize, PartialEq)]
         struct TupleStruct(u64, String, (), f64);
-        let tag = Tag::new(b"42:foo::1.2:bar;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42:foo::1.2:bar;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             TupleStruct::deserialize(deserializer),
@@ -1183,8 +1218,8 @@ mod tests {
     fn tuple_struct_unexpected_values() {
         #[derive(Debug, Deserialize, PartialEq)]
         struct TupleStruct(u64, String, (), f64);
-        let tag = Tag::new(b"42:foo::1.2;bar;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#42:foo::1.2;bar;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             TupleStruct::deserialize(deserializer),
@@ -1194,8 +1229,8 @@ mod tests {
 
     #[test]
     fn map() {
-        let tag = Tag::new(b"foo:1;bar:2;baz:3;qux:4;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#foo:1;bar:2;baz:3;qux:4;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         let mut expected = HashMap::new();
         expected.insert("foo".to_owned(), 1);
@@ -1206,13 +1241,36 @@ mod tests {
     }
 
     #[test]
+    fn r#struct() {
+        #[derive(Debug, Deserialize, PartialEq)]
+        struct Struct {
+            foo: String,
+            bar: u64,
+            baz: (),
+            qux: f64,
+        }
+        let mut tags = Tags::new(b"#;\n#foo:test;\n#bar:42;\n#baz:;\n#qux:1.2;\n".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
+
+        assert_ok_eq!(
+            Struct::deserialize(deserializer),
+            Struct {
+                foo: "test".to_owned(),
+                bar: 42,
+                baz: (),
+                qux: 1.2
+            }
+        );
+    }
+
+    #[test]
     fn enum_unit_variant() {
         #[derive(Debug, Deserialize, PartialEq)]
         enum Unit {
             Variant,
         }
-        let tag = Tag::new(b"Variant;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#Variant;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_ok_eq!(Unit::deserialize(deserializer), Unit::Variant);
     }
@@ -1223,8 +1281,8 @@ mod tests {
         enum Unit {
             Variant,
         }
-        let tag = Tag::new(b"Variant:42;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#Variant:42;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             Unit::deserialize(deserializer),
@@ -1238,8 +1296,8 @@ mod tests {
         enum Unit {
             Variant,
         }
-        let tag = Tag::new(b"Variant;42;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#Variant;42;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             Unit::deserialize(deserializer),
@@ -1253,8 +1311,8 @@ mod tests {
         enum Newtype {
             Variant(u64),
         }
-        let tag = Tag::new(b"Variant:42;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#Variant:42;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_ok_eq!(Newtype::deserialize(deserializer), Newtype::Variant(42));
     }
@@ -1265,8 +1323,8 @@ mod tests {
         enum Newtype {
             Variant(u64),
         }
-        let tag = Tag::new(b"Variant:42:bar;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#Variant:42:bar;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             Newtype::deserialize(deserializer),
@@ -1280,8 +1338,8 @@ mod tests {
         enum Newtype {
             Variant(u64),
         }
-        let tag = Tag::new(b"Variant:42;bar;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#Variant:42;bar;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             Newtype::deserialize(deserializer),
@@ -1295,8 +1353,8 @@ mod tests {
         enum Tuple {
             Variant(u64, String, (), f64),
         }
-        let tag = Tag::new(b"Variant:42:foo::1.2;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#Variant:42:foo::1.2;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_ok_eq!(
             Tuple::deserialize(deserializer),
@@ -1310,8 +1368,8 @@ mod tests {
         enum Tuple {
             Variant(u64, String, (), f64),
         }
-        let tag = Tag::new(b"Variant:42:foo::1.2:bar;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#Variant:42:foo::1.2:bar;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             Tuple::deserialize(deserializer),
@@ -1325,8 +1383,8 @@ mod tests {
         enum Tuple {
             Variant(u64, String, (), f64),
         }
-        let tag = Tag::new(b"Variant:42:foo::1.2;bar;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#Variant:42:foo::1.2;bar;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             Tuple::deserialize(deserializer),
@@ -1365,8 +1423,8 @@ mod tests {
 
     #[test]
     fn identifier() {
-        let tag = Tag::new(b"foo;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#foo;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_ok_eq!(
             Identifier::deserialize(deserializer),
@@ -1376,8 +1434,8 @@ mod tests {
 
     #[test]
     fn identifier_whitespace() {
-        let tag = Tag::new(b"   foo  ;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#   foo  ;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_ok_eq!(
             Identifier::deserialize(deserializer),
@@ -1387,8 +1445,8 @@ mod tests {
 
     #[test]
     fn identifier_invalid() {
-        let tag = Tag::new(b"\xF0\x9Ffoo;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#\xF0\x9Ffoo;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             Identifier::deserialize(deserializer),
@@ -1398,8 +1456,8 @@ mod tests {
 
     #[test]
     fn identifier_too_many_values() {
-        let tag = Tag::new(b"foo:bar;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#foo:bar;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             Identifier::deserialize(deserializer),
@@ -1409,8 +1467,8 @@ mod tests {
 
     #[test]
     fn identifier_unexpected_values() {
-        let tag = Tag::new(b"foo;bar;", 0, 0);
-        let deserializer = Deserializer::new(tag);
+        let mut tags = Tags::new(b"#foo;bar;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             Identifier::deserialize(deserializer),

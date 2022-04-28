@@ -47,11 +47,11 @@ where
     where
         V: Visitor<'de>,
     {
-        let mut values = unsafe {self.values.into_values()};
+        let mut values = unsafe { self.values.into_values() };
         let value = values.next()?;
         let parsed = value.parse_bool()?;
         values.assert_exhausted()?;
-        unsafe {self.tag.into_tag()}.assert_exhausted()?;
+        unsafe { self.tag.into_tag() }.assert_exhausted()?;
         visitor.visit_bool(parsed)
     }
 
@@ -59,11 +59,11 @@ where
     where
         V: Visitor<'de>,
     {
-        let mut values = unsafe {self.values.into_values()};
+        let mut values = unsafe { self.values.into_values() };
         let value = values.next()?;
         let parsed = value.parse_i8()?;
         values.assert_exhausted()?;
-        unsafe {self.tag.into_tag()}.assert_exhausted()?;
+        unsafe { self.tag.into_tag() }.assert_exhausted()?;
         visitor.visit_i8(parsed)
     }
 
@@ -71,11 +71,11 @@ where
     where
         V: Visitor<'de>,
     {
-        let mut values = unsafe {self.values.into_values()};
+        let mut values = unsafe { self.values.into_values() };
         let value = values.next()?;
         let parsed = value.parse_i16()?;
         values.assert_exhausted()?;
-        unsafe {self.tag.into_tag()}.assert_exhausted()?;
+        unsafe { self.tag.into_tag() }.assert_exhausted()?;
         visitor.visit_i16(parsed)
     }
 
@@ -83,11 +83,11 @@ where
     where
         V: Visitor<'de>,
     {
-        let mut values = unsafe {self.values.into_values()};
+        let mut values = unsafe { self.values.into_values() };
         let value = values.next()?;
         let parsed = value.parse_i32()?;
         values.assert_exhausted()?;
-        unsafe {self.tag.into_tag()}.assert_exhausted()?;
+        unsafe { self.tag.into_tag() }.assert_exhausted()?;
         visitor.visit_i32(parsed)
     }
 
@@ -95,11 +95,11 @@ where
     where
         V: Visitor<'de>,
     {
-        let mut values = unsafe {self.values.into_values()};
+        let mut values = unsafe { self.values.into_values() };
         let value = values.next()?;
         let parsed = value.parse_i64()?;
         values.assert_exhausted()?;
-        unsafe {self.tag.into_tag()}.assert_exhausted()?;
+        unsafe { self.tag.into_tag() }.assert_exhausted()?;
         visitor.visit_i64(parsed)
     }
 
@@ -108,11 +108,11 @@ where
     where
         V: Visitor<'de>,
     {
-        let mut values = unsafe {self.values.into_values()};
+        let mut values = unsafe { self.values.into_values() };
         let value = values.next()?;
         let parsed = value.parse_i128()?;
         values.assert_exhausted()?;
-        unsafe {self.tag.into_tag()}.assert_exhausted()?;
+        unsafe { self.tag.into_tag() }.assert_exhausted()?;
         visitor.visit_i128(parsed)
     }
 
@@ -120,11 +120,11 @@ where
     where
         V: Visitor<'de>,
     {
-        let mut values = unsafe {self.values.into_values()};
+        let mut values = unsafe { self.values.into_values() };
         let value = values.next()?;
         let parsed = value.parse_u8()?;
         values.assert_exhausted()?;
-        unsafe {self.tag.into_tag()}.assert_exhausted()?;
+        unsafe { self.tag.into_tag() }.assert_exhausted()?;
         visitor.visit_u8(parsed)
     }
 
@@ -132,11 +132,11 @@ where
     where
         V: Visitor<'de>,
     {
-        let mut values = unsafe {self.values.into_values()};
+        let mut values = unsafe { self.values.into_values() };
         let value = values.next()?;
         let parsed = value.parse_u16()?;
         values.assert_exhausted()?;
-        unsafe {self.tag.into_tag()}.assert_exhausted()?;
+        unsafe { self.tag.into_tag() }.assert_exhausted()?;
         visitor.visit_u16(parsed)
     }
 
@@ -144,11 +144,11 @@ where
     where
         V: Visitor<'de>,
     {
-        let mut values = unsafe {self.values.into_values()};
+        let mut values = unsafe { self.values.into_values() };
         let value = values.next()?;
         let parsed = value.parse_u32()?;
         values.assert_exhausted()?;
-        unsafe {self.tag.into_tag()}.assert_exhausted()?;
+        unsafe { self.tag.into_tag() }.assert_exhausted()?;
         visitor.visit_u32(parsed)
     }
 
@@ -156,11 +156,11 @@ where
     where
         V: Visitor<'de>,
     {
-        let mut values = unsafe {self.values.into_values()};
+        let mut values = unsafe { self.values.into_values() };
         let value = values.next()?;
         let parsed = value.parse_u64()?;
         values.assert_exhausted()?;
-        unsafe {self.tag.into_tag()}.assert_exhausted()?;
+        unsafe { self.tag.into_tag() }.assert_exhausted()?;
         visitor.visit_u64(parsed)
     }
 
@@ -169,11 +169,11 @@ where
     where
         V: Visitor<'de>,
     {
-        let mut values = unsafe {self.values.into_values()};
+        let mut values = unsafe { self.values.into_values() };
         let value = values.next()?;
         let parsed = value.parse_u128()?;
         values.assert_exhausted()?;
-        unsafe {self.tag.into_tag()}.assert_exhausted()?;
+        unsafe { self.tag.into_tag() }.assert_exhausted()?;
         visitor.visit_u128(parsed)
     }
 
@@ -181,11 +181,11 @@ where
     where
         V: Visitor<'de>,
     {
-        let mut values = unsafe {self.values.into_values()};
+        let mut values = unsafe { self.values.into_values() };
         let value = values.next()?;
         let parsed = value.parse_f32()?;
         values.assert_exhausted()?;
-        unsafe {self.tag.into_tag()}.assert_exhausted()?;
+        unsafe { self.tag.into_tag() }.assert_exhausted()?;
         visitor.visit_f32(parsed)
     }
 
@@ -193,11 +193,11 @@ where
     where
         V: Visitor<'de>,
     {
-        let mut values = unsafe {self.values.into_values()};
+        let mut values = unsafe { self.values.into_values() };
         let value = values.next()?;
         let parsed = value.parse_f64()?;
         values.assert_exhausted()?;
-        unsafe {self.tag.into_tag()}.assert_exhausted()?;
+        unsafe { self.tag.into_tag() }.assert_exhausted()?;
         visitor.visit_f64(parsed)
     }
 
@@ -205,11 +205,11 @@ where
     where
         V: Visitor<'de>,
     {
-        let mut values = unsafe {self.values.into_values()};
+        let mut values = unsafe { self.values.into_values() };
         let value = values.next()?;
         let parsed = value.parse_char()?;
         values.assert_exhausted()?;
-        unsafe {self.tag.into_tag()}.assert_exhausted()?;
+        unsafe { self.tag.into_tag() }.assert_exhausted()?;
         visitor.visit_char(parsed)
     }
 
@@ -217,11 +217,11 @@ where
     where
         V: Visitor<'de>,
     {
-        let mut values = unsafe {self.values.into_values()};
+        let mut values = unsafe { self.values.into_values() };
         let value = values.next()?;
         let parsed = value.parse_string()?;
         values.assert_exhausted()?;
-        unsafe {self.tag.into_tag()}.assert_exhausted()?;
+        unsafe { self.tag.into_tag() }.assert_exhausted()?;
         visitor.visit_str(&parsed)
     }
 
@@ -229,11 +229,11 @@ where
     where
         V: Visitor<'de>,
     {
-        let mut values = unsafe {self.values.into_values()};
+        let mut values = unsafe { self.values.into_values() };
         let value = values.next()?;
         let parsed = value.parse_string()?;
         values.assert_exhausted()?;
-        unsafe {self.tag.into_tag()}.assert_exhausted()?;
+        unsafe { self.tag.into_tag() }.assert_exhausted()?;
         visitor.visit_string(parsed)
     }
 
@@ -241,11 +241,11 @@ where
     where
         V: Visitor<'de>,
     {
-        let mut values = unsafe {self.values.into_values()};
+        let mut values = unsafe { self.values.into_values() };
         let value = values.next()?;
         let parsed = value.parse_byte_buf();
         values.assert_exhausted()?;
-        unsafe {self.tag.into_tag()}.assert_exhausted()?;
+        unsafe { self.tag.into_tag() }.assert_exhausted()?;
         visitor.visit_bytes(&parsed)
     }
 
@@ -253,11 +253,11 @@ where
     where
         V: Visitor<'de>,
     {
-        let mut values = unsafe {self.values.into_values()};
+        let mut values = unsafe { self.values.into_values() };
         let value = values.next()?;
         let parsed = value.parse_byte_buf();
         values.assert_exhausted()?;
-        unsafe {self.tag.into_tag()}.assert_exhausted()?;
+        unsafe { self.tag.into_tag() }.assert_exhausted()?;
         visitor.visit_byte_buf(parsed)
     }
 
@@ -273,11 +273,11 @@ where
     where
         V: Visitor<'de>,
     {
-        let mut values = unsafe {self.values.into_values()};
+        let mut values = unsafe { self.values.into_values() };
         let value = values.next()?;
         value.parse_unit()?;
         values.assert_exhausted()?;
-        unsafe {self.tag.into_tag()}.assert_exhausted()?;
+        unsafe { self.tag.into_tag() }.assert_exhausted()?;
         visitor.visit_unit()
     }
 
@@ -285,11 +285,11 @@ where
     where
         V: Visitor<'de>,
     {
-        let mut values = unsafe {self.values.into_values()};
+        let mut values = unsafe { self.values.into_values() };
         let value = values.next()?;
         value.parse_unit()?;
         values.assert_exhausted()?;
-        unsafe {self.tag.into_tag()}.assert_exhausted()?;
+        unsafe { self.tag.into_tag() }.assert_exhausted()?;
         visitor.visit_unit()
     }
 
@@ -315,10 +315,10 @@ where
     where
         V: Visitor<'de>,
     {
-        let mut values = unsafe {self.values.into_values()};
+        let mut values = unsafe { self.values.into_values() };
         let result = visitor.visit_seq(tuple::Access::new(&mut values, len))?;
         values.assert_exhausted()?;
-        unsafe {self.tag.into_tag()}.assert_exhausted()?;
+        unsafe { self.tag.into_tag() }.assert_exhausted()?;
         Ok(result)
     }
 
@@ -331,10 +331,10 @@ where
     where
         V: Visitor<'de>,
     {
-        let mut values = unsafe {self.values.into_values()};
+        let mut values = unsafe { self.values.into_values() };
         let result = visitor.visit_seq(tuple::Access::new(&mut values, len))?;
         values.assert_exhausted()?;
-        unsafe {self.tag.into_tag()}.assert_exhausted()?;
+        unsafe { self.tag.into_tag() }.assert_exhausted()?;
         Ok(result)
     }
 
@@ -342,7 +342,7 @@ where
     where
         V: Visitor<'de>,
     {
-        let mut tag = unsafe {self.tag.into_tag()};
+        let mut tag = unsafe { self.tag.into_tag() };
         // SAFETY: `self.values` references the same buffer that `self.tag` references.
         unsafe { tag.revisit(self.values.into_values()) };
         let result = visitor.visit_map(map::field::Access::new(&mut tag))?;
@@ -371,10 +371,10 @@ where
     where
         V: Visitor<'de>,
     {
-        let mut values = unsafe {self.values.into_values()};
+        let mut values = unsafe { self.values.into_values() };
         let result = visitor.visit_enum(r#enum::Access::new(&mut values))?;
         values.assert_exhausted()?;
-        unsafe {self.tag.into_tag()}.assert_exhausted()?;
+        unsafe { self.tag.into_tag() }.assert_exhausted()?;
         Ok(result)
     }
 
@@ -382,11 +382,11 @@ where
     where
         V: Visitor<'de>,
     {
-        let mut values = unsafe {self.values.into_values()};
+        let mut values = unsafe { self.values.into_values() };
         let value = values.next()?;
         let parsed = value.parse_identifier()?;
         values.assert_exhausted()?;
-        unsafe {self.tag.into_tag()}.assert_exhausted()?;
+        unsafe { self.tag.into_tag() }.assert_exhausted()?;
         visitor.visit_str(&parsed)
     }
 
@@ -416,8 +416,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_ok_eq!(bool::deserialize(deserializer), true);
     }
@@ -430,8 +429,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_ok_eq!(bool::deserialize(deserializer), false);
     }
@@ -444,8 +442,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             bool::deserialize(deserializer),
@@ -461,8 +458,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             bool::deserialize(deserializer),
@@ -478,8 +474,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             bool::deserialize(deserializer),
@@ -495,8 +490,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_ok_eq!(i8::deserialize(deserializer), 42);
     }
@@ -509,8 +503,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             i8::deserialize(deserializer),
@@ -526,8 +519,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             i8::deserialize(deserializer),
@@ -543,8 +535,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             i8::deserialize(deserializer),
@@ -560,8 +551,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_ok_eq!(i16::deserialize(deserializer), 42);
     }
@@ -574,8 +564,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             i16::deserialize(deserializer),
@@ -591,8 +580,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             i16::deserialize(deserializer),
@@ -608,8 +596,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             i16::deserialize(deserializer),
@@ -625,8 +612,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_ok_eq!(i32::deserialize(deserializer), 42);
     }
@@ -639,8 +625,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             i32::deserialize(deserializer),
@@ -656,8 +641,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             i32::deserialize(deserializer),
@@ -673,8 +657,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             i32::deserialize(deserializer),
@@ -690,8 +673,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_ok_eq!(i64::deserialize(deserializer), 42);
     }
@@ -704,8 +686,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             i64::deserialize(deserializer),
@@ -721,8 +702,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             i64::deserialize(deserializer),
@@ -738,8 +718,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             i64::deserialize(deserializer),
@@ -756,8 +735,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_ok_eq!(i128::deserialize(deserializer), 42);
     }
@@ -771,8 +749,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             i128::deserialize(deserializer),
@@ -789,8 +766,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             i128::deserialize(deserializer),
@@ -807,8 +783,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             i128::deserialize(deserializer),
@@ -824,8 +799,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_ok_eq!(u8::deserialize(deserializer), 42);
     }
@@ -838,8 +812,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             u8::deserialize(deserializer),
@@ -855,8 +828,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             u8::deserialize(deserializer),
@@ -872,8 +844,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             u8::deserialize(deserializer),
@@ -889,8 +860,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_ok_eq!(u16::deserialize(deserializer), 42);
     }
@@ -903,8 +873,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             u16::deserialize(deserializer),
@@ -920,8 +889,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             u16::deserialize(deserializer),
@@ -937,8 +905,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             u16::deserialize(deserializer),
@@ -954,8 +921,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_ok_eq!(u32::deserialize(deserializer), 42);
     }
@@ -968,8 +934,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             u32::deserialize(deserializer),
@@ -985,8 +950,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             u32::deserialize(deserializer),
@@ -1002,8 +966,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             u32::deserialize(deserializer),
@@ -1019,8 +982,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_ok_eq!(u64::deserialize(deserializer), 42);
     }
@@ -1033,8 +995,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             u64::deserialize(deserializer),
@@ -1050,8 +1011,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             u64::deserialize(deserializer),
@@ -1067,8 +1027,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             u64::deserialize(deserializer),
@@ -1085,8 +1044,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_ok_eq!(u128::deserialize(deserializer), 42);
     }
@@ -1100,8 +1058,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             u128::deserialize(deserializer),
@@ -1118,8 +1075,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             u128::deserialize(deserializer),
@@ -1136,8 +1092,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             u128::deserialize(deserializer),
@@ -1153,8 +1108,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_ok_eq!(f32::deserialize(deserializer), 42.9);
     }
@@ -1167,8 +1121,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             f32::deserialize(deserializer),
@@ -1184,8 +1137,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             f32::deserialize(deserializer),
@@ -1201,8 +1153,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             f32::deserialize(deserializer),
@@ -1218,8 +1169,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_ok_eq!(f64::deserialize(deserializer), 42.9);
     }
@@ -1232,8 +1182,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             f64::deserialize(deserializer),
@@ -1249,8 +1198,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             f64::deserialize(deserializer),
@@ -1266,8 +1214,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             f64::deserialize(deserializer),
@@ -1283,8 +1230,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_ok_eq!(char::deserialize(deserializer), 'a');
     }
@@ -1297,8 +1243,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             char::deserialize(deserializer),
@@ -1314,8 +1259,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             char::deserialize(deserializer),
@@ -1331,8 +1275,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             char::deserialize(deserializer),
@@ -1348,8 +1291,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_ok_eq!(String::deserialize(deserializer), "foo");
     }
@@ -1362,8 +1304,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             String::deserialize(deserializer),
@@ -1379,8 +1320,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             String::deserialize(deserializer),
@@ -1396,8 +1336,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             String::deserialize(deserializer),
@@ -1413,8 +1352,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_ok_eq!(ByteBuf::deserialize(deserializer), b"foo");
     }
@@ -1427,8 +1365,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             ByteBuf::deserialize(deserializer),
@@ -1444,8 +1381,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             ByteBuf::deserialize(deserializer),
@@ -1461,8 +1397,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_ok_eq!(Option::<u64>::deserialize(deserializer), Some(42));
     }
@@ -1475,8 +1410,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_ok_eq!(<()>::deserialize(deserializer), ());
     }
@@ -1489,8 +1423,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             <()>::deserialize(deserializer),
@@ -1506,8 +1439,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             <()>::deserialize(deserializer),
@@ -1523,8 +1455,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             <()>::deserialize(deserializer),
@@ -1542,8 +1473,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_ok_eq!(Unit::deserialize(deserializer), Unit);
     }
@@ -1558,8 +1488,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             Unit::deserialize(deserializer),
@@ -1577,8 +1506,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             Unit::deserialize(deserializer),
@@ -1596,8 +1524,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             Unit::deserialize(deserializer),
@@ -1613,13 +1540,9 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
-        assert_ok_eq!(
-            Vec::<u64>::deserialize(deserializer),
-            vec![1, 2, 3]
-        );
+        assert_ok_eq!(Vec::<u64>::deserialize(deserializer), vec![1, 2, 3]);
     }
 
     #[test]
@@ -1630,8 +1553,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_ok_eq!(
             <(u64, String, (), f64)>::deserialize(deserializer),
@@ -1647,8 +1569,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             <(u64, String, (), f64)>::deserialize(deserializer),
@@ -1664,8 +1585,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             <(u64, String, (), f64)>::deserialize(deserializer),
@@ -1683,8 +1603,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_ok_eq!(
             TupleStruct::deserialize(deserializer),
@@ -1702,8 +1621,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             TupleStruct::deserialize(deserializer),
@@ -1721,8 +1639,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             TupleStruct::deserialize(deserializer),
@@ -1738,8 +1655,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         let mut expected = HashMap::new();
         expected.insert("foo".to_owned(), 1);
@@ -1761,8 +1677,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_ok_eq!(Unit::deserialize(deserializer), Unit::Variant);
     }
@@ -1779,8 +1694,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             Unit::deserialize(deserializer),
@@ -1800,8 +1714,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             Unit::deserialize(deserializer),
@@ -1821,8 +1734,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_ok_eq!(Newtype::deserialize(deserializer), Newtype::Variant(42));
     }
@@ -1839,8 +1751,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             Newtype::deserialize(deserializer),
@@ -1860,8 +1771,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             Newtype::deserialize(deserializer),
@@ -1881,8 +1791,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_ok_eq!(
             Tuple::deserialize(deserializer),
@@ -1902,8 +1811,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             Tuple::deserialize(deserializer),
@@ -1923,8 +1831,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             Tuple::deserialize(deserializer),
@@ -1969,8 +1876,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_ok_eq!(
             Identifier::deserialize(deserializer),
@@ -1986,8 +1892,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             Identifier::deserialize(deserializer),
@@ -2003,8 +1908,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             Identifier::deserialize(deserializer),
@@ -2020,8 +1924,7 @@ mod tests {
         let _field = assert_ok!(values.next());
         let stored_tag = tag.into_stored();
         let stored_values = values.into_stored();
-        let deserializer =
-            Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
 
         assert_err_eq!(
             Identifier::deserialize(deserializer),

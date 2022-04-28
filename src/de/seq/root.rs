@@ -27,7 +27,11 @@ where
             Ok(tag) => tag,
             Err(_) => return Ok(None),
         };
-        Ok(Some(seed.deserialize(element::Deserializer::new(tag))?))
+        let stored = tag.into_stored();
+        unsafe { self.tags.revisit(stored) };
+        Ok(Some(
+            seed.deserialize(element::Deserializer::new(&mut self.tags))?,
+        ))
     }
 }
 
