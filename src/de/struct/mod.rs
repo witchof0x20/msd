@@ -17,6 +17,7 @@ pub(in crate::de) struct Access<'a, R> {
     // call to `self.tags.next()`.
     tag: Option<StoredTag>,
     values: Option<StoredValues>,
+    field: Option<&'static str>,
 }
 
 impl<'a, R> Access<'a, R> {
@@ -27,6 +28,7 @@ impl<'a, R> Access<'a, R> {
 
             tag: None,
             values: None,
+            field: None,
         }
     }
 }
@@ -49,12 +51,13 @@ where
         let field = values.next()?.parse_identifier()?;
 
         // Only return the result if the field is in the list of possible fields for the struct.
-        if self.fields.take(field.as_str()).is_some() {
+        if let Some(static_field) = self.fields.take(field.as_str()) {
             let result = seed.deserialize(field::Deserializer::new(&field))?;
             // Note that these raw values will only live until the next call to `next_key_seed()`, at
             // which point they will be overwritten.
             self.values = Some(values.into_stored());
             self.tag = Some(tag.into_stored());
+            self.field = Some(static_field);
             Ok(Some(result))
         } else {
             tag.reset();
@@ -71,22 +74,17 @@ where
     {
         // SAFETY: `self.tags` is not modified here, so this `Tag` will live longer than the
         // referenced buffer.
-        let tag = unsafe {
+        let tag =
             self.tag
                 .take()
-                .expect("call to `next_value()` not preceeded by successful call to `next_key()`")
-                .into_tag()
-        };
-        // SAFETY: `self.tags` is not modified here, so this `Values` will live longer than the
-        // referenced buffer.
-        let values = unsafe {
+                .expect("call to `next_value()` not preceeded by successful call to `next_key()`");
+        let values =
             self.values
                 .take()
-                .expect("call to `next_value()` not preceeded by successful call to `next_key()`")
-                .into_values()
-        };
+                .expect("call to `next_value()` not preceeded by successful call to `next_key()`");
+        let field = self.field.take().expect("call to `next_value()` not preceeded by successful call to `next_key()`");
 
-        seed.deserialize(value::Deserializer::new(tag, values))
+        seed.deserialize(value::Deserializer::new(field, self.tags, tag, values))
     }
 
     fn next_entry_seed<K, V>(
@@ -106,9 +104,11 @@ where
         let field = values.next()?.parse_identifier()?;
 
         // Only return the result if the field is in the list of possible fields for the struct.
-        if self.fields.take(field.as_str()).is_some() {
+        if let Some(static_field) = self.fields.take(field.as_str()) {
             let key = key_seed.deserialize(field::Deserializer::new(&field))?;
-            let value = value_seed.deserialize(value::Deserializer::new(tag, values))?;
+            let stored_tag = tag.into_stored();
+            let stored_values = values.into_stored();
+            let value = value_seed.deserialize(value::Deserializer::new(static_field, self.tags, stored_tag, stored_values))?;
             Ok(Some((key, value)))
         } else {
             tag.reset();
