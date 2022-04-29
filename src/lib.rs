@@ -4,6 +4,6 @@ pub mod de;
 pub mod ser;
 
 #[doc(inline)]
-pub use de::{Deserializer, from_bytes, from_reader};
+pub use de::{from_bytes, from_reader, Deserializer};
 #[doc(inline)]
-pub use ser::{Serializer, to_bytes, to_writer};
+pub use ser::{to_bytes, to_writer, Serializer};

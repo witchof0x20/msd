@@ -8,7 +8,11 @@ mod tuple;
 
 pub use error::{Error, Result};
 
-use serde::{de, Deserialize, de::{DeserializeOwned, Visitor}};
+use serde::{
+    de,
+    de::{DeserializeOwned, Visitor},
+    Deserialize,
+};
 use std::io::Read;
 
 pub struct Deserializer<R> {
@@ -449,12 +453,19 @@ unsafe impl<R> Send for Deserializer<R> {}
 
 unsafe impl<R> Sync for Deserializer<R> {}
 
-pub fn from_reader<R, T>(reader: R) -> Result<T> where R: Read, T: DeserializeOwned {
+pub fn from_reader<R, T>(reader: R) -> Result<T>
+where
+    R: Read,
+    T: DeserializeOwned,
+{
     let mut deserializer = Deserializer::new(reader);
     T::deserialize(&mut deserializer)
 }
 
-pub fn from_bytes<'a, T>(bytes: &'a [u8]) -> Result<T> where T: Deserialize<'a> {
+pub fn from_bytes<'a, T>(bytes: &'a [u8]) -> Result<T>
+where
+    T: Deserialize<'a>,
+{
     let mut deserializer = Deserializer::new(bytes);
     T::deserialize(&mut deserializer)
 }

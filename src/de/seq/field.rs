@@ -102,12 +102,24 @@ mod tests {
             bar: char,
             baz: u64,
         }
-        let mut tags = Tags::new(b"#foo:;\n#bar:a;\n#baz:1;\n#foo:;\n#bar:b;\n#baz:2;\n#foo:;\n#bar:c;\n#baz:3;\n".as_slice());
+        let mut tags = Tags::new(
+            b"#foo:;\n#bar:a;\n#baz:1;\n#foo:;\n#bar:b;\n#baz:2;\n#foo:;\n#bar:c;\n#baz:3;\n"
+                .as_slice(),
+        );
         let mut access = Access::new("foo", &mut tags);
 
-        assert_some_eq!(assert_ok!(access.next_element::<Struct>()), Struct {bar: 'a', baz: 1});
-        assert_some_eq!(assert_ok!(access.next_element::<Struct>()), Struct {bar: 'b', baz: 2});
-        assert_some_eq!(assert_ok!(access.next_element::<Struct>()), Struct {bar: 'c', baz: 3});
+        assert_some_eq!(
+            assert_ok!(access.next_element::<Struct>()),
+            Struct { bar: 'a', baz: 1 }
+        );
+        assert_some_eq!(
+            assert_ok!(access.next_element::<Struct>()),
+            Struct { bar: 'b', baz: 2 }
+        );
+        assert_some_eq!(
+            assert_ok!(access.next_element::<Struct>()),
+            Struct { bar: 'c', baz: 3 }
+        );
         assert_none!(assert_ok!(access.next_element::<Struct>()));
     }
 }

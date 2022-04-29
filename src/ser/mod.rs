@@ -48,75 +48,87 @@ where
 
     fn serialize_i8(self, v: i8) -> Result<Self::Ok> {
         let mut buffer = itoa::Buffer::new();
-        self.writer.write_tag_name_unescaped(buffer.format(v).as_bytes())?;
+        self.writer
+            .write_tag_name_unescaped(buffer.format(v).as_bytes())?;
         self.writer.close_tag()
     }
 
     fn serialize_i16(self, v: i16) -> Result<Self::Ok> {
         let mut buffer = itoa::Buffer::new();
-        self.writer.write_tag_name_unescaped(buffer.format(v).as_bytes())?;
+        self.writer
+            .write_tag_name_unescaped(buffer.format(v).as_bytes())?;
         self.writer.close_tag()
     }
 
     fn serialize_i32(self, v: i32) -> Result<Self::Ok> {
         let mut buffer = itoa::Buffer::new();
-        self.writer.write_tag_name_unescaped(buffer.format(v).as_bytes())?;
+        self.writer
+            .write_tag_name_unescaped(buffer.format(v).as_bytes())?;
         self.writer.close_tag()
     }
 
     fn serialize_i64(self, v: i64) -> Result<Self::Ok> {
         let mut buffer = itoa::Buffer::new();
-        self.writer.write_tag_name_unescaped(buffer.format(v).as_bytes())?;
+        self.writer
+            .write_tag_name_unescaped(buffer.format(v).as_bytes())?;
         self.writer.close_tag()
     }
 
     #[cfg(has_i128)]
     fn serialize_i128(self, v: i128) -> Result<Self::Ok> {
         let mut buffer = itoa::Buffer::new();
-        self.writer.write_tag_name_unescaped(buffer.format(v).as_bytes())?;
+        self.writer
+            .write_tag_name_unescaped(buffer.format(v).as_bytes())?;
         self.writer.close_tag()
     }
 
     fn serialize_u8(self, v: u8) -> Result<Self::Ok> {
         let mut buffer = itoa::Buffer::new();
-        self.writer.write_tag_name_unescaped(buffer.format(v).as_bytes())?;
+        self.writer
+            .write_tag_name_unescaped(buffer.format(v).as_bytes())?;
         self.writer.close_tag()
     }
 
     fn serialize_u16(self, v: u16) -> Result<Self::Ok> {
         let mut buffer = itoa::Buffer::new();
-        self.writer.write_tag_name_unescaped(buffer.format(v).as_bytes())?;
+        self.writer
+            .write_tag_name_unescaped(buffer.format(v).as_bytes())?;
         self.writer.close_tag()
     }
 
     fn serialize_u32(self, v: u32) -> Result<Self::Ok> {
         let mut buffer = itoa::Buffer::new();
-        self.writer.write_tag_name_unescaped(buffer.format(v).as_bytes())?;
+        self.writer
+            .write_tag_name_unescaped(buffer.format(v).as_bytes())?;
         self.writer.close_tag()
     }
 
     fn serialize_u64(self, v: u64) -> Result<Self::Ok> {
         let mut buffer = itoa::Buffer::new();
-        self.writer.write_tag_name_unescaped(buffer.format(v).as_bytes())?;
+        self.writer
+            .write_tag_name_unescaped(buffer.format(v).as_bytes())?;
         self.writer.close_tag()
     }
 
     #[cfg(has_i128)]
     fn serialize_u128(self, v: u128) -> Result<Self::Ok> {
         let mut buffer = itoa::Buffer::new();
-        self.writer.write_tag_name_unescaped(buffer.format(v).as_bytes())?;
+        self.writer
+            .write_tag_name_unescaped(buffer.format(v).as_bytes())?;
         self.writer.close_tag()
     }
 
     fn serialize_f32(self, v: f32) -> Result<Self::Ok> {
         let mut buffer = ryu::Buffer::new();
-        self.writer.write_tag_name_unescaped(buffer.format(v).as_bytes())?;
+        self.writer
+            .write_tag_name_unescaped(buffer.format(v).as_bytes())?;
         self.writer.close_tag()
     }
 
     fn serialize_f64(self, v: f64) -> Result<Self::Ok> {
         let mut buffer = ryu::Buffer::new();
-        self.writer.write_tag_name_unescaped(buffer.format(v).as_bytes())?;
+        self.writer
+            .write_tag_name_unescaped(buffer.format(v).as_bytes())?;
         self.writer.close_tag()
     }
 
@@ -240,13 +252,20 @@ where
     }
 }
 
-pub fn to_writer<W, T>(writer: W, value: &T) -> Result<()> where W: Write, T: ?Sized + Serialize {
+pub fn to_writer<W, T>(writer: W, value: &T) -> Result<()>
+where
+    W: Write,
+    T: ?Sized + Serialize,
+{
     let mut serializer = Serializer::new(writer);
     value.serialize(&mut serializer)?;
     Ok(())
 }
 
-pub fn to_bytes<T>(value: &T) -> Result<Vec<u8>> where T: ?Sized + Serialize {
+pub fn to_bytes<T>(value: &T) -> Result<Vec<u8>>
+where
+    T: ?Sized + Serialize,
+{
     let mut bytes = Vec::with_capacity(128);
     to_writer(&mut bytes, value)?;
     Ok(bytes)

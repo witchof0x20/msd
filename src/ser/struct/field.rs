@@ -46,7 +46,8 @@ where
         self.writer
             .write_tag_name_unescaped(&self.escaped_field_name)?;
         let mut buffer = itoa::Buffer::new();
-        self.writer.write_parameter_unescaped(buffer.format(v).as_bytes())?;
+        self.writer
+            .write_parameter_unescaped(buffer.format(v).as_bytes())?;
         self.writer.close_tag()
     }
 
@@ -54,7 +55,8 @@ where
         self.writer
             .write_tag_name_unescaped(&self.escaped_field_name)?;
         let mut buffer = itoa::Buffer::new();
-        self.writer.write_parameter_unescaped(buffer.format(v).as_bytes())?;
+        self.writer
+            .write_parameter_unescaped(buffer.format(v).as_bytes())?;
         self.writer.close_tag()
     }
 
@@ -62,7 +64,8 @@ where
         self.writer
             .write_tag_name_unescaped(&self.escaped_field_name)?;
         let mut buffer = itoa::Buffer::new();
-        self.writer.write_parameter_unescaped(buffer.format(v).as_bytes())?;
+        self.writer
+            .write_parameter_unescaped(buffer.format(v).as_bytes())?;
         self.writer.close_tag()
     }
 
@@ -70,7 +73,8 @@ where
         self.writer
             .write_tag_name_unescaped(&self.escaped_field_name)?;
         let mut buffer = itoa::Buffer::new();
-        self.writer.write_parameter_unescaped(buffer.format(v).as_bytes())?;
+        self.writer
+            .write_parameter_unescaped(buffer.format(v).as_bytes())?;
         self.writer.close_tag()
     }
 
@@ -79,7 +83,8 @@ where
         self.writer
             .write_tag_name_unescaped(&self.escaped_field_name)?;
         let mut buffer = itoa::Buffer::new();
-        self.writer.write_parameter_unescaped(buffer.format(v).as_bytes())?;
+        self.writer
+            .write_parameter_unescaped(buffer.format(v).as_bytes())?;
         self.writer.close_tag()
     }
 
@@ -87,7 +92,8 @@ where
         self.writer
             .write_tag_name_unescaped(&self.escaped_field_name)?;
         let mut buffer = itoa::Buffer::new();
-        self.writer.write_parameter_unescaped(buffer.format(v).as_bytes())?;
+        self.writer
+            .write_parameter_unescaped(buffer.format(v).as_bytes())?;
         self.writer.close_tag()
     }
 
@@ -95,7 +101,8 @@ where
         self.writer
             .write_tag_name_unescaped(&self.escaped_field_name)?;
         let mut buffer = itoa::Buffer::new();
-        self.writer.write_parameter_unescaped(buffer.format(v).as_bytes())?;
+        self.writer
+            .write_parameter_unescaped(buffer.format(v).as_bytes())?;
         self.writer.close_tag()
     }
 
@@ -103,7 +110,8 @@ where
         self.writer
             .write_tag_name_unescaped(&self.escaped_field_name)?;
         let mut buffer = itoa::Buffer::new();
-        self.writer.write_parameter_unescaped(buffer.format(v).as_bytes())?;
+        self.writer
+            .write_parameter_unescaped(buffer.format(v).as_bytes())?;
         self.writer.close_tag()
     }
 
@@ -111,7 +119,8 @@ where
         self.writer
             .write_tag_name_unescaped(&self.escaped_field_name)?;
         let mut buffer = itoa::Buffer::new();
-        self.writer.write_parameter_unescaped(buffer.format(v).as_bytes())?;
+        self.writer
+            .write_parameter_unescaped(buffer.format(v).as_bytes())?;
         self.writer.close_tag()
     }
 
@@ -120,7 +129,8 @@ where
         self.writer
             .write_tag_name_unescaped(&self.escaped_field_name)?;
         let mut buffer = itoa::Buffer::new();
-        self.writer.write_parameter_unescaped(buffer.format(v).as_bytes())?;
+        self.writer
+            .write_parameter_unescaped(buffer.format(v).as_bytes())?;
         self.writer.close_tag()
     }
 
@@ -128,7 +138,8 @@ where
         self.writer
             .write_tag_name_unescaped(&self.escaped_field_name)?;
         let mut buffer = ryu::Buffer::new();
-        self.writer.write_parameter_unescaped(buffer.format(v).as_bytes())?;
+        self.writer
+            .write_parameter_unescaped(buffer.format(v).as_bytes())?;
         self.writer.close_tag()
     }
 
@@ -136,7 +147,8 @@ where
         self.writer
             .write_tag_name_unescaped(&self.escaped_field_name)?;
         let mut buffer = ryu::Buffer::new();
-        self.writer.write_parameter_unescaped(buffer.format(v).as_bytes())?;
+        self.writer
+            .write_parameter_unescaped(buffer.format(v).as_bytes())?;
         self.writer.close_tag()
     }
 
