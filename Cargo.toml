@@ -2,6 +2,7 @@
 name = "msd"
 version = "0.1.0"
 edition = "2021"
+rust-version = "1.58.0"
 
 [dependencies]
 arrayvec = "0.7.2"
