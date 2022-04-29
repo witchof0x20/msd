@@ -1,3 +1,24 @@
+//! MSD deserialization.
+//! 
+//! This module provides all of the tools necessary for deserializing MSD input into types
+//! implementing [`Deserialize`].
+//! 
+//! # Example
+//! ```
+//! use std::collections::HashMap;
+//! 
+//! let input = b"#foo:1;\n#bar:2;\n";
+//! let deserialized: HashMap<String, u64> = msd::from_bytes(input.as_slice()).unwrap();
+//! 
+//! let mut expected = HashMap::new();
+//! expected.insert("foo".to_owned(), 1);
+//! expected.insert("bar".to_owned(), 2);
+//! 
+//! assert_eq!(deserialized, expected);
+//! ```
+//! 
+//! [`Deserialize`]: serde::Deserialize
+
 mod r#enum;
 mod error;
 mod map;
