@@ -1,5 +1,5 @@
 //! A library for reading and writing MSD files.
-//! 
+//!
 //! # Usage
 //! Reading and writing of MSD files is done using [`serde`](https://crates.io/crates/serde), a library
 //! for generic serialization and deserialization. It will work with any types that implement the
@@ -21,7 +21,7 @@
 //!     // Deserialize back into a map again.
 //!     let deserialized = msd::from_bytes(&serialized).unwrap();
 //!
-//!     assert_eq!(map, deserialized); 
+//!     assert_eq!(map, deserialized);
 //! }
 //! ```
 

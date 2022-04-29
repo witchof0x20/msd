@@ -1,20 +1,20 @@
 //! MSD serialization.
-//! 
+//!
 //! This module provides all of the tools necessary for serializing types implementing
 //! [`Serialize`] into the MSD format.
-//! 
+//!
 //! # Example
 //! ```
 //! use std::collections::HashMap;
-//! 
+//!
 //! let mut map = HashMap::new();
 //! map.insert("foo".to_owned(), 1);
 //! map.insert("bar".to_owned(), 2);
 //! let serialized = msd::to_bytes(&map).unwrap();
-//! 
+//!
 //! assert_eq!(serialized, b"#foo:1;\n#bar:2;\n");
 //! ```
-//! 
+//!
 //! [`Serialize`]: serde::Serialize
 
 mod error;
