@@ -1,16 +1,16 @@
 # msd
 
-[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Anders429/msd/Tests)](https://github.com/Anders429/msd/actions)
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Anders429/msd/CI)](https://github.com/Anders429/msd/actions)
 [![codecov.io](https://img.shields.io/codecov/c/gh/Anders429/msd)](https://codecov.io/gh/Anders429/msd)
 [![crates.io](https://img.shields.io/crates/v/msd)](https://crates.io/crates/msd)
 [![docs.rs](https://docs.rs/msd/badge.svg)](https://docs.rs/msd)
 [![MSRV](https://img.shields.io/badge/rustc-1.58.0+-yellow.svg)](#minimum-supported-rust-version)
 [![License](https://img.shields.io/crates/l/msd)](#license)
 
-A library for writing and reading MSD files.
+A library for reading and writing MSD files.
 
 ## Usage
-Writing and reading of MSD files is done using [`serde`](https://crates.io/crates/serde), a library
+Reading and writing of MSD files is done using [`serde`](https://crates.io/crates/serde), a library
 for generic serialization and deserialization. It will work with any types that implement the
 [`Serialize`](https://docs.rs/serde/*/serde/trait.Serialize.html) and
 [`Deserialize`](https://docs.rs/serde/*/serde/trait.Deserialize.html) traits.
@@ -61,7 +61,8 @@ The first known use of the MSD format is from the rhythm dance game DDR'99 (DDR 
 [version 2.0β1](https://web.archive.org/web/20070606025338/http://doremi.kalin.to/ddr/msd_format.html).
 Note that `.msd` files are not necessarily the same as what is commonly referred to as an "MSD
 File"; `.msd` files often contain specific tags, whereas an "MSD file" is any file that follows the
-general MSD tag-parameter structure.
+general MSD tag-parameter structure (See also Stepmania's definition of an
+[MSD file](https://github.com/stepmania/stepmania/blob/a1984e4f6519b1376ac030d8c6b11c3aff1dcae6/src/MsdFile.cpp#L2-L7)).
 
 As for what MSD originally stood for, no one seems to know for sure. The best guess is likely
 "Musical Score Data", but there isn't a concrete source to back this up. Modern usages of the
