@@ -38,22 +38,19 @@ impl<'a> Iterator for Clean<'a> {
             b'/' => {
                 // Possibly entering a comment.
                 match self.bytes.get(0).copied() {
-                    Some(next_byte) => match next_byte {
-                        b'/' => {
-                            // Inside a comment.
-                            loop {
-                                let comment_byte = *self.bytes.get(0)?;
-                                // SAFETY: If `self.bytes` is empty, it will have returned in the
-                                // previous statement.
-                                self.bytes = unsafe { self.bytes.get_unchecked(1..) };
-                                if matches!(comment_byte, b'\n') {
-                                    return Some(comment_byte);
-                                }
+                    Some(b'/') => {
+                        // Inside a comment.
+                        loop {
+                            let comment_byte = *self.bytes.get(0)?;
+                            // SAFETY: If `self.bytes` is empty, it will have returned in the
+                            // previous statement.
+                            self.bytes = unsafe { self.bytes.get_unchecked(1..) };
+                            if matches!(comment_byte, b'\n') {
+                                return Some(comment_byte);
                             }
                         }
-                        _ => Some(byte),
-                    },
-                    None => Some(byte),
+                    }
+                    _ => Some(byte),
                 }
             }
             _ => Some(byte),

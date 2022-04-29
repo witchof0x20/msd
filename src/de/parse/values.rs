@@ -148,26 +148,24 @@ impl<'a> Values<'a> {
                 if let Some(value) = value {
                     return Ok(value);
                 }
+            } else if !self.exhausted {
+                self.exhausted = true;
+                return Ok(Value::new(
+                    // SAFETY: self.current_byte_index is guaranteed to only be one past the
+                    // last value in the slice.
+                    unsafe {
+                        self.bytes
+                            .get_unchecked(self.started_byte_index..self.current_byte_index)
+                    },
+                    self.started_line,
+                    self.started_column,
+                ));
             } else {
-                if !self.exhausted {
-                    self.exhausted = true;
-                    return Ok(Value::new(
-                        // SAFETY: self.current_byte_index is guaranteed to only be one past the
-                        // last value in the slice.
-                        unsafe {
-                            self.bytes
-                                .get_unchecked(self.started_byte_index..self.current_byte_index)
-                        },
-                        self.started_line,
-                        self.started_column,
-                    ));
-                } else {
-                    return Err(Error::new(
-                        error::Kind::EndOfValues,
-                        self.current_line,
-                        self.current_column,
-                    ));
-                }
+                return Err(Error::new(
+                    error::Kind::EndOfValues,
+                    self.current_line,
+                    self.current_column,
+                ));
             }
         }
     }

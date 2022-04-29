@@ -24,7 +24,7 @@ impl<'a, R> Access<'a, R> {
     pub(in crate::de) fn new(tags: &'a mut Tags<R>, fields: &'static [&'static str]) -> Self {
         Self {
             tags,
-            fields: fields.into_iter().copied().collect(),
+            fields: fields.iter().copied().collect(),
 
             tag: None,
             values: None,

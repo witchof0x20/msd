@@ -83,7 +83,7 @@ where
     /// return items that have a shorter lifetime than the iterator itself. Each `Tag` returned
     /// here only lives until the next call to `next()`, because it borrows from a reused internal
     /// buffer.
-    pub(in crate::de) fn next<'buffer>(&'buffer mut self) -> Result<Tag<'buffer>> {
+    pub(in crate::de) fn next(&mut self) -> Result<Tag> {
         if let Some(error) = self.encountered_error {
             return Err(error);
         }

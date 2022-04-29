@@ -350,7 +350,7 @@ where
     }
 
     fn deserialize_struct<V>(
-        mut self,
+        self,
         _name: &'static str,
         fields: &'static [&'static str],
         visitor: V,
@@ -364,7 +364,7 @@ where
         value.parse_unit()?;
         values.assert_exhausted()?;
         tag.assert_exhausted()?;
-        visitor.visit_map(r#struct::Access::new(&mut self.tags, fields))
+        visitor.visit_map(r#struct::Access::new(self.tags, fields))
     }
 
     fn deserialize_enum<V>(

@@ -39,7 +39,7 @@ where
             let stored = tag.into_stored();
             unsafe { self.tags.revisit(stored) };
             Ok(Some(
-                seed.deserialize(element::Deserializer::new(&mut self.tags))?,
+                seed.deserialize(element::Deserializer::new(self.tags))?,
             ))
         } else {
             tag.reset();
