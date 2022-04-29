@@ -240,6 +240,18 @@ where
     }
 }
 
+pub fn to_writer<W, T>(writer: W, value: &T) -> Result<()> where W: Write, T: ?Sized + Serialize {
+    let mut serializer = Serializer::new(writer);
+    value.serialize(&mut serializer)?;
+    Ok(())
+}
+
+pub fn to_bytes<T>(value: &T) -> Result<Vec<u8>> where T: ?Sized + Serialize {
+    let mut bytes = Vec::with_capacity(128);
+    to_writer(&mut bytes, value)?;
+    Ok(bytes)
+}
+
 #[cfg(test)]
 mod tests {
     use super::Serializer;
