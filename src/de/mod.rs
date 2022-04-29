@@ -445,6 +445,10 @@ where
     }
 }
 
+unsafe impl<R> Send for Deserializer<R> {}
+
+unsafe impl<R> Sync for Deserializer<R> {}
+
 #[cfg(test)]
 mod tests {
     use super::{error, Deserializer, Error};
