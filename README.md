@@ -19,16 +19,16 @@ for generic serialization and deserialization. It will work with any types that 
 ``` rust
 use std::collections::HashMap;
 
-fn main() -> msd::Result<()> {
-    let mut map = HashMap::new();
-    map.insert("foo", 1);
-    map.insert("bar", 2);
+fn main() {
+    let mut map: HashMap<String, usize> = HashMap::new();
+    map.insert("foo".to_owned(), 1);
+    map.insert("bar".to_owned(), 2);
 
     // Serialize the map into a byte buffer.
-    let serialized = msd::to_bytes(&map)?;
+    let serialized = msd::to_bytes(&map).unwrap();
 
     // Deserialize back into a map again.
-    let deserialized = msd::from_bytes(serialized)?;
+    let deserialized = msd::from_bytes(&serialized).unwrap();
 
     assert_eq!(map, deserialized); 
 }
