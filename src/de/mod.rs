@@ -493,7 +493,7 @@ unsafe impl<R> Send for Deserializer<R> {}
 
 unsafe impl<R> Sync for Deserializer<R> {}
 
-/// Deserialize a value of type `T` from the given `Reader`.
+/// Deserialize a value of type `T` from the given `reader`.
 pub fn from_reader<R, T>(reader: R) -> Result<T>
 where
     R: Read,
