@@ -292,6 +292,7 @@ where
     }
 }
 
+/// Serialize the given `value` into the given `writer` in MSD format.
 pub fn to_writer<W, T>(writer: W, value: &T) -> Result<()>
 where
     W: Write,
@@ -302,6 +303,7 @@ where
     Ok(())
 }
 
+/// Serialize the given `value` into a byte buffer.
 pub fn to_bytes<T>(value: &T) -> Result<Vec<u8>>
 where
     T: ?Sized + Serialize,
