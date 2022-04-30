@@ -31,6 +31,7 @@ pub enum Kind {
     Custom,
 }
 
+/// An error that may occur during deserialization.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Error {
     line: usize,
@@ -66,4 +67,7 @@ impl Display for Error {
 
 impl std::error::Error for Error {}
 
+/// An alias for a [`Result`] with the error type [`Error`].
+///
+/// [`Result`]: std::result::Result
 pub type Result<T> = core::result::Result<T, Error>;

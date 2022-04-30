@@ -1,6 +1,7 @@
 use serde::ser;
 use std::{fmt, fmt::Display};
 
+/// An error that may occur during serialization.
 #[derive(Debug, PartialEq)]
 pub enum Error {
     UnsupportedType,
@@ -29,6 +30,9 @@ impl Display for Error {
 
 impl std::error::Error for Error {}
 
+/// An alias for a [`Result`] with the error type [`Error`].
+///
+/// [`Result`]: std::result::Result
 pub type Result<T> = core::result::Result<T, Error>;
 
 #[cfg(test)]
