@@ -36,6 +36,25 @@ use serde::{
 };
 use std::io::Read;
 
+/// Deserializes data from MSD format.
+/// 
+/// `Deserializer` can be used to read from any value that implements the [`Read`] trait. The bytes
+/// will be interpreted as MSD and deserialized into a given type.
+/// 
+/// # Example
+/// ```
+/// use serde::Deserialize;
+/// use std::collections::HashMap;
+/// 
+/// let mut deserializer = msd::Deserializer::new(b"#foo:1;\n#bar:2;\n".as_slice());
+/// let deserialized = HashMap::deserialize(&mut deserializer).unwrap();
+/// 
+/// let mut expected: HashMap<String, u64> = HashMap::new();
+/// expected.insert("foo".to_owned(), 1);
+/// expected.insert("bar".to_owned(), 2);
+/// 
+/// assert_eq!(deserialized, expected);
+/// ```
 pub struct Deserializer<R> {
     tags: parse::Tags<R>,
 }
