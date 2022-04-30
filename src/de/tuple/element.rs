@@ -1,4 +1,4 @@
-use crate::de::{parse::Values, Error, Result};
+use crate::de::{parse::Values, r#enum, Error, Result};
 use serde::de::Visitor;
 
 pub(in crate::de) struct Deserializer<'a, 'b> {
@@ -228,19 +228,19 @@ impl<'a, 'b, 'de> serde::Deserializer<'de> for Deserializer<'a, 'b> {
         self,
         _name: &'static str,
         _variants: &'static [&'static str],
-        _visitor: V,
+        visitor: V,
     ) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        todo!()
+        visitor.visit_enum(r#enum::Access::new(self.values))
     }
 
-    fn deserialize_identifier<V>(self, _visitor: V) -> Result<V::Value>
+    fn deserialize_identifier<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        todo!()
+        visitor.visit_str(&self.values.next()?.parse_identifier()?)
     }
 
     fn deserialize_ignored_any<V>(self, _visitor: V) -> Result<V::Value>
@@ -256,9 +256,10 @@ mod tests {
     use super::Deserializer;
     use crate::de::{error, parse::Values, Error};
     use claim::{assert_err_eq, assert_ok_eq};
-    use serde::Deserialize;
+    use serde::{de, de::Visitor, Deserialize};
     use serde_bytes::ByteBuf;
     use serde_derive::Deserialize;
+    use std::fmt;
 
     #[test]
     fn i8_valid() {
@@ -807,6 +808,135 @@ mod tests {
         assert_ok_eq!(
             TupleStruct::deserialize(deserializer),
             TupleStruct(42, "foo".to_owned(), (), 1.2)
+        );
+    }
+
+    #[test]
+    fn enum_unit_variant() {
+        #[derive(Debug, Deserialize, PartialEq)]
+        enum Unit {
+            Variant,
+        }
+        let mut values = Values::new(b"Variant", 0, 0);
+        let deserializer = Deserializer::new(&mut values);
+
+        assert_ok_eq!(Unit::deserialize(deserializer), Unit::Variant,);
+    }
+
+    #[test]
+    fn enum_unit_variant_trailing_values() {
+        #[derive(Debug, Deserialize, PartialEq)]
+        enum Unit {
+            Variant,
+        }
+        let mut values = Values::new(b"Variant:42", 0, 0);
+        let deserializer = Deserializer::new(&mut values);
+
+        assert_ok_eq!(Unit::deserialize(deserializer), Unit::Variant,);
+    }
+
+    #[test]
+    fn enum_newtype_variant() {
+        #[derive(Debug, Deserialize, PartialEq)]
+        enum Newtype {
+            Variant(u64),
+        }
+        let mut values = Values::new(b"Variant:42", 0, 0);
+        let deserializer = Deserializer::new(&mut values);
+
+        assert_ok_eq!(Newtype::deserialize(deserializer), Newtype::Variant(42),);
+    }
+
+    #[test]
+    fn enum_newtype_variant_trailing_values() {
+        #[derive(Debug, Deserialize, PartialEq)]
+        enum Newtype {
+            Variant(u64),
+        }
+        let mut values = Values::new(b"Variant:42:foo", 0, 0);
+        let deserializer = Deserializer::new(&mut values);
+
+        assert_ok_eq!(Newtype::deserialize(deserializer), Newtype::Variant(42),);
+    }
+
+    #[test]
+    fn enum_tuple_variant() {
+        #[derive(Debug, Deserialize, PartialEq)]
+        enum Tuple {
+            Variant(u64, String),
+        }
+        let mut values = Values::new(b"Variant:42:foo", 0, 0);
+        let deserializer = Deserializer::new(&mut values);
+
+        assert_ok_eq!(
+            Tuple::deserialize(deserializer),
+            Tuple::Variant(42, "foo".to_owned()),
+        );
+    }
+
+    #[test]
+    fn enum_tuple_variant_trailing_values() {
+        #[derive(Debug, Deserialize, PartialEq)]
+        enum Tuple {
+            Variant(u64, String),
+        }
+        let mut values = Values::new(b"Variant:42:foo:bar", 0, 0);
+        let deserializer = Deserializer::new(&mut values);
+
+        assert_ok_eq!(
+            Tuple::deserialize(deserializer),
+            Tuple::Variant(42, "foo".to_owned()),
+        );
+    }
+
+    #[derive(Debug, PartialEq)]
+    struct Identifier(String);
+
+    impl<'de> Deserialize<'de> for Identifier {
+        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where
+            D: de::Deserializer<'de>,
+        {
+            struct IdentifierVisitor;
+
+            impl<'de> Visitor<'de> for IdentifierVisitor {
+                type Value = Identifier;
+
+                fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                    formatter.write_str("identifier")
+                }
+
+                fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+                where
+                    E: de::Error,
+                {
+                    Ok(Identifier(value.to_owned()))
+                }
+            }
+
+            deserializer.deserialize_identifier(IdentifierVisitor)
+        }
+    }
+
+    #[test]
+    fn identifier() {
+        let mut values = Values::new(b"foo", 0, 0);
+        let deserializer = Deserializer::new(&mut values);
+
+        assert_ok_eq!(
+            Identifier::deserialize(deserializer),
+            Identifier("foo".to_owned()),
+        );
+    }
+
+    #[test]
+    fn identifier_trailing_values() {
+        let mut values = Values::new(b"foo:bar", 0, 0);
+        let deserializer = Deserializer::new(&mut values);
+
+        assert_ok_eq!(
+            Identifier::deserialize(deserializer),
+            Identifier("foo".to_owned()),
         );
     }
 }
