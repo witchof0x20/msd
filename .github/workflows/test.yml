@@ -66,6 +66,20 @@ jobs:
       with:
         command: clippy
 
+  doc:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: nightly
+        override: true
+    - uses: actions-rs/cargo@v1
+      with:
+        command: doc
+      env:
+        RUSTDOCFLAGS: -D warnings
+
   codecov:
     runs-on: ubuntu-latest
     steps:
