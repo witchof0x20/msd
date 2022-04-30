@@ -33,10 +33,10 @@ use std::io::Write;
 use write::WriteExt;
 
 /// Serializes data into MSD format.
-/// 
+///
 /// `Serializer` can be used to write to any value that implements the [`Write`] trait. The bytes
 /// written will be valid MSD that can be read later using [`Deserializer`].
-/// 
+///
 /// # Example
 /// ```
 /// use serde::Serialize;
@@ -48,10 +48,10 @@ use write::WriteExt;
 /// let mut serialized = Vec::new();
 /// let mut serializer = msd::Serializer::new(&mut serialized);
 /// map.serialize(&mut serializer);
-/// 
+///
 /// assert_eq!(serialized, b"#bar:2;\n#foo:1;\n");
 /// ```
-/// 
+///
 /// [`Deserializer`]: crate::Deserializer
 pub struct Serializer<W> {
     writer: W,
