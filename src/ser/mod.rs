@@ -5,14 +5,14 @@
 //!
 //! # Example
 //! ```
-//! use std::collections::HashMap;
+//! use std::collections::BTreeMap;
 //!
-//! let mut map = HashMap::new();
+//! let mut map = BTreeMap::new();
 //! map.insert("foo".to_owned(), 1);
 //! map.insert("bar".to_owned(), 2);
 //! let serialized = msd::to_bytes(&map).unwrap();
 //!
-//! assert_eq!(serialized, b"#foo:1;\n#bar:2;\n");
+//! assert_eq!(serialized, b"#bar:2;\n#foo:1;\n");
 //! ```
 //!
 //! [`Serialize`]: serde::Serialize
