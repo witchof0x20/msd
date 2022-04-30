@@ -493,6 +493,7 @@ unsafe impl<R> Send for Deserializer<R> {}
 
 unsafe impl<R> Sync for Deserializer<R> {}
 
+/// Deserialize a value of type `T` from the given `Reader`.
 pub fn from_reader<R, T>(reader: R) -> Result<T>
 where
     R: Read,
@@ -502,6 +503,7 @@ where
     T::deserialize(&mut deserializer)
 }
 
+/// Deserialize a value of type `T` from a slice of bytes.
 pub fn from_bytes<'a, T>(bytes: &'a [u8]) -> Result<T>
 where
     T: Deserialize<'a>,
