@@ -35,7 +35,7 @@ impl<'a, 'b, 'de> SeqAccess<'de> for Access<'a, 'b> {
 #[cfg(test)]
 mod tests {
     use super::Access;
-    use crate::de::{error, parse::Values, Error};
+    use crate::de::{error, parse::Values, Error, Position};
     use claim::{assert_err_eq, assert_ok, assert_some_eq};
     use serde::de::SeqAccess;
 
@@ -50,7 +50,7 @@ mod tests {
         assert_some_eq!(access.size_hint(), 0);
         assert_err_eq!(
             access.next_element::<()>(),
-            Error::new(error::Kind::EndOfValues, 0, 0)
+            Error::new(error::Kind::EndOfValues, Position::new(0, 0))
         );
         assert_some_eq!(access.size_hint(), 0);
     }
@@ -65,7 +65,7 @@ mod tests {
         assert_some_eq!(access.size_hint(), 0);
         assert_err_eq!(
             access.next_element::<()>(),
-            Error::new(error::Kind::EndOfValues, 0, 2)
+            Error::new(error::Kind::EndOfValues, Position::new(0, 2))
         );
         assert_some_eq!(access.size_hint(), 0);
     }
@@ -85,7 +85,7 @@ mod tests {
         assert_some_eq!(access.size_hint(), 0);
         assert_err_eq!(
             access.next_element::<()>(),
-            Error::new(error::Kind::EndOfValues, 0, 6)
+            Error::new(error::Kind::EndOfValues, Position::new(0, 6))
         );
         assert_some_eq!(access.size_hint(), 0);
     }
@@ -107,7 +107,7 @@ mod tests {
         assert_some_eq!(access.size_hint(), 0);
         assert_err_eq!(
             access.next_element::<()>(),
-            Error::new(error::Kind::EndOfValues, 0, 11)
+            Error::new(error::Kind::EndOfValues, Position::new(0, 11))
         );
         assert_some_eq!(access.size_hint(), 0);
     }

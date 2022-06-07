@@ -1,5 +1,5 @@
 use super::Value;
-use crate::de::{error, Error, Result};
+use crate::de::{error, Error, Position, Result};
 use std::slice;
 
 #[derive(Debug, PartialEq)]
@@ -164,8 +164,8 @@ impl<'a> Values<'a> {
             } else {
                 return Err(Error::new(
                     error::Kind::EndOfValues,
-                    self.current_line,
-                    self.current_column,
+                    Position::new(self.current_line,
+                    self.current_column),
                 ));
             }
         }
@@ -177,8 +177,8 @@ impl<'a> Values<'a> {
         } else {
             Err(Error::new(
                 error::Kind::UnexpectedValue,
-                self.current_line,
-                self.current_column,
+                Position::new(self.current_line,
+                self.current_column),
             ))
         }
     }
@@ -200,7 +200,7 @@ impl<'a> Values<'a> {
 #[cfg(test)]
 mod tests {
     use super::Values;
-    use crate::de::{error, parse::Value, Error};
+    use crate::de::{error, parse::Value, Error, Position};
     use claim::{assert_err_eq, assert_ok, assert_ok_eq};
 
     #[test]
@@ -208,7 +208,7 @@ mod tests {
         let mut values = Values::new(b"", 0, 0);
 
         assert_ok_eq!(values.next(), Value::new(b"", 0, 0));
-        assert_err_eq!(values.next(), Error::new(error::Kind::EndOfValues, 0, 0));
+        assert_err_eq!(values.next(), Error::new(error::Kind::EndOfValues, Position::new(0, 0)));
     }
 
     #[test]
@@ -216,7 +216,7 @@ mod tests {
         let mut values = Values::new(b"foo", 0, 0);
 
         assert_ok_eq!(values.next(), Value::new(b"foo", 0, 0));
-        assert_err_eq!(values.next(), Error::new(error::Kind::EndOfValues, 0, 3));
+        assert_err_eq!(values.next(), Error::new(error::Kind::EndOfValues, Position::new(0, 3)));
     }
 
     #[test]
@@ -226,7 +226,7 @@ mod tests {
         assert_ok_eq!(values.next(), Value::new(b"foo", 0, 0));
         assert_ok_eq!(values.next(), Value::new(b"bar", 0, 4));
         assert_ok_eq!(values.next(), Value::new(b"baz", 0, 8));
-        assert_err_eq!(values.next(), Error::new(error::Kind::EndOfValues, 0, 11));
+        assert_err_eq!(values.next(), Error::new(error::Kind::EndOfValues, Position::new(0, 11)));
     }
 
     #[test]
@@ -235,7 +235,7 @@ mod tests {
 
         assert_ok_eq!(values.next(), Value::new(b"foo//comment:\n", 0, 0));
         assert_ok_eq!(values.next(), Value::new(b"bar", 1, 1));
-        assert_err_eq!(values.next(), Error::new(error::Kind::EndOfValues, 1, 4));
+        assert_err_eq!(values.next(), Error::new(error::Kind::EndOfValues, Position::new(1, 4)));
     }
 
     #[test]
@@ -245,7 +245,7 @@ mod tests {
         assert_ok_eq!(values.next(), Value::new(b"foo\\/\\/comment", 0, 0));
         assert_ok_eq!(values.next(), Value::new(b"\n", 0, 15));
         assert_ok_eq!(values.next(), Value::new(b"bar", 1, 1));
-        assert_err_eq!(values.next(), Error::new(error::Kind::EndOfValues, 1, 4));
+        assert_err_eq!(values.next(), Error::new(error::Kind::EndOfValues, Position::new(1, 4)));
     }
 
     #[test]
@@ -253,7 +253,7 @@ mod tests {
         let mut values = Values::new(b"foo\\:bar", 0, 0);
 
         assert_ok_eq!(values.next(), Value::new(b"foo\\:bar", 0, 0));
-        assert_err_eq!(values.next(), Error::new(error::Kind::EndOfValues, 0, 8));
+        assert_err_eq!(values.next(), Error::new(error::Kind::EndOfValues, Position::new(0, 8)));
     }
 
     #[test]
@@ -262,7 +262,7 @@ mod tests {
 
         assert_ok_eq!(values.next(), Value::new(b"foo\\\\", 0, 0));
         assert_ok_eq!(values.next(), Value::new(b"bar", 0, 6));
-        assert_err_eq!(values.next(), Error::new(error::Kind::EndOfValues, 0, 9));
+        assert_err_eq!(values.next(), Error::new(error::Kind::EndOfValues, Position::new(0, 9)));
     }
 
     #[test]
@@ -282,7 +282,7 @@ mod tests {
 
         assert_err_eq!(
             values.assert_exhausted(),
-            Error::new(error::Kind::UnexpectedValue, 0, 4)
+            Error::new(error::Kind::UnexpectedValue, Position::new(0, 4))
         );
     }
 
@@ -296,7 +296,7 @@ mod tests {
         assert_ok_eq!(unstored_values.next(), Value::new(b"foo", 0, 0));
         assert_err_eq!(
             unstored_values.next(),
-            Error::new(error::Kind::EndOfValues, 0, 3)
+            Error::new(error::Kind::EndOfValues, Position::new(0, 3))
         );
     }
 
@@ -311,7 +311,7 @@ mod tests {
         assert_ok_eq!(unstored_values.next(), Value::new(b"bar", 0, 4));
         assert_err_eq!(
             unstored_values.next(),
-            Error::new(error::Kind::EndOfValues, 0, 7)
+            Error::new(error::Kind::EndOfValues, Position::new(0, 7))
         );
     }
 }

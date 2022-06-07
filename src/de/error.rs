@@ -1,3 +1,4 @@
+use crate::de::Position;
 use serde::de;
 use std::{fmt, fmt::Display};
 
@@ -34,14 +35,13 @@ pub enum Kind {
 /// An error that may occur during deserialization.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Error {
-    line: usize,
-    column: usize,
+    position: Position,
     kind: Kind,
 }
 
 impl Error {
-    pub(super) fn new(kind: Kind, line: usize, column: usize) -> Self {
-        Self { line, column, kind }
+    pub(super) fn new(kind: Kind, position: Position) -> Self {
+        Self { position, kind }
     }
 }
 
@@ -55,7 +55,7 @@ impl de::Error for Error {
         // Perhaps injecting the position into the error after it is returned from user code?
         // Also need a way to include the custom error messages. That doesn't jive with this struct
         // being Copy.
-        Self::new(Kind::Custom, 0, 0)
+        Self::new(Kind::Custom, Position::new(0, 0))
     }
 }
 

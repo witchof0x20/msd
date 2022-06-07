@@ -252,7 +252,7 @@ impl<'a, 'de> de::Deserializer<'de> for Deserializer<'a> {
 #[cfg(test)]
 mod tests {
     use super::Deserializer;
-    use crate::de::{error, parse::Value, Error};
+    use crate::de::{error, parse::Value, Error, Position};
     use claim::{assert_err_eq, assert_ok_eq};
     use serde::{de, de::Visitor, Deserialize};
     use std::fmt;
@@ -302,7 +302,7 @@ mod tests {
 
         assert_err_eq!(
             Identifier::deserialize(deserializer),
-            Error::new(error::Kind::ExpectedIdentifier, 0, 0)
+            Error::new(error::Kind::ExpectedIdentifier, Position::new(0, 0))
         );
     }
 }

@@ -1,11 +1,6 @@
 use super::Tag;
-use crate::de::{error, parse::StoredTag, Error, Result};
+use crate::de::{error, parse::StoredTag, Error, Position, Result};
 use std::io::{Bytes, Read};
-
-struct Position {
-    line: usize,
-    column: usize,
-}
 
 #[derive(Debug)]
 enum TagState {
@@ -112,7 +107,7 @@ where
                     Ok(byte) => byte,
                     Err(_error) => {
                         let error =
-                            Error::new(error::Kind::Io, self.current_line, self.current_column);
+                            Error::new(error::Kind::Io, Position::new(self.current_line, self.current_column));
                         self.encountered_error = Some(error);
                         self.exhausted = true;
                         return Err(error);
@@ -123,8 +118,8 @@ where
                     if self.buffer.is_empty() {
                         let error = Error::new(
                             error::Kind::EndOfFile,
-                            self.current_line,
-                            self.current_column,
+                            Position::new(self.current_line,
+                            self.current_column),
                         );
                         self.encountered_error = Some(error);
                         return Err(error);
@@ -241,8 +236,8 @@ where
                                 {
                                     let error = Error::new(
                                         error::Kind::ExpectedTag,
-                                        self.current_line,
-                                        self.current_column - 1,
+                                        Position::new(self.current_line,
+                                        self.current_column - 1),
                                     );
                                     self.encountered_error = Some(error);
                                     return Err(error);
@@ -264,8 +259,8 @@ where
                                 {
                                     let error = Error::new(
                                         error::Kind::ExpectedTag,
-                                        self.current_line,
-                                        self.current_column - 1,
+                                        Position::new(self.current_line,
+                                        self.current_column - 1),
                                     );
                                     self.encountered_error = Some(error);
                                     return Err(error);
@@ -274,8 +269,8 @@ where
                                 if !byte.is_ascii_whitespace() {
                                     let error = Error::new(
                                         error::Kind::ExpectedTag,
-                                        self.current_line,
-                                        self.current_column,
+                                        Position::new(self.current_line,
+                                        self.current_column),
                                     );
                                     self.encountered_error = Some(error);
                                     return Err(error);
@@ -318,7 +313,7 @@ where
                         Ok(byte) => byte,
                         Err(_error) => {
                             let error =
-                                Error::new(error::Kind::Io, self.current_line, self.current_column);
+                                Error::new(error::Kind::Io, Position::new(self.current_line, self.current_column));
                             self.encountered_error = Some(error);
                             self.exhausted = true;
                             break;
@@ -342,8 +337,8 @@ where
                             if matches!(self.comment_state, CommentState::MaybeEnteringComment) {
                                 let error = Error::new(
                                     error::Kind::ExpectedTag,
-                                    self.current_line,
-                                    self.current_column - 1,
+                                    Position::new(self.current_line,
+                                    self.current_column - 1),
                                 );
                                 self.encountered_error = Some(error);
                                 break;
@@ -364,8 +359,8 @@ where
                             if matches!(self.comment_state, CommentState::MaybeEnteringComment) {
                                 let error = Error::new(
                                     error::Kind::ExpectedTag,
-                                    self.current_line,
-                                    self.current_column - 1,
+                                    Position::new(self.current_line,
+                                    self.current_column - 1),
                                 );
                                 self.encountered_error = Some(error);
                                 break;
@@ -374,8 +369,8 @@ where
                             if !byte.is_ascii_whitespace() {
                                 let error = Error::new(
                                     error::Kind::ExpectedTag,
-                                    self.current_line,
-                                    self.current_column,
+                                    Position::new(self.current_line,
+                                    self.current_column),
                                 );
                                 self.encountered_error = Some(error);
                                 break;
@@ -416,16 +411,16 @@ where
         if let Some(revisit) = self.revisit.as_ref() {
             Err(Error::new(
                 error::Kind::UnexpectedTag,
-                revisit.origin_line(),
-                revisit.origin_column(),
+                Position::new(revisit.origin_line(),
+                revisit.origin_column()),
             ))
         } else if self.exhausted {
             Ok(())
         } else {
             Err(Error::new(
                 error::Kind::UnexpectedTag,
-                self.started_line,
-                self.started_column,
+                Position::new(self.started_line,
+                self.started_column),
             ))
         }
     }
@@ -434,7 +429,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::Tags;
-    use crate::de::{error, parse::Tag, Error};
+    use crate::de::{error, parse::Tag, Error, Position};
     use claim::{assert_err_eq, assert_ok, assert_ok_eq};
 
     #[test]
@@ -442,7 +437,7 @@ mod tests {
         let input = b"";
         let mut tags = Tags::new(input.as_slice());
 
-        assert_err_eq!(tags.next(), Error::new(error::Kind::EndOfFile, 0, 0));
+        assert_err_eq!(tags.next(), Error::new(error::Kind::EndOfFile, Position::new(0, 0)));
     }
 
     #[test]
@@ -450,7 +445,7 @@ mod tests {
         let input = b"foo#bar;\n";
         let mut tags = Tags::new(input.as_slice());
 
-        assert_err_eq!(tags.next(), Error::new(error::Kind::ExpectedTag, 0, 0));
+        assert_err_eq!(tags.next(), Error::new(error::Kind::ExpectedTag, Position::new(0, 0)));
     }
 
     #[test]
@@ -458,7 +453,7 @@ mod tests {
         let input = b"\n  foo#bar;\n";
         let mut tags = Tags::new(input.as_slice());
 
-        assert_err_eq!(tags.next(), Error::new(error::Kind::ExpectedTag, 1, 2));
+        assert_err_eq!(tags.next(), Error::new(error::Kind::ExpectedTag, Position::new(1, 2)));
     }
 
     #[test]
@@ -533,7 +528,7 @@ mod tests {
         let input = b"/#foo:bar;\n";
         let mut tags = Tags::new(input.as_slice());
 
-        assert_err_eq!(tags.next(), Error::new(error::Kind::ExpectedTag, 0, 0));
+        assert_err_eq!(tags.next(), Error::new(error::Kind::ExpectedTag, Position::new(0, 0)));
     }
 
     #[test]
@@ -541,7 +536,7 @@ mod tests {
         let input = b"//#foo:bar;\n";
         let mut tags = Tags::new(input.as_slice());
 
-        assert_err_eq!(tags.next(), Error::new(error::Kind::EndOfFile, 1, 0));
+        assert_err_eq!(tags.next(), Error::new(error::Kind::EndOfFile, Position::new(1, 0)));
     }
 
     #[test]
@@ -615,7 +610,7 @@ mod tests {
 
         assert_err_eq!(
             tags.assert_exhausted(),
-            Error::new(error::Kind::UnexpectedTag, 1, 0)
+            Error::new(error::Kind::UnexpectedTag, Position::new(1, 0))
         );
     }
 
@@ -629,7 +624,7 @@ mod tests {
         unsafe { tags.revisit(tag) };
         assert_err_eq!(
             tags.assert_exhausted(),
-            Error::new(error::Kind::UnexpectedTag, 0, 0)
+            Error::new(error::Kind::UnexpectedTag, Position::new(0, 0))
         );
     }
 }

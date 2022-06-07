@@ -401,7 +401,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::Deserializer;
-    use crate::de::{error, parse::Tags, Error};
+    use crate::de::{error, parse::Tags, Error, Position};
     use claim::{assert_err_eq, assert_ok, assert_ok_eq};
     use serde::{de, de::Visitor, Deserialize};
     use serde_bytes::ByteBuf;
@@ -446,7 +446,7 @@ mod tests {
 
         assert_err_eq!(
             bool::deserialize(deserializer),
-            Error::new(error::Kind::ExpectedBool, 0, 5)
+            Error::new(error::Kind::ExpectedBool, Position::new(0, 5))
         );
     }
 
@@ -462,7 +462,7 @@ mod tests {
 
         assert_err_eq!(
             bool::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValue, 0, 10)
+            Error::new(error::Kind::UnexpectedValue, Position::new(0, 10))
         );
     }
 
@@ -478,7 +478,7 @@ mod tests {
 
         assert_err_eq!(
             bool::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValues, 0, 10)
+            Error::new(error::Kind::UnexpectedValues, Position::new(0, 10))
         );
     }
 
@@ -507,7 +507,7 @@ mod tests {
 
         assert_err_eq!(
             i8::deserialize(deserializer),
-            Error::new(error::Kind::ExpectedI8, 0, 5)
+            Error::new(error::Kind::ExpectedI8, Position::new(0, 5))
         );
     }
 
@@ -523,7 +523,7 @@ mod tests {
 
         assert_err_eq!(
             i8::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValue, 0, 8)
+            Error::new(error::Kind::UnexpectedValue, Position::new(0, 8))
         );
     }
 
@@ -539,7 +539,7 @@ mod tests {
 
         assert_err_eq!(
             i8::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValues, 0, 8)
+            Error::new(error::Kind::UnexpectedValues, Position::new(0, 8))
         );
     }
 
@@ -568,7 +568,7 @@ mod tests {
 
         assert_err_eq!(
             i16::deserialize(deserializer),
-            Error::new(error::Kind::ExpectedI16, 0, 5)
+            Error::new(error::Kind::ExpectedI16, Position::new(0, 5))
         );
     }
 
@@ -584,7 +584,7 @@ mod tests {
 
         assert_err_eq!(
             i16::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValue, 0, 8)
+            Error::new(error::Kind::UnexpectedValue, Position::new(0, 8))
         );
     }
 
@@ -600,7 +600,7 @@ mod tests {
 
         assert_err_eq!(
             i16::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValues, 0, 8)
+            Error::new(error::Kind::UnexpectedValues, Position::new(0, 8))
         );
     }
 
@@ -629,7 +629,7 @@ mod tests {
 
         assert_err_eq!(
             i32::deserialize(deserializer),
-            Error::new(error::Kind::ExpectedI32, 0, 5)
+            Error::new(error::Kind::ExpectedI32, Position::new(0, 5))
         );
     }
 
@@ -645,7 +645,7 @@ mod tests {
 
         assert_err_eq!(
             i32::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValue, 0, 8)
+            Error::new(error::Kind::UnexpectedValue, Position::new(0, 8))
         );
     }
 
@@ -661,7 +661,7 @@ mod tests {
 
         assert_err_eq!(
             i32::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValues, 0, 8)
+            Error::new(error::Kind::UnexpectedValues, Position::new(0, 8))
         );
     }
 
@@ -690,7 +690,7 @@ mod tests {
 
         assert_err_eq!(
             i64::deserialize(deserializer),
-            Error::new(error::Kind::ExpectedI64, 0, 5)
+            Error::new(error::Kind::ExpectedI64, Position::new(0, 5))
         );
     }
 
@@ -706,7 +706,7 @@ mod tests {
 
         assert_err_eq!(
             i64::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValue, 0, 8)
+            Error::new(error::Kind::UnexpectedValue, Position::new(0, 8))
         );
     }
 
@@ -722,7 +722,7 @@ mod tests {
 
         assert_err_eq!(
             i64::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValues, 0, 8)
+            Error::new(error::Kind::UnexpectedValues, Position::new(0, 8))
         );
     }
 
@@ -753,7 +753,7 @@ mod tests {
 
         assert_err_eq!(
             i128::deserialize(deserializer),
-            Error::new(error::Kind::ExpectedI128, 0, 5)
+            Error::new(error::Kind::ExpectedI128, Position::new(0, 5))
         );
     }
 
@@ -770,7 +770,7 @@ mod tests {
 
         assert_err_eq!(
             i128::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValue, 0, 8)
+            Error::new(error::Kind::UnexpectedValue, Position::new(0, 8))
         );
     }
 
@@ -787,7 +787,7 @@ mod tests {
 
         assert_err_eq!(
             i128::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValues, 0, 8)
+            Error::new(error::Kind::UnexpectedValues, Position::new(0, 8))
         );
     }
 
@@ -816,7 +816,7 @@ mod tests {
 
         assert_err_eq!(
             u8::deserialize(deserializer),
-            Error::new(error::Kind::ExpectedU8, 0, 5)
+            Error::new(error::Kind::ExpectedU8, Position::new(0, 5))
         );
     }
 
@@ -832,7 +832,7 @@ mod tests {
 
         assert_err_eq!(
             u8::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValue, 0, 8)
+            Error::new(error::Kind::UnexpectedValue, Position::new(0, 8))
         );
     }
 
@@ -848,7 +848,7 @@ mod tests {
 
         assert_err_eq!(
             u8::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValues, 0, 8)
+            Error::new(error::Kind::UnexpectedValues, Position::new(0, 8))
         );
     }
 
@@ -877,7 +877,7 @@ mod tests {
 
         assert_err_eq!(
             u16::deserialize(deserializer),
-            Error::new(error::Kind::ExpectedU16, 0, 5)
+            Error::new(error::Kind::ExpectedU16, Position::new(0, 5))
         );
     }
 
@@ -893,7 +893,7 @@ mod tests {
 
         assert_err_eq!(
             u16::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValue, 0, 8)
+            Error::new(error::Kind::UnexpectedValue, Position::new(0, 8))
         );
     }
 
@@ -909,7 +909,7 @@ mod tests {
 
         assert_err_eq!(
             u16::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValues, 0, 8)
+            Error::new(error::Kind::UnexpectedValues, Position::new(0, 8))
         );
     }
 
@@ -938,7 +938,7 @@ mod tests {
 
         assert_err_eq!(
             u32::deserialize(deserializer),
-            Error::new(error::Kind::ExpectedU32, 0, 5)
+            Error::new(error::Kind::ExpectedU32, Position::new(0, 5))
         );
     }
 
@@ -954,7 +954,7 @@ mod tests {
 
         assert_err_eq!(
             u32::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValue, 0, 8)
+            Error::new(error::Kind::UnexpectedValue, Position::new(0, 8))
         );
     }
 
@@ -970,7 +970,7 @@ mod tests {
 
         assert_err_eq!(
             u32::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValues, 0, 8)
+            Error::new(error::Kind::UnexpectedValues, Position::new(0, 8))
         );
     }
 
@@ -999,7 +999,7 @@ mod tests {
 
         assert_err_eq!(
             u64::deserialize(deserializer),
-            Error::new(error::Kind::ExpectedU64, 0, 5)
+            Error::new(error::Kind::ExpectedU64, Position::new(0, 5))
         );
     }
 
@@ -1015,7 +1015,7 @@ mod tests {
 
         assert_err_eq!(
             u64::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValue, 0, 8)
+            Error::new(error::Kind::UnexpectedValue, Position::new(0, 8))
         );
     }
 
@@ -1031,7 +1031,7 @@ mod tests {
 
         assert_err_eq!(
             u64::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValues, 0, 8)
+            Error::new(error::Kind::UnexpectedValues, Position::new(0, 8))
         );
     }
 
@@ -1062,7 +1062,7 @@ mod tests {
 
         assert_err_eq!(
             u128::deserialize(deserializer),
-            Error::new(error::Kind::ExpectedU128, 0, 5)
+            Error::new(error::Kind::ExpectedU128, Position::new(0, 5))
         );
     }
 
@@ -1079,7 +1079,7 @@ mod tests {
 
         assert_err_eq!(
             u128::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValue, 0, 8)
+            Error::new(error::Kind::UnexpectedValue, Position::new(0, 8))
         );
     }
 
@@ -1096,7 +1096,7 @@ mod tests {
 
         assert_err_eq!(
             u128::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValues, 0, 8)
+            Error::new(error::Kind::UnexpectedValues, Position::new(0, 8))
         );
     }
 
@@ -1125,7 +1125,7 @@ mod tests {
 
         assert_err_eq!(
             f32::deserialize(deserializer),
-            Error::new(error::Kind::ExpectedF32, 0, 5)
+            Error::new(error::Kind::ExpectedF32, Position::new(0, 5))
         );
     }
 
@@ -1141,7 +1141,7 @@ mod tests {
 
         assert_err_eq!(
             f32::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValue, 0, 10)
+            Error::new(error::Kind::UnexpectedValue, Position::new(0, 10))
         );
     }
 
@@ -1157,7 +1157,7 @@ mod tests {
 
         assert_err_eq!(
             f32::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValues, 0, 10)
+            Error::new(error::Kind::UnexpectedValues, Position::new(0, 10))
         );
     }
 
@@ -1186,7 +1186,7 @@ mod tests {
 
         assert_err_eq!(
             f64::deserialize(deserializer),
-            Error::new(error::Kind::ExpectedF64, 0, 5)
+            Error::new(error::Kind::ExpectedF64, Position::new(0, 5))
         );
     }
 
@@ -1202,7 +1202,7 @@ mod tests {
 
         assert_err_eq!(
             f64::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValue, 0, 10)
+            Error::new(error::Kind::UnexpectedValue, Position::new(0, 10))
         );
     }
 
@@ -1218,7 +1218,7 @@ mod tests {
 
         assert_err_eq!(
             f64::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValues, 0, 10)
+            Error::new(error::Kind::UnexpectedValues, Position::new(0, 10))
         );
     }
 
@@ -1247,7 +1247,7 @@ mod tests {
 
         assert_err_eq!(
             char::deserialize(deserializer),
-            Error::new(error::Kind::ExpectedChar, 0, 5)
+            Error::new(error::Kind::ExpectedChar, Position::new(0, 5))
         );
     }
 
@@ -1263,7 +1263,7 @@ mod tests {
 
         assert_err_eq!(
             char::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValue, 0, 7)
+            Error::new(error::Kind::UnexpectedValue, Position::new(0, 7))
         );
     }
 
@@ -1279,7 +1279,7 @@ mod tests {
 
         assert_err_eq!(
             char::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValues, 0, 7)
+            Error::new(error::Kind::UnexpectedValues, Position::new(0, 7))
         );
     }
 
@@ -1308,7 +1308,7 @@ mod tests {
 
         assert_err_eq!(
             String::deserialize(deserializer),
-            Error::new(error::Kind::ExpectedString, 0, 5)
+            Error::new(error::Kind::ExpectedString, Position::new(0, 5))
         );
     }
 
@@ -1324,7 +1324,7 @@ mod tests {
 
         assert_err_eq!(
             String::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValue, 0, 9)
+            Error::new(error::Kind::UnexpectedValue, Position::new(0, 9))
         );
     }
 
@@ -1340,7 +1340,7 @@ mod tests {
 
         assert_err_eq!(
             String::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValues, 0, 9)
+            Error::new(error::Kind::UnexpectedValues, Position::new(0, 9))
         );
     }
 
@@ -1369,7 +1369,7 @@ mod tests {
 
         assert_err_eq!(
             ByteBuf::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValue, 0, 9)
+            Error::new(error::Kind::UnexpectedValue, Position::new(0, 9))
         );
     }
 
@@ -1385,7 +1385,7 @@ mod tests {
 
         assert_err_eq!(
             ByteBuf::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValues, 0, 9)
+            Error::new(error::Kind::UnexpectedValues, Position::new(0, 9))
         );
     }
 
@@ -1427,7 +1427,7 @@ mod tests {
 
         assert_err_eq!(
             <()>::deserialize(deserializer),
-            Error::new(error::Kind::ExpectedUnit, 0, 5)
+            Error::new(error::Kind::ExpectedUnit, Position::new(0, 5))
         );
     }
 
@@ -1443,7 +1443,7 @@ mod tests {
 
         assert_err_eq!(
             <()>::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValue, 0, 6)
+            Error::new(error::Kind::UnexpectedValue, Position::new(0, 6))
         );
     }
 
@@ -1459,7 +1459,7 @@ mod tests {
 
         assert_err_eq!(
             <()>::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValues, 0, 6)
+            Error::new(error::Kind::UnexpectedValues, Position::new(0, 6))
         );
     }
 
@@ -1492,7 +1492,7 @@ mod tests {
 
         assert_err_eq!(
             Unit::deserialize(deserializer),
-            Error::new(error::Kind::ExpectedUnit, 0, 5)
+            Error::new(error::Kind::ExpectedUnit, Position::new(0, 5))
         );
     }
 
@@ -1510,7 +1510,7 @@ mod tests {
 
         assert_err_eq!(
             Unit::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValue, 0, 6)
+            Error::new(error::Kind::UnexpectedValue, Position::new(0, 6))
         );
     }
 
@@ -1528,7 +1528,7 @@ mod tests {
 
         assert_err_eq!(
             Unit::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValues, 0, 6)
+            Error::new(error::Kind::UnexpectedValues, Position::new(0, 6))
         );
     }
 
@@ -1573,7 +1573,7 @@ mod tests {
 
         assert_err_eq!(
             <(u64, String, (), f64)>::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValue, 0, 17)
+            Error::new(error::Kind::UnexpectedValue, Position::new(0, 17))
         );
     }
 
@@ -1589,7 +1589,7 @@ mod tests {
 
         assert_err_eq!(
             <(u64, String, (), f64)>::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValues, 0, 17)
+            Error::new(error::Kind::UnexpectedValues, Position::new(0, 17))
         );
     }
 
@@ -1625,7 +1625,7 @@ mod tests {
 
         assert_err_eq!(
             TupleStruct::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValue, 0, 17)
+            Error::new(error::Kind::UnexpectedValue, Position::new(0, 17))
         );
     }
 
@@ -1643,7 +1643,7 @@ mod tests {
 
         assert_err_eq!(
             TupleStruct::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValues, 0, 17)
+            Error::new(error::Kind::UnexpectedValues, Position::new(0, 17))
         );
     }
 
@@ -1698,7 +1698,7 @@ mod tests {
 
         assert_err_eq!(
             Unit::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValue, 0, 13)
+            Error::new(error::Kind::UnexpectedValue, Position::new(0, 13))
         );
     }
 
@@ -1718,7 +1718,7 @@ mod tests {
 
         assert_err_eq!(
             Unit::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValues, 0, 13)
+            Error::new(error::Kind::UnexpectedValues, Position::new(0, 13))
         );
     }
 
@@ -1755,7 +1755,7 @@ mod tests {
 
         assert_err_eq!(
             Newtype::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValue, 0, 16)
+            Error::new(error::Kind::UnexpectedValue, Position::new(0, 16))
         );
     }
 
@@ -1775,7 +1775,7 @@ mod tests {
 
         assert_err_eq!(
             Newtype::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValues, 0, 16)
+            Error::new(error::Kind::UnexpectedValues, Position::new(0, 16))
         );
     }
 
@@ -1815,7 +1815,7 @@ mod tests {
 
         assert_err_eq!(
             Tuple::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValue, 0, 25)
+            Error::new(error::Kind::UnexpectedValue, Position::new(0, 25))
         );
     }
 
@@ -1835,7 +1835,7 @@ mod tests {
 
         assert_err_eq!(
             Tuple::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValues, 0, 25)
+            Error::new(error::Kind::UnexpectedValues, Position::new(0, 25))
         );
     }
 
@@ -1896,7 +1896,7 @@ mod tests {
 
         assert_err_eq!(
             Identifier::deserialize(deserializer),
-            Error::new(error::Kind::ExpectedIdentifier, 0, 5)
+            Error::new(error::Kind::ExpectedIdentifier, Position::new(0, 5))
         );
     }
 
@@ -1912,7 +1912,7 @@ mod tests {
 
         assert_err_eq!(
             Identifier::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValue, 0, 9)
+            Error::new(error::Kind::UnexpectedValue, Position::new(0, 9))
         );
     }
 
@@ -1928,7 +1928,7 @@ mod tests {
 
         assert_err_eq!(
             Identifier::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValues, 0, 9)
+            Error::new(error::Kind::UnexpectedValues, Position::new(0, 9))
         );
     }
 }

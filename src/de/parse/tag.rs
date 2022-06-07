@@ -1,5 +1,5 @@
 use super::{StoredValues, Values};
-use crate::de::{error, Error, Result};
+use crate::de::{error, Error, Position, Result};
 use std::slice;
 
 #[derive(Debug, PartialEq)]
@@ -214,8 +214,8 @@ impl<'a> Tag<'a> {
                 }
                 return Err(Error::new(
                     error::Kind::EndOfTag,
-                    self.current_line,
-                    self.current_column,
+                    Position::new(self.current_line,
+                    self.current_column),
                 ));
             }
         }
@@ -244,8 +244,8 @@ impl<'a> Tag<'a> {
             if !byte.is_ascii_whitespace() {
                 return Err(Error::new(
                     error::Kind::UnexpectedValues,
-                    current_line,
-                    current_column,
+                    Position::new(current_line,
+                    current_column),
                 ));
             } else if matches!(byte, b'\n') {
                 current_line += 1;
@@ -279,7 +279,7 @@ impl<'a> Tag<'a> {
 #[cfg(test)]
 mod tests {
     use super::Tag;
-    use crate::de::{error, parse::Values, Error};
+    use crate::de::{error, parse::Values, Error, Position};
     use claim::{assert_err_eq, assert_ok, assert_ok_eq};
 
     #[test]
@@ -287,7 +287,7 @@ mod tests {
         let mut tag = Tag::new(b"", 0, 0);
 
         assert_ok_eq!(tag.next(), Values::new(b"", 0, 1));
-        assert_err_eq!(tag.next(), Error::new(error::Kind::EndOfTag, 0, 1));
+        assert_err_eq!(tag.next(), Error::new(error::Kind::EndOfTag, Position::new(0, 1)));
     }
 
     #[test]
@@ -295,7 +295,7 @@ mod tests {
         let mut tag = Tag::new(b"foo;\n", 0, 0);
 
         assert_ok_eq!(tag.next(), Values::new(b"foo", 0, 1));
-        assert_err_eq!(tag.next(), Error::new(error::Kind::EndOfTag, 1, 0));
+        assert_err_eq!(tag.next(), Error::new(error::Kind::EndOfTag, Position::new(1, 0)));
     }
 
     #[test]
@@ -303,7 +303,7 @@ mod tests {
         let mut tag = Tag::new(b"foo:bar:baz;\n", 0, 0);
 
         assert_ok_eq!(tag.next(), Values::new(b"foo:bar:baz", 0, 1));
-        assert_err_eq!(tag.next(), Error::new(error::Kind::EndOfTag, 1, 0));
+        assert_err_eq!(tag.next(), Error::new(error::Kind::EndOfTag, Position::new(1, 0)));
     }
 
     #[test]
@@ -312,7 +312,7 @@ mod tests {
 
         assert_ok_eq!(tag.next(), Values::new(b"foo", 0, 1));
         assert_ok_eq!(tag.next(), Values::new(b"bar", 0, 5));
-        assert_err_eq!(tag.next(), Error::new(error::Kind::EndOfTag, 0, 9));
+        assert_err_eq!(tag.next(), Error::new(error::Kind::EndOfTag, Position::new(0, 9)));
     }
 
     #[test]
@@ -320,7 +320,7 @@ mod tests {
         let mut tag = Tag::new(b"foo\\;bar;", 0, 0);
 
         assert_ok_eq!(tag.next(), Values::new(b"foo\\;bar", 0, 1));
-        assert_err_eq!(tag.next(), Error::new(error::Kind::EndOfTag, 0, 10));
+        assert_err_eq!(tag.next(), Error::new(error::Kind::EndOfTag, Position::new(0, 10)));
     }
 
     #[test]
@@ -328,7 +328,7 @@ mod tests {
         let mut tag = Tag::new(b"foo: //comment;\nbar;\n", 0, 0);
 
         assert_ok_eq!(tag.next(), Values::new(b"foo: //comment;\nbar", 0, 1));
-        assert_err_eq!(tag.next(), Error::new(error::Kind::EndOfTag, 2, 0));
+        assert_err_eq!(tag.next(), Error::new(error::Kind::EndOfTag, Position::new(2, 0)));
     }
 
     #[test]
@@ -337,7 +337,7 @@ mod tests {
 
         assert_ok_eq!(tag.next(), Values::new(b"foo: \\/\\/comment", 0, 1));
         assert_ok_eq!(tag.next(), Values::new(b"\nbar", 0, 18));
-        assert_err_eq!(tag.next(), Error::new(error::Kind::EndOfTag, 2, 0));
+        assert_err_eq!(tag.next(), Error::new(error::Kind::EndOfTag, Position::new(2, 0)));
     }
 
     #[test]
@@ -345,7 +345,7 @@ mod tests {
         let mut tag = Tag::new(b"foo\n", 0, 0);
 
         assert_ok_eq!(tag.next(), Values::new(b"foo", 0, 1));
-        assert_err_eq!(tag.next(), Error::new(error::Kind::EndOfTag, 1, 0));
+        assert_err_eq!(tag.next(), Error::new(error::Kind::EndOfTag, Position::new(1, 0)));
     }
 
     #[test]
@@ -386,7 +386,7 @@ mod tests {
 
         assert_err_eq!(
             tag.assert_exhausted(),
-            Error::new(error::Kind::UnexpectedValues, 1, 0)
+            Error::new(error::Kind::UnexpectedValues, Position::new(1, 0))
         );
     }
 
@@ -398,7 +398,7 @@ mod tests {
         let mut unstored_tag = unsafe { stored.into_tag() };
 
         assert_ok_eq!(unstored_tag.next(), Values::new(b"foo", 0, 1));
-        assert_err_eq!(unstored_tag.next(), Error::new(error::Kind::EndOfTag, 0, 5));
+        assert_err_eq!(unstored_tag.next(), Error::new(error::Kind::EndOfTag, Position::new(0, 5)));
     }
 
     #[test]
@@ -410,7 +410,7 @@ mod tests {
         let mut unstored_tag = unsafe { stored.into_tag() };
 
         assert_ok_eq!(unstored_tag.next(), Values::new(b"bar", 0, 5));
-        assert_err_eq!(unstored_tag.next(), Error::new(error::Kind::EndOfTag, 0, 9));
+        assert_err_eq!(unstored_tag.next(), Error::new(error::Kind::EndOfTag, Position::new(0, 9)));
     }
 
     #[test]
