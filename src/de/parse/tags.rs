@@ -7,28 +7,33 @@ struct Position {
     column: usize,
 }
 
+#[derive(Debug)]
 enum TagState {
     InTag,
     MaybeEndingTag,
     None,
 }
 
+#[derive(Debug)]
 enum NewlineState {
     StartingNewline,
     None,
 }
 
+#[derive(Debug)]
 enum EscapingState {
     Escaping,
     None,
 }
 
+#[derive(Debug)]
 enum CommentState {
     MaybeEnteringComment,
     InComment,
     None,
 }
 
+#[derive(Debug)]
 pub(in crate::de) struct Tags<R> {
     reader: Bytes<R>,
 

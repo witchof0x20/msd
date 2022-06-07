@@ -15,6 +15,7 @@ enum EscapingState {
     None,
 }
 
+#[derive(Debug)]
 pub(in crate::de) struct StoredValues {
     byte_ptr: *const u8,
     byte_len: usize,
