@@ -102,8 +102,7 @@ where
                 Some(byte) => match byte {
                     Ok(byte) => byte,
                     Err(_error) => {
-                        let error =
-                            Error::new(error::Kind::Io, self.current_position);
+                        let error = Error::new(error::Kind::Io, self.current_position);
                         self.encountered_error = Some(error.clone());
                         self.exhausted = true;
                         return Err(error);
@@ -112,17 +111,11 @@ where
                 None => {
                     self.exhausted = true;
                     if self.buffer.is_empty() {
-                        let error = Error::new(
-                            error::Kind::EndOfFile,
-                            self.current_position,
-                        );
+                        let error = Error::new(error::Kind::EndOfFile, self.current_position);
                         self.encountered_error = Some(error.clone());
                         return Err(error);
                     } else {
-                        return Ok(Tag::new(
-                            &self.buffer,
-                            self.started_position,
-                        ));
+                        return Ok(Tag::new(&self.buffer, self.started_position));
                     }
                 }
             };
@@ -250,10 +243,8 @@ where
                                 }
                                 // Non-whitespace bytes are not allowed before the first tag.
                                 if !byte.is_ascii_whitespace() {
-                                    let error = Error::new(
-                                        error::Kind::ExpectedTag,
-                                        self.current_position,
-                                    );
+                                    let error =
+                                        Error::new(error::Kind::ExpectedTag, self.current_position);
                                     self.encountered_error = Some(error.clone());
                                     return Err(error);
                                 }
@@ -293,8 +284,7 @@ where
                     Some(byte) => match byte {
                         Ok(byte) => byte,
                         Err(_error) => {
-                            let error =
-                                Error::new(error::Kind::Io, self.current_position);
+                            let error = Error::new(error::Kind::Io, self.current_position);
                             self.encountered_error = Some(error);
                             self.exhausted = true;
                             break;
@@ -345,10 +335,8 @@ where
                             }
                             // Non-whitespace bytes are not allowed before the first tag.
                             if !byte.is_ascii_whitespace() {
-                                let error = Error::new(
-                                    error::Kind::ExpectedTag,
-                                    self.current_position,
-                                );
+                                let error =
+                                    Error::new(error::Kind::ExpectedTag, self.current_position);
                                 self.encountered_error = Some(error);
                                 break;
                             }
@@ -411,7 +399,10 @@ mod tests {
         let input = b"";
         let mut tags = Tags::new(input.as_slice());
 
-        assert_err_eq!(tags.next(), Error::new(error::Kind::EndOfFile, Position::new(0, 0)));
+        assert_err_eq!(
+            tags.next(),
+            Error::new(error::Kind::EndOfFile, Position::new(0, 0))
+        );
     }
 
     #[test]
@@ -419,7 +410,10 @@ mod tests {
         let input = b"foo#bar;\n";
         let mut tags = Tags::new(input.as_slice());
 
-        assert_err_eq!(tags.next(), Error::new(error::Kind::ExpectedTag, Position::new(0, 0)));
+        assert_err_eq!(
+            tags.next(),
+            Error::new(error::Kind::ExpectedTag, Position::new(0, 0))
+        );
     }
 
     #[test]
@@ -427,7 +421,10 @@ mod tests {
         let input = b"\n  foo#bar;\n";
         let mut tags = Tags::new(input.as_slice());
 
-        assert_err_eq!(tags.next(), Error::new(error::Kind::ExpectedTag, Position::new(1, 2)));
+        assert_err_eq!(
+            tags.next(),
+            Error::new(error::Kind::ExpectedTag, Position::new(1, 2))
+        );
     }
 
     #[test]
@@ -461,7 +458,10 @@ mod tests {
         let input = b"#foo:bar#baz;\n";
         let mut tags = Tags::new(input.as_slice());
 
-        assert_ok_eq!(tags.next(), Tag::new(b"foo:bar#baz;\n", Position::new(0, 0)));
+        assert_ok_eq!(
+            tags.next(),
+            Tag::new(b"foo:bar#baz;\n", Position::new(0, 0))
+        );
     }
 
     #[test]
@@ -478,7 +478,10 @@ mod tests {
         let input = b"#foo:bar;\n\\#baz;\n";
         let mut tags = Tags::new(input.as_slice());
 
-        assert_ok_eq!(tags.next(), Tag::new(b"foo:bar;\n\\#baz;\n", Position::new(0, 0)));
+        assert_ok_eq!(
+            tags.next(),
+            Tag::new(b"foo:bar;\n\\#baz;\n", Position::new(0, 0))
+        );
     }
 
     #[test]
@@ -486,7 +489,10 @@ mod tests {
         let input = b"#foo:bar\n\\#baz;\n";
         let mut tags = Tags::new(input.as_slice());
 
-        assert_ok_eq!(tags.next(), Tag::new(b"foo:bar\n\\#baz;\n", Position::new(0, 0)));
+        assert_ok_eq!(
+            tags.next(),
+            Tag::new(b"foo:bar\n\\#baz;\n", Position::new(0, 0))
+        );
     }
 
     #[test]
@@ -502,7 +508,10 @@ mod tests {
         let input = b"/#foo:bar;\n";
         let mut tags = Tags::new(input.as_slice());
 
-        assert_err_eq!(tags.next(), Error::new(error::Kind::ExpectedTag, Position::new(0, 0)));
+        assert_err_eq!(
+            tags.next(),
+            Error::new(error::Kind::ExpectedTag, Position::new(0, 0))
+        );
     }
 
     #[test]
@@ -510,7 +519,10 @@ mod tests {
         let input = b"//#foo:bar;\n";
         let mut tags = Tags::new(input.as_slice());
 
-        assert_err_eq!(tags.next(), Error::new(error::Kind::EndOfFile, Position::new(1, 0)));
+        assert_err_eq!(
+            tags.next(),
+            Error::new(error::Kind::EndOfFile, Position::new(1, 0))
+        );
     }
 
     #[test]
@@ -518,7 +530,10 @@ mod tests {
         let input = b"#foo:bar\\;#baz;\n";
         let mut tags = Tags::new(input.as_slice());
 
-        assert_ok_eq!(tags.next(), Tag::new(b"foo:bar\\;#baz;\n", Position::new(0, 0)));
+        assert_ok_eq!(
+            tags.next(),
+            Tag::new(b"foo:bar\\;#baz;\n", Position::new(0, 0))
+        );
     }
 
     #[test]

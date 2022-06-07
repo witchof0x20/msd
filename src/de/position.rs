@@ -6,10 +6,7 @@ pub(in crate::de) struct Position {
 
 impl Position {
     pub(in crate::de) fn new(line: usize, column: usize) -> Self {
-        Self {
-            line,
-            column,
-        }
+        Self { line, column }
     }
 
     pub(in crate::de) fn increment_line(self) -> Self {

@@ -131,7 +131,10 @@ where
 #[cfg(test)]
 mod tests {
     use super::Access;
-    use crate::de::{parse::{Tag, Tags}, Position};
+    use crate::de::{
+        parse::{Tag, Tags},
+        Position,
+    };
     use claim::{assert_none, assert_ok, assert_ok_eq, assert_some_eq};
     use serde::{
         de,

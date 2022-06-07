@@ -308,10 +308,7 @@ pub(in crate::de) struct Value<'a> {
 
 impl<'a> Value<'a> {
     pub(in crate::de) fn new(bytes: &'a [u8], position: Position) -> Self {
-        Self {
-            bytes,
-            position,
-        }
+        Self { bytes, position }
     }
 
     pub(in crate::de) fn parse_bool(&self) -> Result<bool> {
@@ -324,26 +321,17 @@ impl<'a> Value<'a> {
                 if parse_ident(value, b"rue") {
                     Ok(true)
                 } else {
-                    Err(Error::new(
-                        error::Kind::ExpectedBool,
-                        self.position,
-                    ))
+                    Err(Error::new(error::Kind::ExpectedBool, self.position))
                 }
             }
             b'f' => {
                 if parse_ident(value, b"alse") {
                     Ok(false)
                 } else {
-                    Err(Error::new(
-                        error::Kind::ExpectedBool,
-                        self.position,
-                    ))
+                    Err(Error::new(error::Kind::ExpectedBool, self.position))
                 }
             }
-            _ => Err(Error::new(
-                error::Kind::ExpectedBool,
-                self.position,
-            )),
+            _ => Err(Error::new(error::Kind::ExpectedBool, self.position)),
         }
     }
 
@@ -420,27 +408,18 @@ impl<'a> Value<'a> {
             if let Some(byte) = value.next() {
                 byte
             } else {
-                return Err(Error::new(
-                    error::Kind::ExpectedChar,
-                    self.position,
-                ));
+                return Err(Error::new(error::Kind::ExpectedChar, self.position));
             }
         };
 
         let width = utf8_char_width(first_byte);
         if width == 0 {
-            Err(Error::new(
-                error::Kind::ExpectedChar,
-                self.position,
-            ))
+            Err(Error::new(error::Kind::ExpectedChar, self.position))
         } else if width == 1 {
             if value.next().is_none() {
                 Ok(first_byte as char)
             } else {
-                Err(Error::new(
-                    error::Kind::ExpectedChar,
-                    self.position,
-                ))
+                Err(Error::new(error::Kind::ExpectedChar, self.position))
             }
         } else {
             let mut buffer = ArrayVec::<_, 4>::new();
@@ -465,10 +444,7 @@ impl<'a> Value<'a> {
                         // the input and the input was nonempty.
                         Ok(unsafe { s.chars().next().unwrap_unchecked() }))?)?
             } else {
-                Err(Error::new(
-                    error::Kind::ExpectedChar,
-                    self.position,
-                ))
+                Err(Error::new(error::Kind::ExpectedChar, self.position))
             }
         }
     }
@@ -487,10 +463,7 @@ impl<'a> Value<'a> {
         if Clean::new(self.bytes).all(|b| b.is_ascii_whitespace()) {
             Ok(())
         } else {
-            Err(Error::new(
-                error::Kind::ExpectedUnit,
-                self.position,
-            ))
+            Err(Error::new(error::Kind::ExpectedUnit, self.position))
         }
     }
 
@@ -555,21 +528,30 @@ mod tests {
     fn parse_i8_positive_overflow() {
         let value = Value::new(b"128", Position::new(0, 0));
 
-        assert_err_eq!(value.parse_i8(), Error::new(error::Kind::ExpectedI8, Position::new(0, 0)));
+        assert_err_eq!(
+            value.parse_i8(),
+            Error::new(error::Kind::ExpectedI8, Position::new(0, 0))
+        );
     }
 
     #[test]
     fn parse_i8_negative_overflow() {
         let value = Value::new(b"-129", Position::new(0, 0));
 
-        assert_err_eq!(value.parse_i8(), Error::new(error::Kind::ExpectedI8, Position::new(0, 0)));
+        assert_err_eq!(
+            value.parse_i8(),
+            Error::new(error::Kind::ExpectedI8, Position::new(0, 0))
+        );
     }
 
     #[test]
     fn parse_i8_invalid() {
         let value = Value::new(b"invalid", Position::new(0, 0));
 
-        assert_err_eq!(value.parse_i8(), Error::new(error::Kind::ExpectedI8, Position::new(0, 0)));
+        assert_err_eq!(
+            value.parse_i8(),
+            Error::new(error::Kind::ExpectedI8, Position::new(0, 0))
+        );
     }
 
     #[test]
@@ -776,7 +758,10 @@ mod tests {
 
     #[test]
     fn parse_i128_positive_overflow() {
-        let value = Value::new(b"170141183460469231731687303715884105728", Position::new(0, 0));
+        let value = Value::new(
+            b"170141183460469231731687303715884105728",
+            Position::new(0, 0),
+        );
 
         assert_err_eq!(
             value.parse_i128(),
@@ -786,7 +771,10 @@ mod tests {
 
     #[test]
     fn parse_i128_negative_overflow() {
-        let value = Value::new(b"-170141183460469231731687303715884105729", Position::new(0, 0));
+        let value = Value::new(
+            b"-170141183460469231731687303715884105729",
+            Position::new(0, 0),
+        );
 
         assert_err_eq!(
             value.parse_i128(),
@@ -829,14 +817,20 @@ mod tests {
     fn parse_u8_overflow() {
         let value = Value::new(b"256", Position::new(0, 0));
 
-        assert_err_eq!(value.parse_u8(), Error::new(error::Kind::ExpectedU8, Position::new(0, 0)));
+        assert_err_eq!(
+            value.parse_u8(),
+            Error::new(error::Kind::ExpectedU8, Position::new(0, 0))
+        );
     }
 
     #[test]
     fn parse_u8_invalid() {
         let value = Value::new(b"invalid", Position::new(0, 0));
 
-        assert_err_eq!(value.parse_u8(), Error::new(error::Kind::ExpectedU8, Position::new(0, 0)));
+        assert_err_eq!(
+            value.parse_u8(),
+            Error::new(error::Kind::ExpectedU8, Position::new(0, 0))
+        );
     }
 
     #[test]
@@ -985,7 +979,10 @@ mod tests {
 
     #[test]
     fn parse_u128_overflow() {
-        let value = Value::new(b"340282366920938463463374607431768211456", Position::new(0, 0));
+        let value = Value::new(
+            b"340282366920938463463374607431768211456",
+            Position::new(0, 0),
+        );
 
         assert_err_eq!(
             value.parse_u128(),
