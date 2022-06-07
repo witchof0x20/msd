@@ -53,6 +53,7 @@ use write::WriteExt;
 /// ```
 ///
 /// [`Deserializer`]: crate::Deserializer
+#[derive(Debug)]
 pub struct Serializer<W> {
     writer: W,
 }

@@ -16,6 +16,7 @@ enum EscapingState {
 }
 
 // Tag without the lifetime. Used when storing within an Access.
+#[derive(Debug)]
 pub(in crate::de) struct StoredTag {
     byte_ptr: *const u8,
     byte_len: usize,

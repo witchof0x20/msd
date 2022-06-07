@@ -55,6 +55,7 @@ use std::io::Read;
 ///
 /// assert_eq!(deserialized, expected);
 /// ```
+#[derive(Debug)]
 pub struct Deserializer<R> {
     tags: parse::Tags<R>,
 }
