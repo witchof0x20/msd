@@ -73,13 +73,13 @@ impl<'a, 'b, 'de> MapAccess<'de> for Access<'a, 'b> {
 #[cfg(test)]
 mod tests {
     use super::Access;
-    use crate::de::parse::Tag;
+    use crate::de::{parse::Tag, Position};
     use claim::{assert_none, assert_ok, assert_ok_eq, assert_some_eq};
     use serde::de::MapAccess;
 
     #[test]
     fn next_key_and_value() {
-        let mut tag = Tag::new(b"foo:42;", 0, 0);
+        let mut tag = Tag::new(b"foo:42;", Position::new(0, 0));
         let mut access = Access::new(&mut tag);
 
         assert_some_eq!(assert_ok!(access.next_key::<String>()), "foo".to_owned());
@@ -88,7 +88,7 @@ mod tests {
 
     #[test]
     fn multiple_keys_and_values() {
-        let mut tag = Tag::new(b"foo:42;bar:100", 0, 0);
+        let mut tag = Tag::new(b"foo:42;bar:100", Position::new(0, 0));
         let mut access = Access::new(&mut tag);
 
         assert_some_eq!(assert_ok!(access.next_key::<String>()), "foo".to_owned());
@@ -101,7 +101,7 @@ mod tests {
     #[should_panic]
     fn next_value_without_next_key() {
         // Should panic if `next_value()` is called before `next_key()`.
-        let mut tag = Tag::new(b"42;", 0, 0);
+        let mut tag = Tag::new(b"42;", Position::new(0, 0));
         let mut access = Access::new(&mut tag);
 
         let _ = access.next_value::<u64>();
@@ -109,7 +109,7 @@ mod tests {
 
     #[test]
     fn next_key_none() {
-        let mut tag = Tag::new(b"", 0, 0);
+        let mut tag = Tag::new(b"", Position::new(0, 0));
         assert_ok!(tag.next());
         let mut access = Access::new(&mut tag);
 
@@ -118,7 +118,7 @@ mod tests {
 
     #[test]
     fn next_entry() {
-        let mut tag = Tag::new(b"foo:42;", 0, 0);
+        let mut tag = Tag::new(b"foo:42;", Position::new(0, 0));
         let mut access = Access::new(&mut tag);
 
         assert_some_eq!(
@@ -129,7 +129,7 @@ mod tests {
 
     #[test]
     fn multiple_entries() {
-        let mut tag = Tag::new(b"foo:42;bar:100;", 0, 0);
+        let mut tag = Tag::new(b"foo:42;bar:100;", Position::new(0, 0));
         let mut access = Access::new(&mut tag);
 
         assert_some_eq!(
@@ -144,7 +144,7 @@ mod tests {
 
     #[test]
     fn next_entry_none() {
-        let mut tag = Tag::new(b"", 0, 0);
+        let mut tag = Tag::new(b"", Position::new(0, 0));
         assert_ok!(tag.next());
         let mut access = Access::new(&mut tag);
 

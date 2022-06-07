@@ -263,7 +263,7 @@ mod tests {
 
     #[test]
     fn i8_valid() {
-        let mut values = Values::new(b"42", 0, 0);
+        let mut values = Values::new(b"42", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(i8::deserialize(deserializer), 42);
@@ -271,7 +271,7 @@ mod tests {
 
     #[test]
     fn i8_invalid() {
-        let mut values = Values::new(b"invalid", 0, 0);
+        let mut values = Values::new(b"invalid", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_err_eq!(
@@ -283,7 +283,7 @@ mod tests {
     #[test]
     fn i8_multiple_values() {
         // The entire values iterator is not consumed. Just the first value is returned.
-        let mut values = Values::new(b"42:100", 0, 0);
+        let mut values = Values::new(b"42:100", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(i8::deserialize(deserializer), 42);
@@ -291,7 +291,7 @@ mod tests {
 
     #[test]
     fn i16_valid() {
-        let mut values = Values::new(b"42", 0, 0);
+        let mut values = Values::new(b"42", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(i16::deserialize(deserializer), 42);
@@ -299,7 +299,7 @@ mod tests {
 
     #[test]
     fn i16_invalid() {
-        let mut values = Values::new(b"invalid", 0, 0);
+        let mut values = Values::new(b"invalid", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_err_eq!(
@@ -311,7 +311,7 @@ mod tests {
     #[test]
     fn i16_multiple_values() {
         // The entire values iterator is not consumed. Just the first value is returned.
-        let mut values = Values::new(b"42:100", 0, 0);
+        let mut values = Values::new(b"42:100", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(i16::deserialize(deserializer), 42);
@@ -319,7 +319,7 @@ mod tests {
 
     #[test]
     fn i32_valid() {
-        let mut values = Values::new(b"42", 0, 0);
+        let mut values = Values::new(b"42", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(i32::deserialize(deserializer), 42);
@@ -327,7 +327,7 @@ mod tests {
 
     #[test]
     fn i32_invalid() {
-        let mut values = Values::new(b"invalid", 0, 0);
+        let mut values = Values::new(b"invalid", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_err_eq!(
@@ -339,7 +339,7 @@ mod tests {
     #[test]
     fn i32_multiple_values() {
         // The entire values iterator is not consumed. Just the first value is returned.
-        let mut values = Values::new(b"42:100", 0, 0);
+        let mut values = Values::new(b"42:100", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(i32::deserialize(deserializer), 42);
@@ -347,7 +347,7 @@ mod tests {
 
     #[test]
     fn i64_valid() {
-        let mut values = Values::new(b"42", 0, 0);
+        let mut values = Values::new(b"42", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(i64::deserialize(deserializer), 42);
@@ -355,7 +355,7 @@ mod tests {
 
     #[test]
     fn i64_invalid() {
-        let mut values = Values::new(b"invalid", 0, 0);
+        let mut values = Values::new(b"invalid", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_err_eq!(
@@ -367,7 +367,7 @@ mod tests {
     #[test]
     fn i64_multiple_values() {
         // The entire values iterator is not consumed. Just the first value is returned.
-        let mut values = Values::new(b"42:100", 0, 0);
+        let mut values = Values::new(b"42:100", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(i64::deserialize(deserializer), 42);
@@ -376,7 +376,7 @@ mod tests {
     #[test]
     #[cfg_attr(not(has_i128), ignore)]
     fn i128_valid() {
-        let mut values = Values::new(b"42", 0, 0);
+        let mut values = Values::new(b"42", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(i128::deserialize(deserializer), 42);
@@ -385,7 +385,7 @@ mod tests {
     #[test]
     #[cfg_attr(not(has_i128), ignore)]
     fn i128_invalid() {
-        let mut values = Values::new(b"invalid", 0, 0);
+        let mut values = Values::new(b"invalid", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_err_eq!(
@@ -398,7 +398,7 @@ mod tests {
     #[cfg_attr(not(has_i128), ignore)]
     fn i128_multiple_values() {
         // The entire values iterator is not consumed. Just the first value is returned.
-        let mut values = Values::new(b"42:100", 0, 0);
+        let mut values = Values::new(b"42:100", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(i128::deserialize(deserializer), 42);
@@ -406,7 +406,7 @@ mod tests {
 
     #[test]
     fn u8_valid() {
-        let mut values = Values::new(b"42", 0, 0);
+        let mut values = Values::new(b"42", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(u8::deserialize(deserializer), 42);
@@ -414,7 +414,7 @@ mod tests {
 
     #[test]
     fn u8_invalid() {
-        let mut values = Values::new(b"invalid", 0, 0);
+        let mut values = Values::new(b"invalid", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_err_eq!(
@@ -426,7 +426,7 @@ mod tests {
     #[test]
     fn u8_multiple_values() {
         // The entire values iterator is not consumed. Just the first value is returned.
-        let mut values = Values::new(b"42:100", 0, 0);
+        let mut values = Values::new(b"42:100", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(u8::deserialize(deserializer), 42);
@@ -434,7 +434,7 @@ mod tests {
 
     #[test]
     fn u16_valid() {
-        let mut values = Values::new(b"42", 0, 0);
+        let mut values = Values::new(b"42", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(u16::deserialize(deserializer), 42);
@@ -442,7 +442,7 @@ mod tests {
 
     #[test]
     fn u16_invalid() {
-        let mut values = Values::new(b"invalid", 0, 0);
+        let mut values = Values::new(b"invalid", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_err_eq!(
@@ -454,7 +454,7 @@ mod tests {
     #[test]
     fn u16_multiple_values() {
         // The entire values iterator is not consumed. Just the first value is returned.
-        let mut values = Values::new(b"42:100", 0, 0);
+        let mut values = Values::new(b"42:100", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(u16::deserialize(deserializer), 42);
@@ -462,7 +462,7 @@ mod tests {
 
     #[test]
     fn u32_valid() {
-        let mut values = Values::new(b"42", 0, 0);
+        let mut values = Values::new(b"42", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(u32::deserialize(deserializer), 42);
@@ -470,7 +470,7 @@ mod tests {
 
     #[test]
     fn u32_invalid() {
-        let mut values = Values::new(b"invalid", 0, 0);
+        let mut values = Values::new(b"invalid", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_err_eq!(
@@ -482,7 +482,7 @@ mod tests {
     #[test]
     fn u32_multiple_values() {
         // The entire values iterator is not consumed. Just the first value is returned.
-        let mut values = Values::new(b"42:100", 0, 0);
+        let mut values = Values::new(b"42:100", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(u32::deserialize(deserializer), 42);
@@ -490,7 +490,7 @@ mod tests {
 
     #[test]
     fn u64_valid() {
-        let mut values = Values::new(b"42", 0, 0);
+        let mut values = Values::new(b"42", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(u64::deserialize(deserializer), 42);
@@ -498,7 +498,7 @@ mod tests {
 
     #[test]
     fn u64_invalid() {
-        let mut values = Values::new(b"invalid", 0, 0);
+        let mut values = Values::new(b"invalid", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_err_eq!(
@@ -510,7 +510,7 @@ mod tests {
     #[test]
     fn u64_multiple_values() {
         // The entire values iterator is not consumed. Just the first value is returned.
-        let mut values = Values::new(b"42:100", 0, 0);
+        let mut values = Values::new(b"42:100", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(u64::deserialize(deserializer), 42);
@@ -519,7 +519,7 @@ mod tests {
     #[test]
     #[cfg_attr(not(has_i128), ignore)]
     fn u128_valid() {
-        let mut values = Values::new(b"42", 0, 0);
+        let mut values = Values::new(b"42", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(u128::deserialize(deserializer), 42);
@@ -528,7 +528,7 @@ mod tests {
     #[test]
     #[cfg_attr(not(has_i128), ignore)]
     fn u128_invalid() {
-        let mut values = Values::new(b"invalid", 0, 0);
+        let mut values = Values::new(b"invalid", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_err_eq!(
@@ -541,7 +541,7 @@ mod tests {
     #[cfg_attr(not(has_i128), ignore)]
     fn u128_multiple_values() {
         // The entire values iterator is not consumed. Just the first value is returned.
-        let mut values = Values::new(b"42:100", 0, 0);
+        let mut values = Values::new(b"42:100", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(u128::deserialize(deserializer), 42);
@@ -549,7 +549,7 @@ mod tests {
 
     #[test]
     fn f32_valid() {
-        let mut values = Values::new(b"42.9", 0, 0);
+        let mut values = Values::new(b"42.9", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(f32::deserialize(deserializer), 42.9);
@@ -557,7 +557,7 @@ mod tests {
 
     #[test]
     fn f32_invalid() {
-        let mut values = Values::new(b"invalid", 0, 0);
+        let mut values = Values::new(b"invalid", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_err_eq!(
@@ -569,7 +569,7 @@ mod tests {
     #[test]
     fn f32_multiple_values() {
         // The entire values iterator is not consumed. Just the first value is returned.
-        let mut values = Values::new(b"42.9:100.1", 0, 0);
+        let mut values = Values::new(b"42.9:100.1", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(f32::deserialize(deserializer), 42.9);
@@ -577,7 +577,7 @@ mod tests {
 
     #[test]
     fn f64_valid() {
-        let mut values = Values::new(b"42.9", 0, 0);
+        let mut values = Values::new(b"42.9", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(f64::deserialize(deserializer), 42.9);
@@ -585,7 +585,7 @@ mod tests {
 
     #[test]
     fn f64_invalid() {
-        let mut values = Values::new(b"invalid", 0, 0);
+        let mut values = Values::new(b"invalid", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_err_eq!(
@@ -597,7 +597,7 @@ mod tests {
     #[test]
     fn f64_multiple_values() {
         // The entire values iterator is not consumed. Just the first value is returned.
-        let mut values = Values::new(b"42.9:100.1", 0, 0);
+        let mut values = Values::new(b"42.9:100.1", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(f64::deserialize(deserializer), 42.9);
@@ -605,7 +605,7 @@ mod tests {
 
     #[test]
     fn char_valid() {
-        let mut values = Values::new(b"a", 0, 0);
+        let mut values = Values::new(b"a", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(char::deserialize(deserializer), 'a');
@@ -613,7 +613,7 @@ mod tests {
 
     #[test]
     fn char_invalid() {
-        let mut values = Values::new(b"invalid", 0, 0);
+        let mut values = Values::new(b"invalid", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_err_eq!(
@@ -625,7 +625,7 @@ mod tests {
     #[test]
     fn char_multiple_values() {
         // The entire values iterator is not consumed. Just the first value is returned.
-        let mut values = Values::new(b"a:b", 0, 0);
+        let mut values = Values::new(b"a:b", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(char::deserialize(deserializer), 'a');
@@ -633,7 +633,7 @@ mod tests {
 
     #[test]
     fn string_valid() {
-        let mut values = Values::new(b"foo", 0, 0);
+        let mut values = Values::new(b"foo", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(String::deserialize(deserializer), "foo");
@@ -641,7 +641,7 @@ mod tests {
 
     #[test]
     fn string_invalid() {
-        let mut values = Values::new(b"\xF0\x9Ffoo", 0, 0);
+        let mut values = Values::new(b"\xF0\x9Ffoo", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_err_eq!(
@@ -653,7 +653,7 @@ mod tests {
     #[test]
     fn string_multiple_values() {
         // The entire values iterator is not consumed. Just the first value is returned.
-        let mut values = Values::new(b"foo:bar", 0, 0);
+        let mut values = Values::new(b"foo:bar", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(String::deserialize(deserializer), "foo");
@@ -661,7 +661,7 @@ mod tests {
 
     #[test]
     fn byte_buf() {
-        let mut values = Values::new(b"foo", 0, 0);
+        let mut values = Values::new(b"foo", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(ByteBuf::deserialize(deserializer), b"foo");
@@ -670,7 +670,7 @@ mod tests {
     #[test]
     fn byte_buf_multiple_values() {
         // The entire values iterator is not consumed. Just the first value is returned.
-        let mut values = Values::new(b"foo:bar", 0, 0);
+        let mut values = Values::new(b"foo:bar", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(ByteBuf::deserialize(deserializer), b"foo");
@@ -678,7 +678,7 @@ mod tests {
 
     #[test]
     fn unit() {
-        let mut values = Values::new(b"", 0, 0);
+        let mut values = Values::new(b"", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(<()>::deserialize(deserializer), ());
@@ -686,7 +686,7 @@ mod tests {
 
     #[test]
     fn unit_invalid() {
-        let mut values = Values::new(b"invalid", 0, 0);
+        let mut values = Values::new(b"invalid", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_err_eq!(
@@ -698,7 +698,7 @@ mod tests {
     #[test]
     fn unit_multiple_values() {
         // The entire values iterator is not consumed. Just the first value is returned.
-        let mut values = Values::new(b":", 0, 0);
+        let mut values = Values::new(b":", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(<()>::deserialize(deserializer), ());
@@ -708,7 +708,7 @@ mod tests {
     fn unit_struct() {
         #[derive(Debug, Deserialize, PartialEq)]
         struct Unit;
-        let mut values = Values::new(b"", 0, 0);
+        let mut values = Values::new(b"", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(Unit::deserialize(deserializer), Unit);
@@ -718,7 +718,7 @@ mod tests {
     fn unit_struct_invalid() {
         #[derive(Debug, Deserialize, PartialEq)]
         struct Unit;
-        let mut values = Values::new(b"invalid", 0, 0);
+        let mut values = Values::new(b"invalid", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_err_eq!(
@@ -732,7 +732,7 @@ mod tests {
         #[derive(Debug, Deserialize, PartialEq)]
         struct Unit;
         // The entire values iterator is not consumed. Just the first value is returned.
-        let mut values = Values::new(b":", 0, 0);
+        let mut values = Values::new(b":", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(Unit::deserialize(deserializer), Unit);
@@ -742,7 +742,7 @@ mod tests {
     fn newtype_struct() {
         #[derive(Debug, Deserialize, PartialEq)]
         struct Newtype(u64);
-        let mut values = Values::new(b"42", 0, 0);
+        let mut values = Values::new(b"42", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(Newtype::deserialize(deserializer), Newtype(42));
@@ -753,7 +753,7 @@ mod tests {
         #[derive(Debug, Deserialize, PartialEq)]
         struct Newtype(u64);
         // The entire values iterator is not consumed. Just the first value is returned.
-        let mut values = Values::new(b"42:100", 0, 0);
+        let mut values = Values::new(b"42:100", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(Newtype::deserialize(deserializer), Newtype(42));
@@ -761,7 +761,7 @@ mod tests {
 
     #[test]
     fn tuple() {
-        let mut values = Values::new(b"42:foo::1.2", 0, 0);
+        let mut values = Values::new(b"42:foo::1.2", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(
@@ -774,7 +774,7 @@ mod tests {
     fn tuple_trailing_values() {
         // The entire values iterator is not consumed. Just the requested tuple values are
         // consumed.
-        let mut values = Values::new(b"42:foo::1.2:not:consumed", 0, 0);
+        let mut values = Values::new(b"42:foo::1.2:not:consumed", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(
@@ -787,7 +787,7 @@ mod tests {
     fn tuple_struct() {
         #[derive(Debug, Deserialize, PartialEq)]
         struct TupleStruct(u64, String, (), f64);
-        let mut values = Values::new(b"42:foo::1.2", 0, 0);
+        let mut values = Values::new(b"42:foo::1.2", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(
@@ -802,7 +802,7 @@ mod tests {
         struct TupleStruct(u64, String, (), f64);
         // The entire values iterator is not consumed. Just the requested tuple values are
         // consumed.
-        let mut values = Values::new(b"42:foo::1.2:not:consumed", 0, 0);
+        let mut values = Values::new(b"42:foo::1.2:not:consumed", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(
@@ -817,7 +817,7 @@ mod tests {
         enum Unit {
             Variant,
         }
-        let mut values = Values::new(b"Variant", 0, 0);
+        let mut values = Values::new(b"Variant", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(Unit::deserialize(deserializer), Unit::Variant,);
@@ -829,7 +829,7 @@ mod tests {
         enum Unit {
             Variant,
         }
-        let mut values = Values::new(b"Variant:42", 0, 0);
+        let mut values = Values::new(b"Variant:42", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(Unit::deserialize(deserializer), Unit::Variant,);
@@ -841,7 +841,7 @@ mod tests {
         enum Newtype {
             Variant(u64),
         }
-        let mut values = Values::new(b"Variant:42", 0, 0);
+        let mut values = Values::new(b"Variant:42", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(Newtype::deserialize(deserializer), Newtype::Variant(42),);
@@ -853,7 +853,7 @@ mod tests {
         enum Newtype {
             Variant(u64),
         }
-        let mut values = Values::new(b"Variant:42:foo", 0, 0);
+        let mut values = Values::new(b"Variant:42:foo", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(Newtype::deserialize(deserializer), Newtype::Variant(42),);
@@ -865,7 +865,7 @@ mod tests {
         enum Tuple {
             Variant(u64, String),
         }
-        let mut values = Values::new(b"Variant:42:foo", 0, 0);
+        let mut values = Values::new(b"Variant:42:foo", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(
@@ -880,7 +880,7 @@ mod tests {
         enum Tuple {
             Variant(u64, String),
         }
-        let mut values = Values::new(b"Variant:42:foo:bar", 0, 0);
+        let mut values = Values::new(b"Variant:42:foo:bar", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(
@@ -920,7 +920,7 @@ mod tests {
 
     #[test]
     fn identifier() {
-        let mut values = Values::new(b"foo", 0, 0);
+        let mut values = Values::new(b"foo", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(
@@ -931,7 +931,7 @@ mod tests {
 
     #[test]
     fn identifier_trailing_values() {
-        let mut values = Values::new(b"foo:bar", 0, 0);
+        let mut values = Values::new(b"foo:bar", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(

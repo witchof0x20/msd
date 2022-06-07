@@ -23,8 +23,7 @@ pub(in crate::de) struct StoredValues {
     exhausted: bool,
 
     current_byte_index: usize,
-    current_line: usize,
-    current_column: usize,
+    current_position: Position,
 }
 
 impl StoredValues {
@@ -42,12 +41,10 @@ impl StoredValues {
             exhausted: self.exhausted,
 
             started_byte_index: self.current_byte_index,
-            started_line: self.current_line,
-            started_column: self.current_column,
+            started_position: self.current_position,
 
             current_byte_index: self.current_byte_index,
-            current_line: self.current_line,
-            current_column: self.current_column,
+            current_position: self.current_position,
         }
     }
 }
@@ -61,16 +58,14 @@ pub(in crate::de) struct Values<'a> {
     exhausted: bool,
 
     started_byte_index: usize,
-    started_line: usize,
-    started_column: usize,
+    started_position: Position,
 
     current_byte_index: usize,
-    current_line: usize,
-    current_column: usize,
+    current_position: Position,
 }
 
 impl<'a> Values<'a> {
-    pub(in crate::de) fn new(bytes: &'a [u8], line: usize, column: usize) -> Self {
+    pub(in crate::de) fn new(bytes: &'a [u8], position: Position) -> Self {
         Self {
             bytes,
 
@@ -79,20 +74,17 @@ impl<'a> Values<'a> {
             exhausted: false,
 
             started_byte_index: 0,
-            started_line: line,
-            started_column: column,
+            started_position: position,
 
             current_byte_index: 0,
-            current_line: line,
-            current_column: column,
+            current_position: position,
         }
     }
 
     pub(in crate::de) fn next(&mut self) -> Result<Value<'a>> {
         let mut value = None;
         self.started_byte_index = self.current_byte_index;
-        self.started_line = self.current_line;
-        self.started_column = self.current_column;
+        self.started_position = self.current_position;
         loop {
             if let Some(byte) = self.bytes.get(self.current_byte_index) {
                 if matches!(self.comment_state, CommentState::InComment) {
@@ -116,8 +108,7 @@ impl<'a> Values<'a> {
                                             self.started_byte_index..self.current_byte_index,
                                         )
                                     },
-                                    self.started_line,
-                                    self.started_column,
+                                    self.started_position,
                                 ));
                             }
                             b'\\' => {
@@ -139,10 +130,9 @@ impl<'a> Values<'a> {
                 }
 
                 if matches!(byte, b'\n') {
-                    self.current_line += 1;
-                    self.current_column = 0;
+                    self.current_position = Position::new(self.current_position.line + 1, 0);
                 } else {
-                    self.current_column += 1;
+                    self.current_position = Position::new(self.current_position.line, self.current_position.column + 1);
                 }
                 self.current_byte_index += 1;
 
@@ -158,14 +148,12 @@ impl<'a> Values<'a> {
                         self.bytes
                             .get_unchecked(self.started_byte_index..self.current_byte_index)
                     },
-                    self.started_line,
-                    self.started_column,
+                    self.started_position,
                 ));
             } else {
                 return Err(Error::new(
                     error::Kind::EndOfValues,
-                    Position::new(self.current_line,
-                    self.current_column),
+                    self.current_position,
                 ));
             }
         }
@@ -177,8 +165,7 @@ impl<'a> Values<'a> {
         } else {
             Err(Error::new(
                 error::Kind::UnexpectedValue,
-                Position::new(self.current_line,
-                self.current_column),
+                self.current_position,
             ))
         }
     }
@@ -191,8 +178,7 @@ impl<'a> Values<'a> {
             exhausted: self.exhausted,
 
             current_byte_index: self.current_byte_index,
-            current_line: self.current_line,
-            current_column: self.current_column,
+            current_position: self.current_position,
         }
     }
 }
@@ -205,69 +191,69 @@ mod tests {
 
     #[test]
     fn empty() {
-        let mut values = Values::new(b"", 0, 0);
+        let mut values = Values::new(b"", Position::new(0, 0));
 
-        assert_ok_eq!(values.next(), Value::new(b"", 0, 0));
+        assert_ok_eq!(values.next(), Value::new(b"", Position::new(0, 0)));
         assert_err_eq!(values.next(), Error::new(error::Kind::EndOfValues, Position::new(0, 0)));
     }
 
     #[test]
     fn finds_single_value() {
-        let mut values = Values::new(b"foo", 0, 0);
+        let mut values = Values::new(b"foo", Position::new(0, 0));
 
-        assert_ok_eq!(values.next(), Value::new(b"foo", 0, 0));
+        assert_ok_eq!(values.next(), Value::new(b"foo", Position::new(0, 0)));
         assert_err_eq!(values.next(), Error::new(error::Kind::EndOfValues, Position::new(0, 3)));
     }
 
     #[test]
     fn finds_multiple_values() {
-        let mut values = Values::new(b"foo:bar:baz", 0, 0);
+        let mut values = Values::new(b"foo:bar:baz", Position::new(0, 0));
 
-        assert_ok_eq!(values.next(), Value::new(b"foo", 0, 0));
-        assert_ok_eq!(values.next(), Value::new(b"bar", 0, 4));
-        assert_ok_eq!(values.next(), Value::new(b"baz", 0, 8));
+        assert_ok_eq!(values.next(), Value::new(b"foo", Position::new(0, 0)));
+        assert_ok_eq!(values.next(), Value::new(b"bar", Position::new(0, 4)));
+        assert_ok_eq!(values.next(), Value::new(b"baz", Position::new(0, 8)));
         assert_err_eq!(values.next(), Error::new(error::Kind::EndOfValues, Position::new(0, 11)));
     }
 
     #[test]
     fn comment() {
-        let mut values = Values::new(b"foo//comment:\n:bar", 0, 0);
+        let mut values = Values::new(b"foo//comment:\n:bar", Position::new(0, 0));
 
-        assert_ok_eq!(values.next(), Value::new(b"foo//comment:\n", 0, 0));
-        assert_ok_eq!(values.next(), Value::new(b"bar", 1, 1));
+        assert_ok_eq!(values.next(), Value::new(b"foo//comment:\n", Position::new(0, 0)));
+        assert_ok_eq!(values.next(), Value::new(b"bar", Position::new(1, 1)));
         assert_err_eq!(values.next(), Error::new(error::Kind::EndOfValues, Position::new(1, 4)));
     }
 
     #[test]
     fn escaped_comment() {
-        let mut values = Values::new(b"foo\\/\\/comment:\n:bar", 0, 0);
+        let mut values = Values::new(b"foo\\/\\/comment:\n:bar", Position::new(0, 0));
 
-        assert_ok_eq!(values.next(), Value::new(b"foo\\/\\/comment", 0, 0));
-        assert_ok_eq!(values.next(), Value::new(b"\n", 0, 15));
-        assert_ok_eq!(values.next(), Value::new(b"bar", 1, 1));
+        assert_ok_eq!(values.next(), Value::new(b"foo\\/\\/comment", Position::new(0, 0)));
+        assert_ok_eq!(values.next(), Value::new(b"\n", Position::new(0, 15)));
+        assert_ok_eq!(values.next(), Value::new(b"bar", Position::new(1, 1)));
         assert_err_eq!(values.next(), Error::new(error::Kind::EndOfValues, Position::new(1, 4)));
     }
 
     #[test]
     fn escaped_colon() {
-        let mut values = Values::new(b"foo\\:bar", 0, 0);
+        let mut values = Values::new(b"foo\\:bar", Position::new(0, 0));
 
-        assert_ok_eq!(values.next(), Value::new(b"foo\\:bar", 0, 0));
+        assert_ok_eq!(values.next(), Value::new(b"foo\\:bar", Position::new(0, 0)));
         assert_err_eq!(values.next(), Error::new(error::Kind::EndOfValues, Position::new(0, 8)));
     }
 
     #[test]
     fn escaped_backslash() {
-        let mut values = Values::new(b"foo\\\\:bar", 0, 0);
+        let mut values = Values::new(b"foo\\\\:bar", Position::new(0, 0));
 
-        assert_ok_eq!(values.next(), Value::new(b"foo\\\\", 0, 0));
-        assert_ok_eq!(values.next(), Value::new(b"bar", 0, 6));
+        assert_ok_eq!(values.next(), Value::new(b"foo\\\\", Position::new(0, 0)));
+        assert_ok_eq!(values.next(), Value::new(b"bar", Position::new(0, 6)));
         assert_err_eq!(values.next(), Error::new(error::Kind::EndOfValues, Position::new(0, 9)));
     }
 
     #[test]
     fn exhausted() {
-        let mut values = Values::new(b"foo", 0, 0);
+        let mut values = Values::new(b"foo", Position::new(0, 0));
 
         assert_ok!(values.next());
 
@@ -276,7 +262,7 @@ mod tests {
 
     #[test]
     fn not_exhausted() {
-        let mut values = Values::new(b"foo:bar", 0, 0);
+        let mut values = Values::new(b"foo:bar", Position::new(0, 0));
 
         assert_ok!(values.next());
 
@@ -289,11 +275,11 @@ mod tests {
     #[test]
     fn into_stored() {
         let buffer = b"foo";
-        let values = Values::new(buffer, 0, 0);
+        let values = Values::new(buffer, Position::new(0, 0));
         let stored = values.into_stored();
         let mut unstored_values = unsafe { stored.into_values() };
 
-        assert_ok_eq!(unstored_values.next(), Value::new(b"foo", 0, 0));
+        assert_ok_eq!(unstored_values.next(), Value::new(b"foo", Position::new(0, 0)));
         assert_err_eq!(
             unstored_values.next(),
             Error::new(error::Kind::EndOfValues, Position::new(0, 3))
@@ -303,12 +289,12 @@ mod tests {
     #[test]
     fn into_stored_after_iteration() {
         let buffer = b"foo:bar";
-        let mut values = Values::new(buffer, 0, 0);
+        let mut values = Values::new(buffer, Position::new(0, 0));
         assert_ok!(values.next());
         let stored = values.into_stored();
         let mut unstored_values = unsafe { stored.into_values() };
 
-        assert_ok_eq!(unstored_values.next(), Value::new(b"bar", 0, 4));
+        assert_ok_eq!(unstored_values.next(), Value::new(b"bar", Position::new(0, 4)));
         assert_err_eq!(
             unstored_values.next(),
             Error::new(error::Kind::EndOfValues, Position::new(0, 7))

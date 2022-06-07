@@ -31,7 +31,7 @@ impl<'a, 'b, 'de> EnumAccess<'de> for Access<'a, 'b> {
 #[cfg(test)]
 mod tests {
     use super::Access;
-    use crate::de::parse::Values;
+    use crate::de::{parse::Values, Position};
     use claim::assert_ok;
     use serde::{
         de,
@@ -70,7 +70,7 @@ mod tests {
             }
         }
 
-        let mut values = Values::new(b"foo", 0, 0);
+        let mut values = Values::new(b"foo", Position::new(0, 0));
         let access = Access::new(&mut values);
 
         let (variant, _variant_access) = assert_ok!(access.variant::<Variant>());

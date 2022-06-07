@@ -288,7 +288,7 @@ mod tests {
 
     #[test]
     fn identifier() {
-        let deserializer = Deserializer::new(Value::new(b"foo", 0, 0));
+        let deserializer = Deserializer::new(Value::new(b"foo", Position::new(0, 0)));
 
         assert_ok_eq!(
             Identifier::deserialize(deserializer),
@@ -298,7 +298,7 @@ mod tests {
 
     #[test]
     fn identifier_invalid() {
-        let deserializer = Deserializer::new(Value::new(b"\xF0\x9Ffoo", 0, 0));
+        let deserializer = Deserializer::new(Value::new(b"\xF0\x9Ffoo", Position::new(0, 0)));
 
         assert_err_eq!(
             Identifier::deserialize(deserializer),

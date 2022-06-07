@@ -131,7 +131,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::Access;
-    use crate::de::parse::{Tag, Tags};
+    use crate::de::{parse::{Tag, Tags}, Position};
     use claim::{assert_none, assert_ok, assert_ok_eq, assert_some_eq};
     use serde::{
         de,
@@ -207,7 +207,7 @@ mod tests {
         assert_none!(assert_ok!(access.next_key::<Identifier>()));
 
         // Should also revisit the tag.
-        assert_ok_eq!(tags.next(), Tag::new(b"bar:42;\n", 0, 0));
+        assert_ok_eq!(tags.next(), Tag::new(b"bar:42;\n", Position::new(0, 0)));
     }
 
     #[test]
@@ -248,6 +248,6 @@ mod tests {
         assert_none!(assert_ok!(access.next_entry::<Identifier, u64>()));
 
         // Should also revisit the tag.
-        assert_ok_eq!(tags.next(), Tag::new(b"bar:42;\n", 0, 0));
+        assert_ok_eq!(tags.next(), Tag::new(b"bar:42;\n", Position::new(0, 0)));
     }
 }

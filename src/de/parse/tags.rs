@@ -33,16 +33,14 @@ pub(in crate::de) struct Tags<R> {
     reader: Bytes<R>,
 
     buffer: Vec<u8>,
-    started_line: usize,
-    started_column: usize,
+    started_position: Position,
 
     tag_state: TagState,
     newline_state: NewlineState,
     escaping_state: EscapingState,
     comment_state: CommentState,
 
-    current_line: usize,
-    current_column: usize,
+    current_position: Position,
 
     encountered_error: Option<Error>,
     exhausted: bool,
@@ -59,16 +57,14 @@ where
             reader: reader.bytes(),
 
             buffer: Vec::with_capacity(1024),
-            started_line: 0,
-            started_column: 0,
+            started_position: Position::new(0, 0),
 
             tag_state: TagState::None,
             newline_state: NewlineState::StartingNewline,
             escaping_state: EscapingState::None,
             comment_state: CommentState::None,
 
-            current_line: 0,
-            current_column: 0,
+            current_position: Position::new(0, 0),
 
             encountered_error: None,
             exhausted: false,
@@ -107,7 +103,7 @@ where
                     Ok(byte) => byte,
                     Err(_error) => {
                         let error =
-                            Error::new(error::Kind::Io, Position::new(self.current_line, self.current_column));
+                            Error::new(error::Kind::Io, self.current_position);
                         self.encountered_error = Some(error);
                         self.exhausted = true;
                         return Err(error);
@@ -118,16 +114,14 @@ where
                     if self.buffer.is_empty() {
                         let error = Error::new(
                             error::Kind::EndOfFile,
-                            Position::new(self.current_line,
-                            self.current_column),
+                            self.current_position,
                         );
                         self.encountered_error = Some(error);
                         return Err(error);
                     } else {
                         return Ok(Tag::new(
                             &self.buffer,
-                            self.started_line,
-                            self.started_column,
+                            self.started_position,
                         ));
                     }
                 }
@@ -156,12 +150,8 @@ where
                                     // escaped.
                                     if matches!(self.newline_state, NewlineState::StartingNewline) {
                                         // Entering a new tag. Return the previous one.
-                                        tag_position = Some(Position {
-                                            line: self.started_line,
-                                            column: self.started_column,
-                                        });
-                                        self.started_line = self.current_line;
-                                        self.started_column = self.current_column;
+                                        tag_position = Some(self.started_position);
+                                        self.started_position = self.current_position;
                                         self.tag_state = TagState::InTag;
                                     } else {
                                         self.buffer.push(byte);
@@ -200,12 +190,8 @@ where
                         match byte {
                             b'#' => {
                                 // Entering a new tag. Return the previous one.
-                                tag_position = Some(Position {
-                                    line: self.started_line,
-                                    column: self.started_column,
-                                });
-                                self.started_line = self.current_line;
-                                self.started_column = self.current_column;
+                                tag_position = Some(self.started_position);
+                                self.started_position = self.current_position;
                                 self.tag_state = TagState::InTag;
                             }
                             b'\\' => {
@@ -236,15 +222,14 @@ where
                                 {
                                     let error = Error::new(
                                         error::Kind::ExpectedTag,
-                                        Position::new(self.current_line,
-                                        self.current_column - 1),
+                                        Position::new(self.current_position.line,
+                                        self.current_position.column - 1),
                                     );
                                     self.encountered_error = Some(error);
                                     return Err(error);
                                 }
                                 self.tag_state = TagState::InTag;
-                                self.started_line = self.current_line;
-                                self.started_column = self.current_column;
+                                self.started_position = self.current_position;
                             }
                             b'/' => {
                                 if matches!(self.comment_state, CommentState::MaybeEnteringComment)
@@ -259,8 +244,8 @@ where
                                 {
                                     let error = Error::new(
                                         error::Kind::ExpectedTag,
-                                        Position::new(self.current_line,
-                                        self.current_column - 1),
+                                        Position::new(self.current_position.line,
+                                        self.current_position.column - 1),
                                     );
                                     self.encountered_error = Some(error);
                                     return Err(error);
@@ -269,8 +254,8 @@ where
                                 if !byte.is_ascii_whitespace() {
                                     let error = Error::new(
                                         error::Kind::ExpectedTag,
-                                        Position::new(self.current_line,
-                                        self.current_column),
+                                        Position::new(self.current_position.line,
+                                        self.current_position.column),
                                     );
                                     self.encountered_error = Some(error);
                                     return Err(error);
@@ -288,14 +273,13 @@ where
             }
 
             if matches!(self.newline_state, NewlineState::StartingNewline) {
-                self.current_line += 1;
-                self.current_column = 0;
+                self.current_position = Position::new(self.current_position.line + 1, 0);
             } else {
-                self.current_column += 1;
+                self.current_position = Position::new(self.current_position.line, self.current_position.column + 1);
             }
 
             if let Some(position) = tag_position {
-                return Ok(Tag::new(&self.buffer, position.line, position.column));
+                return Ok(Tag::new(&self.buffer, position));
             }
         }
     }
@@ -313,7 +297,7 @@ where
                         Ok(byte) => byte,
                         Err(_error) => {
                             let error =
-                                Error::new(error::Kind::Io, Position::new(self.current_line, self.current_column));
+                                Error::new(error::Kind::Io, self.current_position);
                             self.encountered_error = Some(error);
                             self.exhausted = true;
                             break;
@@ -337,15 +321,14 @@ where
                             if matches!(self.comment_state, CommentState::MaybeEnteringComment) {
                                 let error = Error::new(
                                     error::Kind::ExpectedTag,
-                                    Position::new(self.current_line,
-                                    self.current_column - 1),
+                                    Position::new(self.current_position.line,
+                                    self.current_position.column - 1),
                                 );
                                 self.encountered_error = Some(error);
                                 break;
                             }
                             self.tag_state = TagState::InTag;
-                            self.started_line = self.current_line;
-                            self.started_column = self.current_column;
+                            self.started_position = self.current_position;
                             break;
                         }
                         b'/' => {
@@ -359,8 +342,8 @@ where
                             if matches!(self.comment_state, CommentState::MaybeEnteringComment) {
                                 let error = Error::new(
                                     error::Kind::ExpectedTag,
-                                    Position::new(self.current_line,
-                                    self.current_column - 1),
+                                    Position::new(self.current_position.line,
+                                    self.current_position.column - 1),
                                 );
                                 self.encountered_error = Some(error);
                                 break;
@@ -369,8 +352,8 @@ where
                             if !byte.is_ascii_whitespace() {
                                 let error = Error::new(
                                     error::Kind::ExpectedTag,
-                                    Position::new(self.current_line,
-                                    self.current_column),
+                                    Position::new(self.current_position.line,
+                                    self.current_position.column),
                                 );
                                 self.encountered_error = Some(error);
                                 break;
@@ -386,10 +369,9 @@ where
                 }
 
                 if matches!(self.newline_state, NewlineState::StartingNewline) {
-                    self.current_line += 1;
-                    self.current_column = 0;
+                    self.current_position = Position::new(self.current_position.line + 1, 0);
                 } else {
-                    self.current_column += 1;
+                    self.current_position = Position::new(self.current_position.line, self.current_position.column + 1);
                 }
             }
         }
@@ -411,16 +393,14 @@ where
         if let Some(revisit) = self.revisit.as_ref() {
             Err(Error::new(
                 error::Kind::UnexpectedTag,
-                Position::new(revisit.origin_line(),
-                revisit.origin_column()),
+                revisit.origin_position(),
             ))
         } else if self.exhausted {
             Ok(())
         } else {
             Err(Error::new(
                 error::Kind::UnexpectedTag,
-                Position::new(self.started_line,
-                self.started_column),
+                self.started_position,
             ))
         }
     }
@@ -461,7 +441,7 @@ mod tests {
         let input = b"#foo:bar;\n";
         let mut tags = Tags::new(input.as_slice());
 
-        assert_ok_eq!(tags.next(), Tag::new(b"foo:bar;\n", 0, 0,));
+        assert_ok_eq!(tags.next(), Tag::new(b"foo:bar;\n", Position::new(0, 0)));
     }
 
     #[test]
@@ -469,8 +449,8 @@ mod tests {
         let input = b"#foo:bar;\n#baz;\n";
         let mut tags = Tags::new(input.as_slice());
 
-        assert_ok_eq!(tags.next(), Tag::new(b"foo:bar;\n", 0, 0,));
-        assert_ok_eq!(tags.next(), Tag::new(b"baz;\n", 1, 0,));
+        assert_ok_eq!(tags.next(), Tag::new(b"foo:bar;\n", Position::new(0, 0)));
+        assert_ok_eq!(tags.next(), Tag::new(b"baz;\n", Position::new(1, 0)));
     }
 
     #[test]
@@ -478,8 +458,8 @@ mod tests {
         let input = b"#foo:bar\n#baz;\n";
         let mut tags = Tags::new(input.as_slice());
 
-        assert_ok_eq!(tags.next(), Tag::new(b"foo:bar\n", 0, 0,));
-        assert_ok_eq!(tags.next(), Tag::new(b"baz;\n", 1, 0,));
+        assert_ok_eq!(tags.next(), Tag::new(b"foo:bar\n", Position::new(0, 0)));
+        assert_ok_eq!(tags.next(), Tag::new(b"baz;\n", Position::new(1, 0)));
     }
 
     #[test]
@@ -487,7 +467,7 @@ mod tests {
         let input = b"#foo:bar#baz;\n";
         let mut tags = Tags::new(input.as_slice());
 
-        assert_ok_eq!(tags.next(), Tag::new(b"foo:bar#baz;\n", 0, 0,));
+        assert_ok_eq!(tags.next(), Tag::new(b"foo:bar#baz;\n", Position::new(0, 0)));
     }
 
     #[test]
@@ -495,8 +475,8 @@ mod tests {
         let input = b"#foo:bar;#baz;\n";
         let mut tags = Tags::new(input.as_slice());
 
-        assert_ok_eq!(tags.next(), Tag::new(b"foo:bar;", 0, 0,));
-        assert_ok_eq!(tags.next(), Tag::new(b"baz;\n", 0, 9,));
+        assert_ok_eq!(tags.next(), Tag::new(b"foo:bar;", Position::new(0, 0)));
+        assert_ok_eq!(tags.next(), Tag::new(b"baz;\n", Position::new(0, 9)));
     }
 
     #[test]
@@ -504,7 +484,7 @@ mod tests {
         let input = b"#foo:bar;\n\\#baz;\n";
         let mut tags = Tags::new(input.as_slice());
 
-        assert_ok_eq!(tags.next(), Tag::new(b"foo:bar;\n\\#baz;\n", 0, 0,));
+        assert_ok_eq!(tags.next(), Tag::new(b"foo:bar;\n\\#baz;\n", Position::new(0, 0)));
     }
 
     #[test]
@@ -512,7 +492,7 @@ mod tests {
         let input = b"#foo:bar\n\\#baz;\n";
         let mut tags = Tags::new(input.as_slice());
 
-        assert_ok_eq!(tags.next(), Tag::new(b"foo:bar\n\\#baz;\n", 0, 0,));
+        assert_ok_eq!(tags.next(), Tag::new(b"foo:bar\n\\#baz;\n", Position::new(0, 0)));
     }
 
     #[test]
@@ -520,7 +500,7 @@ mod tests {
         let input = b"//comment\n#foo:bar;\n";
         let mut tags = Tags::new(input.as_slice());
 
-        assert_ok_eq!(tags.next(), Tag::new(b"foo:bar;\n", 1, 0,));
+        assert_ok_eq!(tags.next(), Tag::new(b"foo:bar;\n", Position::new(1, 0)));
     }
 
     #[test]
@@ -544,7 +524,7 @@ mod tests {
         let input = b"#foo:bar\\;#baz;\n";
         let mut tags = Tags::new(input.as_slice());
 
-        assert_ok_eq!(tags.next(), Tag::new(b"foo:bar\\;#baz;\n", 0, 0,));
+        assert_ok_eq!(tags.next(), Tag::new(b"foo:bar\\;#baz;\n", Position::new(0, 0)));
     }
 
     #[test]
@@ -569,7 +549,7 @@ mod tests {
         let mut tags = Tags::new(input.as_slice());
 
         assert_ok_eq!(tags.has_next(), true);
-        assert_ok_eq!(tags.next(), Tag::new(b"foo:bar;\n", 0, 0));
+        assert_ok_eq!(tags.next(), Tag::new(b"foo:bar;\n", Position::new(0, 0)));
     }
 
     #[test]
@@ -578,7 +558,7 @@ mod tests {
         let mut tags = Tags::new(input.as_slice());
 
         assert_ok_eq!(tags.has_next(), true);
-        assert_ok_eq!(tags.next(), Tag::new(b"foo:bar;\n", 1, 1));
+        assert_ok_eq!(tags.next(), Tag::new(b"foo:bar;\n", Position::new(1, 1)));
     }
 
     #[test]
@@ -588,7 +568,7 @@ mod tests {
 
         let tag = assert_ok!(tags.next()).into_stored();
         unsafe { tags.revisit(tag) };
-        assert_ok_eq!(tags.next(), Tag::new(b"foo;\n", 0, 0));
+        assert_ok_eq!(tags.next(), Tag::new(b"foo;\n", Position::new(0, 0)));
     }
 
     #[test]

@@ -41,7 +41,7 @@ mod tests {
 
     #[test]
     fn empty() {
-        let mut values = Values::new(b"", 0, 0);
+        let mut values = Values::new(b"", Position::new(0, 0));
         // Consume the single unit value, as all values are non-empty.
         assert_ok!(values.next());
         assert_ok!(values.assert_exhausted());
@@ -57,7 +57,7 @@ mod tests {
 
     #[test]
     fn one_value() {
-        let mut values = Values::new(b"42", 0, 0);
+        let mut values = Values::new(b"42", Position::new(0, 0));
         let mut access = Access::new(&mut values, 1);
 
         assert_some_eq!(access.size_hint(), 1);
@@ -72,7 +72,7 @@ mod tests {
 
     #[test]
     fn multiple_values() {
-        let mut values = Values::new(b"foo:42", 0, 0);
+        let mut values = Values::new(b"foo:42", Position::new(0, 0));
         let mut access = Access::new(&mut values, 2);
 
         assert_some_eq!(access.size_hint(), 2);
@@ -92,7 +92,7 @@ mod tests {
 
     #[test]
     fn nested_values() {
-        let mut values = Values::new(b"foo:42::1.2", 0, 0);
+        let mut values = Values::new(b"foo:42::1.2", Position::new(0, 0));
         let mut access = Access::new(&mut values, 3);
 
         assert_some_eq!(access.size_hint(), 3);
