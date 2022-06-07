@@ -2,7 +2,7 @@ use crate::de::Position;
 use serde::de;
 use std::{fmt, fmt::Display};
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Kind {
     EndOfFile,
     ExpectedTag,
@@ -29,11 +29,11 @@ pub enum Kind {
     ExpectedUnit,
     ExpectedIdentifier,
     Io,
-    Custom,
+    Custom(String),
 }
 
 /// An error that may occur during deserialization.
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Error {
     position: Position,
     kind: Kind,
@@ -46,16 +46,14 @@ impl Error {
 }
 
 impl de::Error for Error {
-    fn custom<T>(_msg: T) -> Self
+    fn custom<T>(msg: T) -> Self
     where
         T: Display,
     {
         // TODO: FIX THIS!
         // Need a way to provide the position to the user-provided error messages.
         // Perhaps injecting the position into the error after it is returned from user code?
-        // Also need a way to include the custom error messages. That doesn't jive with this struct
-        // being Copy.
-        Self::new(Kind::Custom, Position::new(0, 0))
+        Self::new(Kind::Custom(msg.to_string()), Position::new(0, 0))
     }
 }
 

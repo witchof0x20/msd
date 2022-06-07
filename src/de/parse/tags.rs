@@ -80,8 +80,8 @@ where
     /// here only lives until the next call to `next()`, because it borrows from a reused internal
     /// buffer.
     pub(in crate::de) fn next(&mut self) -> Result<Tag> {
-        if let Some(error) = self.encountered_error {
-            return Err(error);
+        if let Some(error) = &self.encountered_error {
+            return Err(error.clone());
         }
 
         if let Some(revisit) = self.revisit.take() {
@@ -104,7 +104,7 @@ where
                     Err(_error) => {
                         let error =
                             Error::new(error::Kind::Io, self.current_position);
-                        self.encountered_error = Some(error);
+                        self.encountered_error = Some(error.clone());
                         self.exhausted = true;
                         return Err(error);
                     }
@@ -116,7 +116,7 @@ where
                             error::Kind::EndOfFile,
                             self.current_position,
                         );
-                        self.encountered_error = Some(error);
+                        self.encountered_error = Some(error.clone());
                         return Err(error);
                     } else {
                         return Ok(Tag::new(
@@ -224,7 +224,7 @@ where
                                         error::Kind::ExpectedTag,
                                         self.current_position.decrement_column(),
                                     );
-                                    self.encountered_error = Some(error);
+                                    self.encountered_error = Some(error.clone());
                                     return Err(error);
                                 }
                                 self.tag_state = TagState::InTag;
@@ -245,7 +245,7 @@ where
                                         error::Kind::ExpectedTag,
                                         self.current_position.decrement_column(),
                                     );
-                                    self.encountered_error = Some(error);
+                                    self.encountered_error = Some(error.clone());
                                     return Err(error);
                                 }
                                 // Non-whitespace bytes are not allowed before the first tag.
@@ -254,7 +254,7 @@ where
                                         error::Kind::ExpectedTag,
                                         self.current_position,
                                     );
-                                    self.encountered_error = Some(error);
+                                    self.encountered_error = Some(error.clone());
                                     return Err(error);
                                 }
                             }
@@ -370,8 +370,8 @@ where
             }
         }
 
-        if let Some(err) = self.encountered_error {
-            Err(err)
+        if let Some(error) = &self.encountered_error {
+            Err(error.clone())
         } else {
             Ok(!self.exhausted
                 && matches!(self.tag_state, TagState::InTag | TagState::MaybeEndingTag))
