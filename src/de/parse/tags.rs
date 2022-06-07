@@ -222,8 +222,7 @@ where
                                 {
                                     let error = Error::new(
                                         error::Kind::ExpectedTag,
-                                        Position::new(self.current_position.line,
-                                        self.current_position.column - 1),
+                                        self.current_position.decrement_column(),
                                     );
                                     self.encountered_error = Some(error);
                                     return Err(error);
@@ -244,8 +243,7 @@ where
                                 {
                                     let error = Error::new(
                                         error::Kind::ExpectedTag,
-                                        Position::new(self.current_position.line,
-                                        self.current_position.column - 1),
+                                        self.current_position.decrement_column(),
                                     );
                                     self.encountered_error = Some(error);
                                     return Err(error);
@@ -254,8 +252,7 @@ where
                                 if !byte.is_ascii_whitespace() {
                                     let error = Error::new(
                                         error::Kind::ExpectedTag,
-                                        Position::new(self.current_position.line,
-                                        self.current_position.column),
+                                        self.current_position,
                                     );
                                     self.encountered_error = Some(error);
                                     return Err(error);
@@ -273,9 +270,9 @@ where
             }
 
             if matches!(self.newline_state, NewlineState::StartingNewline) {
-                self.current_position = Position::new(self.current_position.line + 1, 0);
+                self.current_position = self.current_position.increment_line();
             } else {
-                self.current_position = Position::new(self.current_position.line, self.current_position.column + 1);
+                self.current_position = self.current_position.increment_column();
             }
 
             if let Some(position) = tag_position {
@@ -321,8 +318,7 @@ where
                             if matches!(self.comment_state, CommentState::MaybeEnteringComment) {
                                 let error = Error::new(
                                     error::Kind::ExpectedTag,
-                                    Position::new(self.current_position.line,
-                                    self.current_position.column - 1),
+                                    self.current_position.decrement_column(),
                                 );
                                 self.encountered_error = Some(error);
                                 break;
@@ -342,8 +338,7 @@ where
                             if matches!(self.comment_state, CommentState::MaybeEnteringComment) {
                                 let error = Error::new(
                                     error::Kind::ExpectedTag,
-                                    Position::new(self.current_position.line,
-                                    self.current_position.column - 1),
+                                    self.current_position.decrement_column(),
                                 );
                                 self.encountered_error = Some(error);
                                 break;
@@ -352,8 +347,7 @@ where
                             if !byte.is_ascii_whitespace() {
                                 let error = Error::new(
                                     error::Kind::ExpectedTag,
-                                    Position::new(self.current_position.line,
-                                    self.current_position.column),
+                                    self.current_position,
                                 );
                                 self.encountered_error = Some(error);
                                 break;
@@ -369,9 +363,9 @@ where
                 }
 
                 if matches!(self.newline_state, NewlineState::StartingNewline) {
-                    self.current_position = Position::new(self.current_position.line + 1, 0);
+                    self.current_position = self.current_position.increment_line();
                 } else {
-                    self.current_position = Position::new(self.current_position.line, self.current_position.column + 1);
+                    self.current_position = self.current_position.increment_column();
                 }
             }
         }

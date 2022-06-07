@@ -130,9 +130,9 @@ impl<'a> Values<'a> {
                 }
 
                 if matches!(byte, b'\n') {
-                    self.current_position = Position::new(self.current_position.line + 1, 0);
+                    self.current_position = self.current_position.increment_line();
                 } else {
-                    self.current_position = Position::new(self.current_position.line, self.current_position.column + 1);
+                    self.current_position = self.current_position.increment_column();
                 }
                 self.current_byte_index += 1;
 

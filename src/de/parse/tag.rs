@@ -94,10 +94,10 @@ impl<'a> Tag<'a> {
             first_values: true,
 
             started_byte_index: 0,
-            started_position: Position::new(position.line, position.column + 1),
+            started_position: position.increment_column(),
 
             current_byte_index: 0,
-            current_position: Position::new(position.line, position.column + 1),
+            current_position: position.increment_column(),
 
             origin_position: position,
 
@@ -165,9 +165,9 @@ impl<'a> Tag<'a> {
                 }
                 last_byte_newline = matches!(byte, b'\n');
                 if last_byte_newline {
-                    self.current_position = Position::new(self.current_position.line + 1, 0);
+                    self.current_position = self.current_position.increment_line();
                 } else {
-                    self.current_position = Position::new(self.current_position.line, self.current_position.column + 1);
+                    self.current_position = self.current_position.increment_column();
                 }
                 self.current_byte_index += 1;
 
@@ -203,9 +203,9 @@ impl<'a> Tag<'a> {
 
     pub(in crate::de) fn reset(&mut self) {
         self.first_values = true;
-        self.started_position = Position::new(self.origin_position.line, self.origin_position.column + 1);
+        self.started_position = self.origin_position.increment_column();
         self.current_byte_index = 0;
-        self.current_position = Position::new(self.origin_position.line, self.origin_position.column + 1);
+        self.current_position = self.origin_position.increment_column();
     }
 
     // SAFETY: `values` must reference the same buffer referenced by this tag. In other words,
@@ -224,9 +224,9 @@ impl<'a> Tag<'a> {
                     current_position,
                 ));
             } else if matches!(byte, b'\n') {
-                current_position = Position::new(current_position.line + 1, 0);
+                current_position = current_position.increment_line();
             } else {
-                current_position = Position::new(current_position.line, current_position.column + 1);
+                current_position = current_position.increment_column();
             }
         }
         Ok(())
