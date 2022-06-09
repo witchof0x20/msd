@@ -9,6 +9,14 @@ impl Position {
         Self { line, column }
     }
 
+    pub(in crate::de) fn line(&self) -> usize {
+        self.line
+    }
+
+    pub(in crate::de) fn column(&self) -> usize {
+        self.column
+    }
+
     pub(in crate::de) fn increment_line(self) -> Self {
         Self {
             line: self.line + 1,
@@ -34,6 +42,20 @@ impl Position {
 #[cfg(test)]
 mod tests {
     use super::Position;
+
+    #[test]
+    fn line() {
+        let position = Position::new(5, 7);
+
+        assert_eq!(position.line(), 5);
+    }
+
+    #[test]
+    fn column() {
+        let position = Position::new(5, 7);
+
+        assert_eq!(position.column(), 7);
+    }
 
     #[test]
     fn increment_line() {
