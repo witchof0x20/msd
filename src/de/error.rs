@@ -87,9 +87,6 @@ impl de::Error for Error {
     where
         T: Display,
     {
-        // TODO: FIX THIS!
-        // Need a way to provide the position to the user-provided error messages.
-        // Perhaps injecting the position into the error after it is returned from user code?
         Self::new(Kind::Custom(msg.to_string()), Position::new(0, 0))
     }
 }
