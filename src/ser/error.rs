@@ -38,6 +38,7 @@ pub type Result<T> = core::result::Result<T, Error>;
 #[cfg(test)]
 mod tests {
     use super::Error;
+    use serde::ser::Error as SerdeError;
 
     #[test]
     fn display_unsupported_type_error() {
@@ -55,7 +56,7 @@ mod tests {
     #[test]
     fn display_custom_error() {
         assert_eq!(
-            format!("{}", Error::Custom("custom error message".to_owned())),
+            format!("{}", Error::custom("custom error message")),
             "custom error message"
         );
     }
