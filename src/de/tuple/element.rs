@@ -26,10 +26,12 @@ impl<'a, 'b, 'de> serde::Deserializer<'de> for Deserializer<'a, 'b> {
         V: Visitor<'de>,
     {
         let value = self.values.next()?;
-        visitor.visit_bool(value.parse_bool()?).map_err(|mut error: Error| {
-            error.set_position(value.position());
-            error
-        })
+        visitor
+            .visit_bool(value.parse_bool()?)
+            .map_err(|mut error: Error| {
+                error.set_position(value.position());
+                error
+            })
     }
 
     fn deserialize_i8<V>(self, visitor: V) -> Result<V::Value>
@@ -37,10 +39,12 @@ impl<'a, 'b, 'de> serde::Deserializer<'de> for Deserializer<'a, 'b> {
         V: Visitor<'de>,
     {
         let value = self.values.next()?;
-        visitor.visit_i8(value.parse_i8()?).map_err(|mut error: Error| {
-            error.set_position(value.position());
-            error
-        })
+        visitor
+            .visit_i8(value.parse_i8()?)
+            .map_err(|mut error: Error| {
+                error.set_position(value.position());
+                error
+            })
     }
 
     fn deserialize_i16<V>(self, visitor: V) -> Result<V::Value>
@@ -48,10 +52,12 @@ impl<'a, 'b, 'de> serde::Deserializer<'de> for Deserializer<'a, 'b> {
         V: Visitor<'de>,
     {
         let value = self.values.next()?;
-        visitor.visit_i16(value.parse_i16()?).map_err(|mut error: Error| {
-            error.set_position(value.position());
-            error
-        })
+        visitor
+            .visit_i16(value.parse_i16()?)
+            .map_err(|mut error: Error| {
+                error.set_position(value.position());
+                error
+            })
     }
 
     fn deserialize_i32<V>(self, visitor: V) -> Result<V::Value>
@@ -59,10 +65,12 @@ impl<'a, 'b, 'de> serde::Deserializer<'de> for Deserializer<'a, 'b> {
         V: Visitor<'de>,
     {
         let value = self.values.next()?;
-        visitor.visit_i32(value.parse_i32()?).map_err(|mut error: Error| {
-            error.set_position(value.position());
-            error
-        })
+        visitor
+            .visit_i32(value.parse_i32()?)
+            .map_err(|mut error: Error| {
+                error.set_position(value.position());
+                error
+            })
     }
 
     fn deserialize_i64<V>(self, visitor: V) -> Result<V::Value>
@@ -70,10 +78,12 @@ impl<'a, 'b, 'de> serde::Deserializer<'de> for Deserializer<'a, 'b> {
         V: Visitor<'de>,
     {
         let value = self.values.next()?;
-        visitor.visit_i64(value.parse_i64()?).map_err(|mut error: Error| {
-            error.set_position(value.position());
-            error
-        })
+        visitor
+            .visit_i64(value.parse_i64()?)
+            .map_err(|mut error: Error| {
+                error.set_position(value.position());
+                error
+            })
     }
 
     #[cfg(has_i128)]
@@ -82,10 +92,12 @@ impl<'a, 'b, 'de> serde::Deserializer<'de> for Deserializer<'a, 'b> {
         V: Visitor<'de>,
     {
         let value = self.values.next()?;
-        visitor.visit_i128(value.parse_i128()?).map_err(|mut error: Error| {
-            error.set_position(value.position());
-            error
-        })
+        visitor
+            .visit_i128(value.parse_i128()?)
+            .map_err(|mut error: Error| {
+                error.set_position(value.position());
+                error
+            })
     }
 
     fn deserialize_u8<V>(self, visitor: V) -> Result<V::Value>
@@ -93,10 +105,12 @@ impl<'a, 'b, 'de> serde::Deserializer<'de> for Deserializer<'a, 'b> {
         V: Visitor<'de>,
     {
         let value = self.values.next()?;
-        visitor.visit_u8(value.parse_u8()?).map_err(|mut error: Error| {
-            error.set_position(value.position());
-            error
-        })
+        visitor
+            .visit_u8(value.parse_u8()?)
+            .map_err(|mut error: Error| {
+                error.set_position(value.position());
+                error
+            })
     }
 
     fn deserialize_u16<V>(self, visitor: V) -> Result<V::Value>
@@ -104,10 +118,12 @@ impl<'a, 'b, 'de> serde::Deserializer<'de> for Deserializer<'a, 'b> {
         V: Visitor<'de>,
     {
         let value = self.values.next()?;
-        visitor.visit_u16(value.parse_u16()?).map_err(|mut error: Error| {
-            error.set_position(value.position());
-            error
-        })
+        visitor
+            .visit_u16(value.parse_u16()?)
+            .map_err(|mut error: Error| {
+                error.set_position(value.position());
+                error
+            })
     }
 
     fn deserialize_u32<V>(self, visitor: V) -> Result<V::Value>
@@ -115,10 +131,12 @@ impl<'a, 'b, 'de> serde::Deserializer<'de> for Deserializer<'a, 'b> {
         V: Visitor<'de>,
     {
         let value = self.values.next()?;
-        visitor.visit_u32(value.parse_u32()?).map_err(|mut error: Error| {
-            error.set_position(value.position());
-            error
-        })
+        visitor
+            .visit_u32(value.parse_u32()?)
+            .map_err(|mut error: Error| {
+                error.set_position(value.position());
+                error
+            })
     }
 
     fn deserialize_u64<V>(self, visitor: V) -> Result<V::Value>
@@ -126,10 +144,12 @@ impl<'a, 'b, 'de> serde::Deserializer<'de> for Deserializer<'a, 'b> {
         V: Visitor<'de>,
     {
         let value = self.values.next()?;
-        visitor.visit_u64(value.parse_u64()?).map_err(|mut error: Error| {
-            error.set_position(value.position());
-            error
-        })
+        visitor
+            .visit_u64(value.parse_u64()?)
+            .map_err(|mut error: Error| {
+                error.set_position(value.position());
+                error
+            })
     }
 
     #[cfg(has_i128)]
@@ -138,10 +158,12 @@ impl<'a, 'b, 'de> serde::Deserializer<'de> for Deserializer<'a, 'b> {
         V: Visitor<'de>,
     {
         let value = self.values.next()?;
-        visitor.visit_u128(value.parse_u128()?).map_err(|mut error: Error| {
-            error.set_position(value.position());
-            error
-        })
+        visitor
+            .visit_u128(value.parse_u128()?)
+            .map_err(|mut error: Error| {
+                error.set_position(value.position());
+                error
+            })
     }
 
     fn deserialize_f32<V>(self, visitor: V) -> Result<V::Value>
@@ -149,10 +171,12 @@ impl<'a, 'b, 'de> serde::Deserializer<'de> for Deserializer<'a, 'b> {
         V: Visitor<'de>,
     {
         let value = self.values.next()?;
-        visitor.visit_f32(value.parse_f32()?).map_err(|mut error: Error| {
-            error.set_position(value.position());
-            error
-        })
+        visitor
+            .visit_f32(value.parse_f32()?)
+            .map_err(|mut error: Error| {
+                error.set_position(value.position());
+                error
+            })
     }
 
     fn deserialize_f64<V>(self, visitor: V) -> Result<V::Value>
@@ -160,10 +184,12 @@ impl<'a, 'b, 'de> serde::Deserializer<'de> for Deserializer<'a, 'b> {
         V: Visitor<'de>,
     {
         let value = self.values.next()?;
-        visitor.visit_f64(value.parse_f64()?).map_err(|mut error: Error| {
-            error.set_position(value.position());
-            error
-        })
+        visitor
+            .visit_f64(value.parse_f64()?)
+            .map_err(|mut error: Error| {
+                error.set_position(value.position());
+                error
+            })
     }
 
     fn deserialize_char<V>(self, visitor: V) -> Result<V::Value>
@@ -171,10 +197,12 @@ impl<'a, 'b, 'de> serde::Deserializer<'de> for Deserializer<'a, 'b> {
         V: Visitor<'de>,
     {
         let value = self.values.next()?;
-        visitor.visit_char(value.parse_char()?).map_err(|mut error: Error| {
-            error.set_position(value.position());
-            error
-        })
+        visitor
+            .visit_char(value.parse_char()?)
+            .map_err(|mut error: Error| {
+                error.set_position(value.position());
+                error
+            })
     }
 
     fn deserialize_str<V>(self, visitor: V) -> Result<V::Value>
@@ -182,10 +210,12 @@ impl<'a, 'b, 'de> serde::Deserializer<'de> for Deserializer<'a, 'b> {
         V: Visitor<'de>,
     {
         let value = self.values.next()?;
-        visitor.visit_str(&value.parse_string()?).map_err(|mut error: Error| {
-            error.set_position(value.position());
-            error
-        })
+        visitor
+            .visit_str(&value.parse_string()?)
+            .map_err(|mut error: Error| {
+                error.set_position(value.position());
+                error
+            })
     }
 
     fn deserialize_string<V>(self, visitor: V) -> Result<V::Value>
@@ -193,10 +223,12 @@ impl<'a, 'b, 'de> serde::Deserializer<'de> for Deserializer<'a, 'b> {
         V: Visitor<'de>,
     {
         let value = self.values.next()?;
-        visitor.visit_string(value.parse_string()?).map_err(|mut error: Error| {
-            error.set_position(value.position());
-            error
-        })
+        visitor
+            .visit_string(value.parse_string()?)
+            .map_err(|mut error: Error| {
+                error.set_position(value.position());
+                error
+            })
     }
 
     fn deserialize_bytes<V>(self, visitor: V) -> Result<V::Value>
@@ -204,10 +236,12 @@ impl<'a, 'b, 'de> serde::Deserializer<'de> for Deserializer<'a, 'b> {
         V: Visitor<'de>,
     {
         let value = self.values.next()?;
-        visitor.visit_bytes(&value.parse_byte_buf()).map_err(|mut error: Error| {
-            error.set_position(value.position());
-            error
-        })
+        visitor
+            .visit_bytes(&value.parse_byte_buf())
+            .map_err(|mut error: Error| {
+                error.set_position(value.position());
+                error
+            })
     }
 
     fn deserialize_byte_buf<V>(self, visitor: V) -> Result<V::Value>
@@ -215,10 +249,12 @@ impl<'a, 'b, 'de> serde::Deserializer<'de> for Deserializer<'a, 'b> {
         V: Visitor<'de>,
     {
         let value = self.values.next()?;
-        visitor.visit_byte_buf(value.parse_byte_buf()).map_err(|mut error: Error| {
-            error.set_position(value.position());
-            error
-        })
+        visitor
+            .visit_byte_buf(value.parse_byte_buf())
+            .map_err(|mut error: Error| {
+                error.set_position(value.position());
+                error
+            })
     }
 
     fn deserialize_option<V>(self, _visitor: V) -> Result<V::Value>
@@ -321,10 +357,12 @@ impl<'a, 'b, 'de> serde::Deserializer<'de> for Deserializer<'a, 'b> {
         V: Visitor<'de>,
     {
         let value = self.values.next()?;
-        visitor.visit_str(&value.parse_identifier()?).map_err(|mut error: Error| {
-            error.set_position(value.position());
-            error
-        })
+        visitor
+            .visit_str(&value.parse_identifier()?)
+            .map_err(|mut error: Error| {
+                error.set_position(value.position());
+                error
+            })
     }
 
     fn deserialize_ignored_any<V>(self, _visitor: V) -> Result<V::Value>
@@ -366,7 +404,10 @@ mod tests {
         let mut values = Values::new(b"invalid", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
-        assert_err_eq!(bool::deserialize(deserializer), Error::new(error::Kind::ExpectedBool, Position::new(0, 0)));
+        assert_err_eq!(
+            bool::deserialize(deserializer),
+            Error::new(error::Kind::ExpectedBool, Position::new(0, 0))
+        );
     }
 
     #[test]
@@ -409,7 +450,7 @@ mod tests {
             }
         }
 
-         let mut values = Values::new(b"true", Position::new(1, 2));
+        let mut values = Values::new(b"true", Position::new(1, 2));
         let deserializer = Deserializer::new(&mut values);
 
         assert_err_eq!(
@@ -477,7 +518,7 @@ mod tests {
             }
         }
 
-         let mut values = Values::new(b"42", Position::new(1, 2));
+        let mut values = Values::new(b"42", Position::new(1, 2));
         let deserializer = Deserializer::new(&mut values);
 
         assert_err_eq!(
@@ -545,7 +586,7 @@ mod tests {
             }
         }
 
-         let mut values = Values::new(b"42", Position::new(1, 2));
+        let mut values = Values::new(b"42", Position::new(1, 2));
         let deserializer = Deserializer::new(&mut values);
 
         assert_err_eq!(
@@ -613,7 +654,7 @@ mod tests {
             }
         }
 
-         let mut values = Values::new(b"42", Position::new(1, 2));
+        let mut values = Values::new(b"42", Position::new(1, 2));
         let deserializer = Deserializer::new(&mut values);
 
         assert_err_eq!(
@@ -681,7 +722,7 @@ mod tests {
             }
         }
 
-         let mut values = Values::new(b"42", Position::new(1, 2));
+        let mut values = Values::new(b"42", Position::new(1, 2));
         let deserializer = Deserializer::new(&mut values);
 
         assert_err_eq!(
@@ -752,7 +793,7 @@ mod tests {
             }
         }
 
-         let mut values = Values::new(b"42", Position::new(1, 2));
+        let mut values = Values::new(b"42", Position::new(1, 2));
         let deserializer = Deserializer::new(&mut values);
 
         assert_err_eq!(
@@ -820,7 +861,7 @@ mod tests {
             }
         }
 
-         let mut values = Values::new(b"42", Position::new(1, 2));
+        let mut values = Values::new(b"42", Position::new(1, 2));
         let deserializer = Deserializer::new(&mut values);
 
         assert_err_eq!(
@@ -888,7 +929,7 @@ mod tests {
             }
         }
 
-         let mut values = Values::new(b"42", Position::new(1, 2));
+        let mut values = Values::new(b"42", Position::new(1, 2));
         let deserializer = Deserializer::new(&mut values);
 
         assert_err_eq!(
@@ -956,7 +997,7 @@ mod tests {
             }
         }
 
-         let mut values = Values::new(b"42", Position::new(1, 2));
+        let mut values = Values::new(b"42", Position::new(1, 2));
         let deserializer = Deserializer::new(&mut values);
 
         assert_err_eq!(
@@ -1024,7 +1065,7 @@ mod tests {
             }
         }
 
-         let mut values = Values::new(b"42", Position::new(1, 2));
+        let mut values = Values::new(b"42", Position::new(1, 2));
         let deserializer = Deserializer::new(&mut values);
 
         assert_err_eq!(
@@ -1095,7 +1136,7 @@ mod tests {
             }
         }
 
-         let mut values = Values::new(b"42", Position::new(1, 2));
+        let mut values = Values::new(b"42", Position::new(1, 2));
         let deserializer = Deserializer::new(&mut values);
 
         assert_err_eq!(
@@ -1163,7 +1204,7 @@ mod tests {
             }
         }
 
-         let mut values = Values::new(b"42", Position::new(1, 2));
+        let mut values = Values::new(b"42", Position::new(1, 2));
         let deserializer = Deserializer::new(&mut values);
 
         assert_err_eq!(
@@ -1231,7 +1272,7 @@ mod tests {
             }
         }
 
-         let mut values = Values::new(b"42", Position::new(1, 2));
+        let mut values = Values::new(b"42", Position::new(1, 2));
         let deserializer = Deserializer::new(&mut values);
 
         assert_err_eq!(
@@ -1299,7 +1340,7 @@ mod tests {
             }
         }
 
-         let mut values = Values::new(b"a", Position::new(1, 2));
+        let mut values = Values::new(b"a", Position::new(1, 2));
         let deserializer = Deserializer::new(&mut values);
 
         assert_err_eq!(
@@ -1367,7 +1408,7 @@ mod tests {
             }
         }
 
-         let mut values = Values::new(b"a", Position::new(1, 2));
+        let mut values = Values::new(b"a", Position::new(1, 2));
         let deserializer = Deserializer::new(&mut values);
 
         assert_err_eq!(
@@ -1424,7 +1465,7 @@ mod tests {
             }
         }
 
-         let mut values = Values::new(b"a", Position::new(1, 2));
+        let mut values = Values::new(b"a", Position::new(1, 2));
         let deserializer = Deserializer::new(&mut values);
 
         assert_err_eq!(
@@ -1492,7 +1533,7 @@ mod tests {
             }
         }
 
-         let mut values = Values::new(b"", Position::new(1, 2));
+        let mut values = Values::new(b"", Position::new(1, 2));
         let deserializer = Deserializer::new(&mut values);
 
         assert_err_eq!(
@@ -1566,7 +1607,7 @@ mod tests {
             }
         }
 
-         let mut values = Values::new(b"", Position::new(1, 2));
+        let mut values = Values::new(b"", Position::new(1, 2));
         let deserializer = Deserializer::new(&mut values);
 
         assert_err_eq!(
@@ -1808,7 +1849,7 @@ mod tests {
             }
         }
 
-         let mut values = Values::new(b"a", Position::new(1, 2));
+        let mut values = Values::new(b"a", Position::new(1, 2));
         let deserializer = Deserializer::new(&mut values);
 
         assert_err_eq!(

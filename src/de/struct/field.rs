@@ -8,7 +8,10 @@ pub(in super::super) struct Deserializer<'a> {
 
 impl<'a> Deserializer<'a> {
     pub(in super::super) fn new(identifier: &'a str, position: Position) -> Self {
-        Self { identifier, position }
+        Self {
+            identifier,
+            position,
+        }
     }
 }
 
@@ -239,10 +242,12 @@ impl<'a, 'de> de::Deserializer<'de> for Deserializer<'a> {
     where
         V: Visitor<'de>,
     {
-        visitor.visit_str(self.identifier).map_err(|mut error: Error| {
-            error.set_position(self.position);
-            error
-        })
+        visitor
+            .visit_str(self.identifier)
+            .map_err(|mut error: Error| {
+                error.set_position(self.position);
+                error
+            })
     }
 
     fn deserialize_ignored_any<V>(self, _visitor: V) -> Result<V::Value>
@@ -256,8 +261,8 @@ impl<'a, 'de> de::Deserializer<'de> for Deserializer<'a> {
 #[cfg(test)]
 mod tests {
     use super::Deserializer;
-    use claim::{assert_err_eq, assert_ok_eq};
     use crate::de::{error, Error, Position};
+    use claim::{assert_err_eq, assert_ok_eq};
     use serde::{de, de::Visitor, Deserialize};
     use std::fmt;
 

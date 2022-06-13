@@ -238,10 +238,12 @@ impl<'a, 'de> de::Deserializer<'de> for Deserializer<'a> {
     where
         V: Visitor<'de>,
     {
-        visitor.visit_str(&self.value.parse_identifier()?).map_err(|mut error: Error| {
-            error.set_position(self.value.position());
-            error
-        })
+        visitor
+            .visit_str(&self.value.parse_identifier()?)
+            .map_err(|mut error: Error| {
+                error.set_position(self.value.position());
+                error
+            })
     }
 
     fn deserialize_ignored_any<V>(self, _visitor: V) -> Result<V::Value>
@@ -340,7 +342,7 @@ mod tests {
             }
         }
 
-        let deserializer = Deserializer::new(Value::new(b"a", Position::new(1, 2))); 
+        let deserializer = Deserializer::new(Value::new(b"a", Position::new(1, 2)));
 
         assert_err_eq!(
             CustomIdentifier::deserialize(deserializer),
