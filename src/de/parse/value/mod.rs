@@ -311,6 +311,10 @@ impl<'a> Value<'a> {
         Self { bytes, position }
     }
 
+    pub(in crate::de) fn position(&self) -> Position {
+        self.position
+    }
+
     pub(in crate::de) fn parse_bool(&self) -> Result<bool> {
         let mut value = Trim::new(Clean::new(self.bytes));
         match value
@@ -478,6 +482,13 @@ mod tests {
     use super::Value;
     use crate::de::{error, Error, Position};
     use claim::{assert_err_eq, assert_ok, assert_ok_eq};
+
+    #[test]
+    fn get_position() {
+        let value = Value::new(b"", Position::new(1, 2));
+
+        assert_eq!(value.position(), Position::new(1, 2));
+    }
 
     #[test]
     fn parse_bool_true() {

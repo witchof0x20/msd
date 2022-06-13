@@ -76,6 +76,10 @@ impl Error {
     pub(super) fn new(kind: Kind, position: Position) -> Self {
         Self { position, kind }
     }
+
+    pub(in crate::de) fn set_position(&mut self, position: Position) {
+        self.position = position;
+    }
 }
 
 impl de::Error for Error {
@@ -326,8 +330,20 @@ mod tests {
     #[test]
     fn custom() {
         assert_eq!(
-            format!("{}", Error::new(Kind::Custom("foo".to_owned()), Position::new(26, 27))),
+            format!(
+                "{}",
+                Error::new(Kind::Custom("foo".to_owned()), Position::new(26, 27))
+            ),
             "foo at line 26 column 27"
         );
+    }
+
+    #[test]
+    fn set_position() {
+        let mut error = Error::new(Kind::EndOfFile, Position::new(0, 0));
+
+        error.set_position(Position::new(1, 2));
+
+        assert_eq!(error.position, Position::new(1, 2));
     }
 }

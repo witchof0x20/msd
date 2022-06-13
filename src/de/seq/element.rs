@@ -32,10 +32,14 @@ where
         let mut tag = self.tags.next()?;
         let mut values = tag.next()?;
         let value = values.next()?;
+        let value_position = value.position();
         let parsed = value.parse_bool()?;
         values.assert_exhausted()?;
         tag.assert_exhausted()?;
-        visitor.visit_bool(parsed)
+        visitor.visit_bool(parsed).map_err(|mut error: Error| {
+            error.set_position(value_position);
+            error
+        })
     }
 
     fn deserialize_i8<V>(self, visitor: V) -> Result<V::Value>
@@ -45,10 +49,14 @@ where
         let mut tag = self.tags.next()?;
         let mut values = tag.next()?;
         let value = values.next()?;
+        let value_position = value.position();
         let parsed = value.parse_i8()?;
         values.assert_exhausted()?;
         tag.assert_exhausted()?;
-        visitor.visit_i8(parsed)
+        visitor.visit_i8(parsed).map_err(|mut error: Error| {
+            error.set_position(value_position);
+            error
+        })
     }
 
     fn deserialize_i16<V>(self, visitor: V) -> Result<V::Value>
@@ -58,10 +66,14 @@ where
         let mut tag = self.tags.next()?;
         let mut values = tag.next()?;
         let value = values.next()?;
+        let value_position = value.position();
         let parsed = value.parse_i16()?;
         values.assert_exhausted()?;
         tag.assert_exhausted()?;
-        visitor.visit_i16(parsed)
+        visitor.visit_i16(parsed).map_err(|mut error: Error| {
+            error.set_position(value_position);
+            error
+        })
     }
 
     fn deserialize_i32<V>(self, visitor: V) -> Result<V::Value>
@@ -71,10 +83,14 @@ where
         let mut tag = self.tags.next()?;
         let mut values = tag.next()?;
         let value = values.next()?;
+        let value_position = value.position();
         let parsed = value.parse_i32()?;
         values.assert_exhausted()?;
         tag.assert_exhausted()?;
-        visitor.visit_i32(parsed)
+        visitor.visit_i32(parsed).map_err(|mut error: Error| {
+            error.set_position(value_position);
+            error
+        })
     }
 
     fn deserialize_i64<V>(self, visitor: V) -> Result<V::Value>
@@ -84,10 +100,14 @@ where
         let mut tag = self.tags.next()?;
         let mut values = tag.next()?;
         let value = values.next()?;
+        let value_position = value.position();
         let parsed = value.parse_i64()?;
         values.assert_exhausted()?;
         tag.assert_exhausted()?;
-        visitor.visit_i64(parsed)
+        visitor.visit_i64(parsed).map_err(|mut error: Error| {
+            error.set_position(value_position);
+            error
+        })
     }
 
     #[cfg(has_i128)]
@@ -98,10 +118,14 @@ where
         let mut tag = self.tags.next()?;
         let mut values = tag.next()?;
         let value = values.next()?;
+        let value_position = value.position();
         let parsed = value.parse_i128()?;
         values.assert_exhausted()?;
         tag.assert_exhausted()?;
-        visitor.visit_i128(parsed)
+        visitor.visit_i128(parsed).map_err(|mut error: Error| {
+            error.set_position(value_position);
+            error
+        })
     }
 
     fn deserialize_u8<V>(self, visitor: V) -> Result<V::Value>
@@ -111,10 +135,14 @@ where
         let mut tag = self.tags.next()?;
         let mut values = tag.next()?;
         let value = values.next()?;
+        let value_position = value.position();
         let parsed = value.parse_u8()?;
         values.assert_exhausted()?;
         tag.assert_exhausted()?;
-        visitor.visit_u8(parsed)
+        visitor.visit_u8(parsed).map_err(|mut error: Error| {
+            error.set_position(value_position);
+            error
+        })
     }
 
     fn deserialize_u16<V>(self, visitor: V) -> Result<V::Value>
@@ -124,10 +152,14 @@ where
         let mut tag = self.tags.next()?;
         let mut values = tag.next()?;
         let value = values.next()?;
+        let value_position = value.position();
         let parsed = value.parse_u16()?;
         values.assert_exhausted()?;
         tag.assert_exhausted()?;
-        visitor.visit_u16(parsed)
+        visitor.visit_u16(parsed).map_err(|mut error: Error| {
+            error.set_position(value_position);
+            error
+        })
     }
 
     fn deserialize_u32<V>(self, visitor: V) -> Result<V::Value>
@@ -137,10 +169,14 @@ where
         let mut tag = self.tags.next()?;
         let mut values = tag.next()?;
         let value = values.next()?;
+        let value_position = value.position();
         let parsed = value.parse_u32()?;
         values.assert_exhausted()?;
         tag.assert_exhausted()?;
-        visitor.visit_u32(parsed)
+        visitor.visit_u32(parsed).map_err(|mut error: Error| {
+            error.set_position(value_position);
+            error
+        })
     }
 
     fn deserialize_u64<V>(self, visitor: V) -> Result<V::Value>
@@ -150,10 +186,14 @@ where
         let mut tag = self.tags.next()?;
         let mut values = tag.next()?;
         let value = values.next()?;
+        let value_position = value.position();
         let parsed = value.parse_u64()?;
         values.assert_exhausted()?;
         tag.assert_exhausted()?;
-        visitor.visit_u64(parsed)
+        visitor.visit_u64(parsed).map_err(|mut error: Error| {
+            error.set_position(value_position);
+            error
+        })
     }
 
     #[cfg(has_i128)]
@@ -164,10 +204,14 @@ where
         let mut tag = self.tags.next()?;
         let mut values = tag.next()?;
         let value = values.next()?;
+        let value_position = value.position();
         let parsed = value.parse_u128()?;
         values.assert_exhausted()?;
         tag.assert_exhausted()?;
-        visitor.visit_u128(parsed)
+        visitor.visit_u128(parsed).map_err(|mut error: Error| {
+            error.set_position(value_position);
+            error
+        })
     }
 
     fn deserialize_f32<V>(self, visitor: V) -> Result<V::Value>
@@ -177,10 +221,14 @@ where
         let mut tag = self.tags.next()?;
         let mut values = tag.next()?;
         let value = values.next()?;
+        let value_position = value.position();
         let parsed = value.parse_f32()?;
         values.assert_exhausted()?;
         tag.assert_exhausted()?;
-        visitor.visit_f32(parsed)
+        visitor.visit_f32(parsed).map_err(|mut error: Error| {
+            error.set_position(value_position);
+            error
+        })
     }
 
     fn deserialize_f64<V>(self, visitor: V) -> Result<V::Value>
@@ -190,10 +238,14 @@ where
         let mut tag = self.tags.next()?;
         let mut values = tag.next()?;
         let value = values.next()?;
+        let value_position = value.position();
         let parsed = value.parse_f64()?;
         values.assert_exhausted()?;
         tag.assert_exhausted()?;
-        visitor.visit_f64(parsed)
+        visitor.visit_f64(parsed).map_err(|mut error: Error| {
+            error.set_position(value_position);
+            error
+        })
     }
 
     fn deserialize_char<V>(self, visitor: V) -> Result<V::Value>
@@ -203,10 +255,14 @@ where
         let mut tag = self.tags.next()?;
         let mut values = tag.next()?;
         let value = values.next()?;
+        let value_position = value.position();
         let parsed = value.parse_char()?;
         values.assert_exhausted()?;
         tag.assert_exhausted()?;
-        visitor.visit_char(parsed)
+        visitor.visit_char(parsed).map_err(|mut error: Error| {
+            error.set_position(value_position);
+            error
+        })
     }
 
     fn deserialize_str<V>(self, visitor: V) -> Result<V::Value>
@@ -216,11 +272,15 @@ where
         let mut tag = self.tags.next()?;
         let mut values = tag.next()?;
         let value = values.next()?;
+        let value_position = value.position();
         // Parsed string must be owned, since it removes escaping and comments.
         let parsed = value.parse_string()?;
         values.assert_exhausted()?;
         tag.assert_exhausted()?;
-        visitor.visit_str(&parsed)
+        visitor.visit_str(&parsed).map_err(|mut error: Error| {
+            error.set_position(value_position);
+            error
+        })
     }
 
     fn deserialize_string<V>(self, visitor: V) -> Result<V::Value>
@@ -230,10 +290,14 @@ where
         let mut tag = self.tags.next()?;
         let mut values = tag.next()?;
         let value = values.next()?;
+        let value_position = value.position();
         let parsed = value.parse_string()?;
         values.assert_exhausted()?;
         tag.assert_exhausted()?;
-        visitor.visit_string(parsed)
+        visitor.visit_string(parsed).map_err(|mut error: Error| {
+            error.set_position(value_position);
+            error
+        })
     }
 
     fn deserialize_bytes<V>(self, visitor: V) -> Result<V::Value>
@@ -243,11 +307,15 @@ where
         let mut tag = self.tags.next()?;
         let mut values = tag.next()?;
         let value = values.next()?;
+        let value_position = value.position();
         // Parsed bytes must be owned, since it removes escaping and comments.
         let parsed = value.parse_byte_buf();
         values.assert_exhausted()?;
         tag.assert_exhausted()?;
-        visitor.visit_bytes(&parsed)
+        visitor.visit_bytes(&parsed).map_err(|mut error: Error| {
+            error.set_position(value_position);
+            error
+        })
     }
 
     fn deserialize_byte_buf<V>(self, visitor: V) -> Result<V::Value>
@@ -257,10 +325,14 @@ where
         let mut tag = self.tags.next()?;
         let mut values = tag.next()?;
         let value = values.next()?;
+        let value_position = value.position();
         let parsed = value.parse_byte_buf();
         values.assert_exhausted()?;
         tag.assert_exhausted()?;
-        visitor.visit_byte_buf(parsed)
+        visitor.visit_byte_buf(parsed).map_err(|mut error: Error| {
+            error.set_position(value_position);
+            error
+        })
     }
 
     fn deserialize_option<V>(self, _visitor: V) -> Result<V::Value>
@@ -277,10 +349,14 @@ where
         let mut tag = self.tags.next()?;
         let mut values = tag.next()?;
         let value = values.next()?;
+        let value_position = value.position();
         value.parse_unit()?;
         values.assert_exhausted()?;
         tag.assert_exhausted()?;
-        visitor.visit_unit()
+        visitor.visit_unit().map_err(|mut error: Error| {
+            error.set_position(value_position);
+            error
+        })
     }
 
     fn deserialize_unit_struct<V>(self, _name: &'static str, visitor: V) -> Result<V::Value>
@@ -290,10 +366,14 @@ where
         let mut tag = self.tags.next()?;
         let mut values = tag.next()?;
         let value = values.next()?;
+        let value_position = value.position();
         value.parse_unit()?;
         values.assert_exhausted()?;
         tag.assert_exhausted()?;
-        visitor.visit_unit()
+        visitor.visit_unit().map_err(|mut error: Error| {
+            error.set_position(value_position);
+            error
+        })
     }
 
     fn deserialize_newtype_struct<V>(self, _name: &'static str, visitor: V) -> Result<V::Value>
@@ -391,11 +471,15 @@ where
         let mut tag = self.tags.next()?;
         let mut values = tag.next()?;
         let value = values.next()?;
+        let value_position = value.position();
         // Parsed string must be owned, since it removes escaping and comments.
         let parsed = value.parse_identifier()?;
         values.assert_exhausted()?;
         tag.assert_exhausted()?;
-        visitor.visit_str(&parsed)
+        visitor.visit_str(&parsed).map_err(|mut error: Error| {
+            error.set_position(value_position);
+            error
+        })
     }
 
     fn deserialize_ignored_any<V>(self, _visitor: V) -> Result<V::Value>
@@ -444,6 +528,46 @@ mod tests {
     }
 
     #[test]
+    fn bool_custom_error() {
+        #[derive(Debug)]
+        struct CustomBool;
+
+        impl<'de> Deserialize<'de> for CustomBool {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: de::Deserializer<'de>,
+            {
+                struct CustomBoolVisitor;
+
+                impl<'de> Visitor<'de> for CustomBoolVisitor {
+                    type Value = CustomBool;
+
+                    fn expecting(&self, _f: &mut fmt::Formatter) -> fmt::Result {
+                        unimplemented!()
+                    }
+
+                    fn visit_bool<E>(self, _value: bool) -> Result<Self::Value, E>
+                    where
+                        E: de::Error,
+                    {
+                        Err(de::Error::custom("foo"))
+                    }
+                }
+
+                deserializer.deserialize_bool(CustomBoolVisitor)
+            }
+        }
+
+        let mut tags = Tags::new(b"#true;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
+
+        assert_err_eq!(
+            CustomBool::deserialize(deserializer),
+            Error::new(error::Kind::Custom("foo".to_string()), Position::new(0, 1))
+        );
+    }
+
+    #[test]
     fn i8() {
         let mut tags = Tags::new(b"#42;".as_slice());
         let deserializer = Deserializer::new(&mut tags);
@@ -481,6 +605,46 @@ mod tests {
         assert_err_eq!(
             i8::deserialize(deserializer),
             Error::new(error::Kind::UnexpectedValues, Position::new(0, 4))
+        );
+    }
+
+    #[test]
+    fn i8_custom_error() {
+        #[derive(Debug)]
+        struct CustomI8;
+
+        impl<'de> Deserialize<'de> for CustomI8 {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: de::Deserializer<'de>,
+            {
+                struct CustomI8Visitor;
+
+                impl<'de> Visitor<'de> for CustomI8Visitor {
+                    type Value = CustomI8;
+
+                    fn expecting(&self, _f: &mut fmt::Formatter) -> fmt::Result {
+                        unimplemented!()
+                    }
+
+                    fn visit_i8<E>(self, _value: i8) -> Result<Self::Value, E>
+                    where
+                        E: de::Error,
+                    {
+                        Err(de::Error::custom("foo"))
+                    }
+                }
+
+                deserializer.deserialize_i8(CustomI8Visitor)
+            }
+        }
+
+        let mut tags = Tags::new(b"#42;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
+
+        assert_err_eq!(
+            CustomI8::deserialize(deserializer),
+            Error::new(error::Kind::Custom("foo".to_string()), Position::new(0, 1))
         );
     }
 
@@ -526,6 +690,46 @@ mod tests {
     }
 
     #[test]
+    fn i16_custom_error() {
+        #[derive(Debug)]
+        struct CustomI16;
+
+        impl<'de> Deserialize<'de> for CustomI16 {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: de::Deserializer<'de>,
+            {
+                struct CustomI16Visitor;
+
+                impl<'de> Visitor<'de> for CustomI16Visitor {
+                    type Value = CustomI16;
+
+                    fn expecting(&self, _f: &mut fmt::Formatter) -> fmt::Result {
+                        unimplemented!()
+                    }
+
+                    fn visit_i16<E>(self, _value: i16) -> Result<Self::Value, E>
+                    where
+                        E: de::Error,
+                    {
+                        Err(de::Error::custom("foo"))
+                    }
+                }
+
+                deserializer.deserialize_i16(CustomI16Visitor)
+            }
+        }
+
+        let mut tags = Tags::new(b"#42;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
+
+        assert_err_eq!(
+            CustomI16::deserialize(deserializer),
+            Error::new(error::Kind::Custom("foo".to_string()), Position::new(0, 1))
+        );
+    }
+
+    #[test]
     fn i32() {
         let mut tags = Tags::new(b"#42;".as_slice());
         let deserializer = Deserializer::new(&mut tags);
@@ -567,6 +771,46 @@ mod tests {
     }
 
     #[test]
+    fn i32_custom_error() {
+        #[derive(Debug)]
+        struct CustomI32;
+
+        impl<'de> Deserialize<'de> for CustomI32 {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: de::Deserializer<'de>,
+            {
+                struct CustomI32Visitor;
+
+                impl<'de> Visitor<'de> for CustomI32Visitor {
+                    type Value = CustomI32;
+
+                    fn expecting(&self, _f: &mut fmt::Formatter) -> fmt::Result {
+                        unimplemented!()
+                    }
+
+                    fn visit_i32<E>(self, _value: i32) -> Result<Self::Value, E>
+                    where
+                        E: de::Error,
+                    {
+                        Err(de::Error::custom("foo"))
+                    }
+                }
+
+                deserializer.deserialize_i32(CustomI32Visitor)
+            }
+        }
+
+        let mut tags = Tags::new(b"#42;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
+
+        assert_err_eq!(
+            CustomI32::deserialize(deserializer),
+            Error::new(error::Kind::Custom("foo".to_string()), Position::new(0, 1))
+        );
+    }
+
+    #[test]
     fn i64() {
         let mut tags = Tags::new(b"#42;".as_slice());
         let deserializer = Deserializer::new(&mut tags);
@@ -604,6 +848,46 @@ mod tests {
         assert_err_eq!(
             i64::deserialize(deserializer),
             Error::new(error::Kind::UnexpectedValues, Position::new(0, 4))
+        );
+    }
+
+    #[test]
+    fn i64_custom_error() {
+        #[derive(Debug)]
+        struct CustomI64;
+
+        impl<'de> Deserialize<'de> for CustomI64 {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: de::Deserializer<'de>,
+            {
+                struct CustomI64Visitor;
+
+                impl<'de> Visitor<'de> for CustomI64Visitor {
+                    type Value = CustomI64;
+
+                    fn expecting(&self, _f: &mut fmt::Formatter) -> fmt::Result {
+                        unimplemented!()
+                    }
+
+                    fn visit_i64<E>(self, _value: i64) -> Result<Self::Value, E>
+                    where
+                        E: de::Error,
+                    {
+                        Err(de::Error::custom("foo"))
+                    }
+                }
+
+                deserializer.deserialize_i64(CustomI64Visitor)
+            }
+        }
+
+        let mut tags = Tags::new(b"#42;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
+
+        assert_err_eq!(
+            CustomI64::deserialize(deserializer),
+            Error::new(error::Kind::Custom("foo".to_string()), Position::new(0, 1))
         );
     }
 
@@ -653,6 +937,46 @@ mod tests {
     }
 
     #[test]
+    fn i128_custom_error() {
+        #[derive(Debug)]
+        struct CustomI128;
+
+        impl<'de> Deserialize<'de> for CustomI128 {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: de::Deserializer<'de>,
+            {
+                struct CustomI128Visitor;
+
+                impl<'de> Visitor<'de> for CustomI128Visitor {
+                    type Value = CustomI128;
+
+                    fn expecting(&self, _f: &mut fmt::Formatter) -> fmt::Result {
+                        unimplemented!()
+                    }
+
+                    fn visit_i128<E>(self, _value: i128) -> Result<Self::Value, E>
+                    where
+                        E: de::Error,
+                    {
+                        Err(de::Error::custom("foo"))
+                    }
+                }
+
+                deserializer.deserialize_i128(CustomI128Visitor)
+            }
+        }
+
+        let mut tags = Tags::new(b"#42;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
+
+        assert_err_eq!(
+            CustomI128::deserialize(deserializer),
+            Error::new(error::Kind::Custom("foo".to_string()), Position::new(0, 1))
+        );
+    }
+
+    #[test]
     fn u8() {
         let mut tags = Tags::new(b"#42;".as_slice());
         let deserializer = Deserializer::new(&mut tags);
@@ -690,6 +1014,46 @@ mod tests {
         assert_err_eq!(
             u8::deserialize(deserializer),
             Error::new(error::Kind::UnexpectedValues, Position::new(0, 4))
+        );
+    }
+
+    #[test]
+    fn u8_custom_error() {
+        #[derive(Debug)]
+        struct CustomU8;
+
+        impl<'de> Deserialize<'de> for CustomU8 {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: de::Deserializer<'de>,
+            {
+                struct CustomU8Visitor;
+
+                impl<'de> Visitor<'de> for CustomU8Visitor {
+                    type Value = CustomU8;
+
+                    fn expecting(&self, _f: &mut fmt::Formatter) -> fmt::Result {
+                        unimplemented!()
+                    }
+
+                    fn visit_u8<E>(self, _value: u8) -> Result<Self::Value, E>
+                    where
+                        E: de::Error,
+                    {
+                        Err(de::Error::custom("foo"))
+                    }
+                }
+
+                deserializer.deserialize_u8(CustomU8Visitor)
+            }
+        }
+
+        let mut tags = Tags::new(b"#42;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
+
+        assert_err_eq!(
+            CustomU8::deserialize(deserializer),
+            Error::new(error::Kind::Custom("foo".to_string()), Position::new(0, 1))
         );
     }
 
@@ -735,6 +1099,46 @@ mod tests {
     }
 
     #[test]
+    fn u16_custom_error() {
+        #[derive(Debug)]
+        struct CustomU16;
+
+        impl<'de> Deserialize<'de> for CustomU16 {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: de::Deserializer<'de>,
+            {
+                struct CustomU16Visitor;
+
+                impl<'de> Visitor<'de> for CustomU16Visitor {
+                    type Value = CustomU16;
+
+                    fn expecting(&self, _f: &mut fmt::Formatter) -> fmt::Result {
+                        unimplemented!()
+                    }
+
+                    fn visit_u16<E>(self, _value: u16) -> Result<Self::Value, E>
+                    where
+                        E: de::Error,
+                    {
+                        Err(de::Error::custom("foo"))
+                    }
+                }
+
+                deserializer.deserialize_u16(CustomU16Visitor)
+            }
+        }
+
+        let mut tags = Tags::new(b"#42;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
+
+        assert_err_eq!(
+            CustomU16::deserialize(deserializer),
+            Error::new(error::Kind::Custom("foo".to_string()), Position::new(0, 1))
+        );
+    }
+
+    #[test]
     fn u32() {
         let mut tags = Tags::new(b"#42;".as_slice());
         let deserializer = Deserializer::new(&mut tags);
@@ -776,6 +1180,46 @@ mod tests {
     }
 
     #[test]
+    fn u32_custom_error() {
+        #[derive(Debug)]
+        struct CustomU32;
+
+        impl<'de> Deserialize<'de> for CustomU32 {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: de::Deserializer<'de>,
+            {
+                struct CustomU32Visitor;
+
+                impl<'de> Visitor<'de> for CustomU32Visitor {
+                    type Value = CustomU32;
+
+                    fn expecting(&self, _f: &mut fmt::Formatter) -> fmt::Result {
+                        unimplemented!()
+                    }
+
+                    fn visit_u32<E>(self, _value: u32) -> Result<Self::Value, E>
+                    where
+                        E: de::Error,
+                    {
+                        Err(de::Error::custom("foo"))
+                    }
+                }
+
+                deserializer.deserialize_u32(CustomU32Visitor)
+            }
+        }
+
+        let mut tags = Tags::new(b"#42;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
+
+        assert_err_eq!(
+            CustomU32::deserialize(deserializer),
+            Error::new(error::Kind::Custom("foo".to_string()), Position::new(0, 1))
+        );
+    }
+
+    #[test]
     fn u64() {
         let mut tags = Tags::new(b"#42;".as_slice());
         let deserializer = Deserializer::new(&mut tags);
@@ -813,6 +1257,46 @@ mod tests {
         assert_err_eq!(
             u64::deserialize(deserializer),
             Error::new(error::Kind::UnexpectedValues, Position::new(0, 4))
+        );
+    }
+
+    #[test]
+    fn u64_custom_error() {
+        #[derive(Debug)]
+        struct CustomU64;
+
+        impl<'de> Deserialize<'de> for CustomU64 {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: de::Deserializer<'de>,
+            {
+                struct CustomU64Visitor;
+
+                impl<'de> Visitor<'de> for CustomU64Visitor {
+                    type Value = CustomU64;
+
+                    fn expecting(&self, _f: &mut fmt::Formatter) -> fmt::Result {
+                        unimplemented!()
+                    }
+
+                    fn visit_u64<E>(self, _value: u64) -> Result<Self::Value, E>
+                    where
+                        E: de::Error,
+                    {
+                        Err(de::Error::custom("foo"))
+                    }
+                }
+
+                deserializer.deserialize_u64(CustomU64Visitor)
+            }
+        }
+
+        let mut tags = Tags::new(b"#42;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
+
+        assert_err_eq!(
+            CustomU64::deserialize(deserializer),
+            Error::new(error::Kind::Custom("foo".to_string()), Position::new(0, 1))
         );
     }
 
@@ -862,6 +1346,46 @@ mod tests {
     }
 
     #[test]
+    fn u128_custom_error() {
+        #[derive(Debug)]
+        struct CustomU128;
+
+        impl<'de> Deserialize<'de> for CustomU128 {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: de::Deserializer<'de>,
+            {
+                struct CustomU128Visitor;
+
+                impl<'de> Visitor<'de> for CustomU128Visitor {
+                    type Value = CustomU128;
+
+                    fn expecting(&self, _f: &mut fmt::Formatter) -> fmt::Result {
+                        unimplemented!()
+                    }
+
+                    fn visit_u128<E>(self, _value: u128) -> Result<Self::Value, E>
+                    where
+                        E: de::Error,
+                    {
+                        Err(de::Error::custom("foo"))
+                    }
+                }
+
+                deserializer.deserialize_u128(CustomU128Visitor)
+            }
+        }
+
+        let mut tags = Tags::new(b"#42;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
+
+        assert_err_eq!(
+            CustomU128::deserialize(deserializer),
+            Error::new(error::Kind::Custom("foo".to_string()), Position::new(0, 1))
+        );
+    }
+
+    #[test]
     fn f32() {
         let mut tags = Tags::new(b"#42.9;".as_slice());
         let deserializer = Deserializer::new(&mut tags);
@@ -899,6 +1423,46 @@ mod tests {
         assert_err_eq!(
             f32::deserialize(deserializer),
             Error::new(error::Kind::UnexpectedValues, Position::new(0, 6))
+        );
+    }
+
+    #[test]
+    fn f32_custom_error() {
+        #[derive(Debug)]
+        struct CustomF32;
+
+        impl<'de> Deserialize<'de> for CustomF32 {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: de::Deserializer<'de>,
+            {
+                struct CustomF32Visitor;
+
+                impl<'de> Visitor<'de> for CustomF32Visitor {
+                    type Value = CustomF32;
+
+                    fn expecting(&self, _f: &mut fmt::Formatter) -> fmt::Result {
+                        unimplemented!()
+                    }
+
+                    fn visit_f32<E>(self, _value: f32) -> Result<Self::Value, E>
+                    where
+                        E: de::Error,
+                    {
+                        Err(de::Error::custom("foo"))
+                    }
+                }
+
+                deserializer.deserialize_f32(CustomF32Visitor)
+            }
+        }
+
+        let mut tags = Tags::new(b"#42.9;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
+
+        assert_err_eq!(
+            CustomF32::deserialize(deserializer),
+            Error::new(error::Kind::Custom("foo".to_string()), Position::new(0, 1))
         );
     }
 
@@ -944,6 +1508,46 @@ mod tests {
     }
 
     #[test]
+    fn f64_custom_error() {
+        #[derive(Debug)]
+        struct CustomF64;
+
+        impl<'de> Deserialize<'de> for CustomF64 {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: de::Deserializer<'de>,
+            {
+                struct CustomF64Visitor;
+
+                impl<'de> Visitor<'de> for CustomF64Visitor {
+                    type Value = CustomF64;
+
+                    fn expecting(&self, _f: &mut fmt::Formatter) -> fmt::Result {
+                        unimplemented!()
+                    }
+
+                    fn visit_f64<E>(self, _value: f64) -> Result<Self::Value, E>
+                    where
+                        E: de::Error,
+                    {
+                        Err(de::Error::custom("foo"))
+                    }
+                }
+
+                deserializer.deserialize_f64(CustomF64Visitor)
+            }
+        }
+
+        let mut tags = Tags::new(b"#42.9;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
+
+        assert_err_eq!(
+            CustomF64::deserialize(deserializer),
+            Error::new(error::Kind::Custom("foo".to_string()), Position::new(0, 1))
+        );
+    }
+
+    #[test]
     fn char() {
         let mut tags = Tags::new(b"#a;".as_slice());
         let deserializer = Deserializer::new(&mut tags);
@@ -981,6 +1585,46 @@ mod tests {
         assert_err_eq!(
             char::deserialize(deserializer),
             Error::new(error::Kind::UnexpectedValues, Position::new(0, 3))
+        );
+    }
+
+    #[test]
+    fn char_custom_error() {
+        #[derive(Debug)]
+        struct CustomChar;
+
+        impl<'de> Deserialize<'de> for CustomChar {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: de::Deserializer<'de>,
+            {
+                struct CustomCharVisitor;
+
+                impl<'de> Visitor<'de> for CustomCharVisitor {
+                    type Value = CustomChar;
+
+                    fn expecting(&self, _f: &mut fmt::Formatter) -> fmt::Result {
+                        unimplemented!()
+                    }
+
+                    fn visit_char<E>(self, _value: char) -> Result<Self::Value, E>
+                    where
+                        E: de::Error,
+                    {
+                        Err(de::Error::custom("foo"))
+                    }
+                }
+
+                deserializer.deserialize_char(CustomCharVisitor)
+            }
+        }
+
+        let mut tags = Tags::new(b"#a;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
+
+        assert_err_eq!(
+            CustomChar::deserialize(deserializer),
+            Error::new(error::Kind::Custom("foo".to_string()), Position::new(0, 1))
         );
     }
 
@@ -1026,6 +1670,46 @@ mod tests {
     }
 
     #[test]
+    fn string_custom_error() {
+        #[derive(Debug)]
+        struct CustomString;
+
+        impl<'de> Deserialize<'de> for CustomString {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: de::Deserializer<'de>,
+            {
+                struct CustomStringVisitor;
+
+                impl<'de> Visitor<'de> for CustomStringVisitor {
+                    type Value = CustomString;
+
+                    fn expecting(&self, _f: &mut fmt::Formatter) -> fmt::Result {
+                        unimplemented!()
+                    }
+
+                    fn visit_str<E>(self, _value: &str) -> Result<Self::Value, E>
+                    where
+                        E: de::Error,
+                    {
+                        Err(de::Error::custom("foo"))
+                    }
+                }
+
+                deserializer.deserialize_string(CustomStringVisitor)
+            }
+        }
+
+        let mut tags = Tags::new(b"#foo;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
+
+        assert_err_eq!(
+            CustomString::deserialize(deserializer),
+            Error::new(error::Kind::Custom("foo".to_string()), Position::new(0, 1))
+        );
+    }
+
+    #[test]
     fn byte_buf() {
         let mut tags = Tags::new(b"#foo;".as_slice());
         let deserializer = Deserializer::new(&mut tags);
@@ -1052,6 +1736,46 @@ mod tests {
         assert_err_eq!(
             ByteBuf::deserialize(deserializer),
             Error::new(error::Kind::UnexpectedValues, Position::new(0, 5))
+        );
+    }
+
+    #[test]
+    fn byte_buf_custom_error() {
+        #[derive(Debug)]
+        struct CustomByteBuf;
+
+        impl<'de> Deserialize<'de> for CustomByteBuf {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: de::Deserializer<'de>,
+            {
+                struct CustomByteBufVisitor;
+
+                impl<'de> Visitor<'de> for CustomByteBufVisitor {
+                    type Value = CustomByteBuf;
+
+                    fn expecting(&self, _f: &mut fmt::Formatter) -> fmt::Result {
+                        unimplemented!()
+                    }
+
+                    fn visit_byte_buf<E>(self, _value: Vec<u8>) -> Result<Self::Value, E>
+                    where
+                        E: de::Error,
+                    {
+                        Err(de::Error::custom("foo"))
+                    }
+                }
+
+                deserializer.deserialize_byte_buf(CustomByteBufVisitor)
+            }
+        }
+
+        let mut tags = Tags::new(b"#foo;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
+
+        assert_err_eq!(
+            CustomByteBuf::deserialize(deserializer),
+            Error::new(error::Kind::Custom("foo".to_string()), Position::new(0, 1))
         );
     }
 
@@ -1093,6 +1817,46 @@ mod tests {
         assert_err_eq!(
             <()>::deserialize(deserializer),
             Error::new(error::Kind::UnexpectedValues, Position::new(0, 2))
+        );
+    }
+
+    #[test]
+    fn unit_custom_error() {
+        #[derive(Debug)]
+        struct CustomUnit;
+
+        impl<'de> Deserialize<'de> for CustomUnit {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: de::Deserializer<'de>,
+            {
+                struct CustomUnitVisitor;
+
+                impl<'de> Visitor<'de> for CustomUnitVisitor {
+                    type Value = CustomUnit;
+
+                    fn expecting(&self, _f: &mut fmt::Formatter) -> fmt::Result {
+                        unimplemented!()
+                    }
+
+                    fn visit_unit<E>(self) -> Result<Self::Value, E>
+                    where
+                        E: de::Error,
+                    {
+                        Err(de::Error::custom("foo"))
+                    }
+                }
+
+                deserializer.deserialize_unit(CustomUnitVisitor)
+            }
+        }
+
+        let mut tags = Tags::new(b"#;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
+
+        assert_err_eq!(
+            CustomUnit::deserialize(deserializer),
+            Error::new(error::Kind::Custom("foo".to_string()), Position::new(0, 1))
         );
     }
 
@@ -1142,6 +1906,46 @@ mod tests {
         assert_err_eq!(
             Unit::deserialize(deserializer),
             Error::new(error::Kind::UnexpectedValues, Position::new(0, 2))
+        );
+    }
+
+    #[test]
+    fn unit_struct_custom_error() {
+        #[derive(Debug)]
+        struct CustomUnitStruct;
+
+        impl<'de> Deserialize<'de> for CustomUnitStruct {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: de::Deserializer<'de>,
+            {
+                struct CustomUnitStructVisitor;
+
+                impl<'de> Visitor<'de> for CustomUnitStructVisitor {
+                    type Value = CustomUnitStruct;
+
+                    fn expecting(&self, _f: &mut fmt::Formatter) -> fmt::Result {
+                        unimplemented!()
+                    }
+
+                    fn visit_unit<E>(self) -> Result<Self::Value, E>
+                    where
+                        E: de::Error,
+                    {
+                        Err(de::Error::custom("foo"))
+                    }
+                }
+
+                deserializer.deserialize_unit_struct("CustomUnitStruct", CustomUnitStructVisitor)
+            }
+        }
+
+        let mut tags = Tags::new(b"#;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
+
+        assert_err_eq!(
+            CustomUnitStruct::deserialize(deserializer),
+            Error::new(error::Kind::Custom("foo".to_string()), Position::new(0, 1))
         );
     }
 
@@ -1473,6 +2277,46 @@ mod tests {
         assert_err_eq!(
             Identifier::deserialize(deserializer),
             Error::new(error::Kind::UnexpectedValues, Position::new(0, 5))
+        );
+    }
+
+    #[test]
+    fn identifier_custom_error() {
+        #[derive(Debug)]
+        struct CustomIdentifier;
+
+        impl<'de> Deserialize<'de> for CustomIdentifier {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: de::Deserializer<'de>,
+            {
+                struct CustomIdentifierVisitor;
+
+                impl<'de> Visitor<'de> for CustomIdentifierVisitor {
+                    type Value = CustomIdentifier;
+
+                    fn expecting(&self, _f: &mut fmt::Formatter) -> fmt::Result {
+                        unimplemented!()
+                    }
+
+                    fn visit_str<E>(self, _value: &str) -> Result<Self::Value, E>
+                    where
+                        E: de::Error,
+                    {
+                        Err(de::Error::custom("foo"))
+                    }
+                }
+
+                deserializer.deserialize_identifier(CustomIdentifierVisitor)
+            }
+        }
+
+        let mut tags = Tags::new(b"#foo;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
+
+        assert_err_eq!(
+            CustomIdentifier::deserialize(deserializer),
+            Error::new(error::Kind::Custom("foo".to_string()), Position::new(0, 1))
         );
     }
 }

@@ -1,13 +1,14 @@
-use crate::de::{Error, Result};
+use crate::de::{Error, Position, Result};
 use serde::{de, de::Visitor};
 
 pub(in super::super) struct Deserializer<'a> {
     identifier: &'a str,
+    position: Position,
 }
 
 impl<'a> Deserializer<'a> {
-    pub(in super::super) fn new(identifier: &'a str) -> Self {
-        Self { identifier }
+    pub(in super::super) fn new(identifier: &'a str, position: Position) -> Self {
+        Self { identifier, position }
     }
 }
 
@@ -238,7 +239,10 @@ impl<'a, 'de> de::Deserializer<'de> for Deserializer<'a> {
     where
         V: Visitor<'de>,
     {
-        visitor.visit_str(self.identifier)
+        visitor.visit_str(self.identifier).map_err(|mut error: Error| {
+            error.set_position(self.position);
+            error
+        })
     }
 
     fn deserialize_ignored_any<V>(self, _visitor: V) -> Result<V::Value>
@@ -252,7 +256,8 @@ impl<'a, 'de> de::Deserializer<'de> for Deserializer<'a> {
 #[cfg(test)]
 mod tests {
     use super::Deserializer;
-    use claim::assert_ok_eq;
+    use claim::{assert_err_eq, assert_ok_eq};
+    use crate::de::{error, Error, Position};
     use serde::{de, de::Visitor, Deserialize};
     use std::fmt;
 
@@ -287,11 +292,50 @@ mod tests {
 
     #[test]
     fn identifier() {
-        let deserializer = Deserializer::new("foo");
+        let deserializer = Deserializer::new("foo", Position::new(1, 2));
 
         assert_ok_eq!(
             Identifier::deserialize(deserializer),
             Identifier("foo".to_owned())
+        );
+    }
+
+    #[test]
+    fn identifier_custom_error() {
+        #[derive(Debug)]
+        struct CustomIdentifier;
+
+        impl<'de> Deserialize<'de> for CustomIdentifier {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: de::Deserializer<'de>,
+            {
+                struct CustomIdentifierVisitor;
+
+                impl<'de> Visitor<'de> for CustomIdentifierVisitor {
+                    type Value = CustomIdentifier;
+
+                    fn expecting(&self, _f: &mut fmt::Formatter) -> fmt::Result {
+                        unimplemented!()
+                    }
+
+                    fn visit_str<E>(self, _value: &str) -> Result<Self::Value, E>
+                    where
+                        E: de::Error,
+                    {
+                        Err(de::Error::custom("foo"))
+                    }
+                }
+
+                deserializer.deserialize_identifier(CustomIdentifierVisitor)
+            }
+        }
+
+        let deserializer = Deserializer::new("foo", Position::new(1, 2));
+
+        assert_err_eq!(
+            CustomIdentifier::deserialize(deserializer),
+            Error::new(error::Kind::Custom("foo".to_string()), Position::new(1, 2))
         );
     }
 }

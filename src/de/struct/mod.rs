@@ -48,11 +48,12 @@ where
             Err(_) => return Ok(None),
         };
         let mut values = tag.next()?;
-        let field = values.next()?.parse_identifier()?;
+        let value = values.next()?;
+        let field = value.parse_identifier()?;
 
         // Only return the result if the field is in the list of possible fields for the struct.
         if let Some(static_field) = self.fields.take(field.as_str()) {
-            let result = seed.deserialize(field::Deserializer::new(&field))?;
+            let result = seed.deserialize(field::Deserializer::new(&field, value.position()))?;
             // Note that these raw values will only live until the next call to `next_key_seed()`, at
             // which point they will be overwritten.
             self.values = Some(values.into_stored());
@@ -104,11 +105,12 @@ where
             Err(_) => return Ok(None),
         };
         let mut values = tag.next()?;
-        let field = values.next()?.parse_identifier()?;
+        let value = values.next()?;
+        let field = value.parse_identifier()?;
 
         // Only return the result if the field is in the list of possible fields for the struct.
         if let Some(static_field) = self.fields.take(field.as_str()) {
-            let key = key_seed.deserialize(field::Deserializer::new(&field))?;
+            let key = key_seed.deserialize(field::Deserializer::new(&field, value.position()))?;
             let stored_tag = tag.into_stored();
             let stored_values = values.into_stored();
             let value = value_seed.deserialize(value::Deserializer::new(
