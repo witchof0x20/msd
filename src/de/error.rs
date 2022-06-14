@@ -149,7 +149,7 @@ impl de::Error for Error {
     fn unknown_variant(variant: &str, expected: &'static [&'static str]) -> Self {
         Self::new(
             Kind::UnknownVariant(variant.to_owned(), expected),
-            Position::new(0, 0)
+            Position::new(0, 0),
         )
     }
 }
