@@ -1,5 +1,8 @@
 use crate::de::Position;
-use serde::{de, de::{Expected, Unexpected}};
+use serde::{
+    de,
+    de::{Expected, Unexpected},
+};
 use std::{fmt, fmt::Display};
 
 #[derive(Clone, Debug, PartialEq)]
@@ -62,7 +65,9 @@ impl Display for Kind {
             Kind::ExpectedIdentifier => formatter.write_str("expected identifier"),
             Kind::Io => formatter.write_str("io error"),
             Kind::Custom(msg) => formatter.write_str(msg),
-            Kind::InvalidType(unexpected, expected) => write!(formatter, "expected {}, found {}", expected, unexpected),
+            Kind::InvalidType(unexpected, expected) => {
+                write!(formatter, "expected {}, found {}", expected, unexpected)
+            }
         }
     }
 }
@@ -93,7 +98,10 @@ impl de::Error for Error {
     }
 
     fn invalid_type(unexpected: Unexpected, expected: &dyn Expected) -> Self {
-        Self::new(Kind::InvalidType(unexpected.to_string(), expected.to_string()), Position::new(0, 0))
+        Self::new(
+            Kind::InvalidType(unexpected.to_string(), expected.to_string()),
+            Position::new(0, 0),
+        )
     }
 }
 
@@ -121,7 +129,7 @@ mod tests {
     use super::{Error, Kind};
     use crate::de::Position;
     use serde::de::Error as SerdeError;
-    use serde::de::{Unexpected};
+    use serde::de::Unexpected;
 
     #[test]
     fn end_of_file() {
@@ -337,25 +345,16 @@ mod tests {
         let mut error = Error::custom("foo");
         error.set_position(Position::new(26, 27));
 
-        assert_eq!(
-            format!(
-                "{}",
-                error
-            ),
-            "foo at line 26 column 27"
-        );
+        assert_eq!(format!("{}", error), "foo at line 26 column 27");
     }
 
     #[test]
     fn invalid_type() {
         let mut error = Error::invalid_type(Unexpected::Bool(true), &"foo");
         error.set_position(Position::new(27, 28));
-        
+
         assert_eq!(
-            format!(
-                "{}",
-                error
-            ),
+            format!("{}", error),
             "expected foo, found boolean `true` at line 27 column 28"
         );
     }
