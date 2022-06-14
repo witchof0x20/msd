@@ -34,6 +34,7 @@ pub enum Kind {
     Io,
     Custom(String),
     InvalidType(String, String),
+    InvalidValue(String, String),
 }
 
 impl Display for Kind {
@@ -72,6 +73,13 @@ impl Display for Kind {
                     expected, unexpected
                 )
             }
+            Kind::InvalidValue(unexpected, expected) => {
+                write!(
+                    formatter,
+                    "invalid value: expected {}, found {}",
+                    expected, unexpected
+                )
+            }
         }
     }
 }
@@ -104,6 +112,13 @@ impl de::Error for Error {
     fn invalid_type(unexpected: Unexpected, expected: &dyn Expected) -> Self {
         Self::new(
             Kind::InvalidType(unexpected.to_string(), expected.to_string()),
+            Position::new(0, 0),
+        )
+    }
+
+    fn invalid_value(unexpected: Unexpected, expected: &dyn Expected) -> Self {
+        Self::new(
+            Kind::InvalidValue(unexpected.to_string(), expected.to_string()),
             Position::new(0, 0),
         )
     }
@@ -360,6 +375,17 @@ mod tests {
         assert_eq!(
             format!("{}", error),
             "invalid type: expected foo, found boolean `true` at line 27 column 28"
+        );
+    }
+
+    #[test]
+    fn invalid_value() {
+        let mut error = Error::invalid_value(Unexpected::Bool(true), &"foo");
+        error.set_position(Position::new(28, 29));
+
+        assert_eq!(
+            format!("{}", error),
+            "invalid value: expected foo, found boolean `true` at line 28 column 29"
         );
     }
 
