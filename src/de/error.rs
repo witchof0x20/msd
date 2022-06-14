@@ -37,6 +37,7 @@ pub enum Kind {
     InvalidValue(String, String),
     InvalidLength(usize, String),
     UnknownVariant(String, &'static [&'static str]),
+    UnknownField(String, &'static [&'static str]),
 }
 
 impl Display for Kind {
@@ -96,6 +97,14 @@ impl Display for Kind {
                     variant, expected
                 )
             }
+
+            Kind::UnknownField(field, expected) => {
+                write!(
+                    formatter,
+                    "unknown field {}, expected one of {:?}",
+                    field, expected
+                )
+            }
         }
     }
 }
@@ -149,6 +158,13 @@ impl de::Error for Error {
     fn unknown_variant(variant: &str, expected: &'static [&'static str]) -> Self {
         Self::new(
             Kind::UnknownVariant(variant.to_owned(), expected),
+            Position::new(0, 0),
+        )
+    }
+
+    fn unknown_field(field: &str, expected: &'static [&'static str]) -> Self {
+        Self::new(
+            Kind::UnknownField(field.to_owned(), expected),
             Position::new(0, 0),
         )
     }
@@ -439,6 +455,18 @@ mod tests {
         assert_eq!(
             format!("{}", error),
             "unknown variant baz, expected one of [\"foo\", \"bar\"] at line 30 column 31"
+        );
+    }
+
+    #[test]
+    fn unknown_field() {
+        static EXPECTED: &'static [&'static str] = &["foo", "bar"];
+        let mut error = Error::unknown_field("baz", EXPECTED);
+        error.set_position(Position::new(31, 32));
+
+        assert_eq!(
+            format!("{}", error),
+            "unknown field baz, expected one of [\"foo\", \"bar\"] at line 31 column 32"
         );
     }
 
