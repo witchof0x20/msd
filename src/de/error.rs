@@ -38,6 +38,7 @@ pub enum Kind {
     InvalidLength(usize, String),
     UnknownVariant(String, &'static [&'static str]),
     UnknownField(String, &'static [&'static str]),
+    MissingField(&'static str),
 }
 
 impl Display for Kind {
@@ -105,6 +106,9 @@ impl Display for Kind {
                     field, expected
                 )
             }
+            Kind::MissingField(field) => {
+                write!(formatter, "missing field {}", field)
+            }
         }
     }
 }
@@ -167,6 +171,10 @@ impl de::Error for Error {
             Kind::UnknownField(field.to_owned(), expected),
             Position::new(0, 0),
         )
+    }
+
+    fn missing_field(field: &'static str) -> Self {
+        Self::new(Kind::MissingField(field), Position::new(0, 0))
     }
 }
 
@@ -460,13 +468,23 @@ mod tests {
 
     #[test]
     fn unknown_field() {
-        static EXPECTED: &'static [&'static str] = &["foo", "bar"];
-        let mut error = Error::unknown_field("baz", EXPECTED);
+        let mut error = Error::unknown_field("baz", &["foo", "bar"]);
         error.set_position(Position::new(31, 32));
 
         assert_eq!(
             format!("{}", error),
             "unknown field baz, expected one of [\"foo\", \"bar\"] at line 31 column 32"
+        );
+    }
+
+    #[test]
+    fn missing_field() {
+        let mut error = Error::missing_field("foo");
+        error.set_position(Position::new(32, 33));
+
+        assert_eq!(
+            format!("{}", error),
+            "missing field foo at line 32 column 33"
         );
     }
 
