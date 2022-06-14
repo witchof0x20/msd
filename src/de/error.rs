@@ -66,7 +66,11 @@ impl Display for Kind {
             Kind::Io => formatter.write_str("io error"),
             Kind::Custom(msg) => formatter.write_str(msg),
             Kind::InvalidType(unexpected, expected) => {
-                write!(formatter, "expected {}, found {}", expected, unexpected)
+                write!(
+                    formatter,
+                    "invalid type: expected {}, found {}",
+                    expected, unexpected
+                )
             }
         }
     }
@@ -355,7 +359,7 @@ mod tests {
 
         assert_eq!(
             format!("{}", error),
-            "expected foo, found boolean `true` at line 27 column 28"
+            "invalid type: expected foo, found boolean `true` at line 27 column 28"
         );
     }
 
