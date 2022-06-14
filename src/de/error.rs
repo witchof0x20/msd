@@ -39,6 +39,7 @@ pub enum Kind {
     UnknownVariant(String, &'static [&'static str]),
     UnknownField(String, &'static [&'static str]),
     MissingField(&'static str),
+    DuplicateField(&'static str),
 }
 
 impl Display for Kind {
@@ -109,6 +110,10 @@ impl Display for Kind {
             Kind::MissingField(field) => {
                 write!(formatter, "missing field {}", field)
             }
+
+            Kind::DuplicateField(field) => {
+                write!(formatter, "duplicate field {}", field)
+            }
         }
     }
 }
@@ -175,6 +180,10 @@ impl de::Error for Error {
 
     fn missing_field(field: &'static str) -> Self {
         Self::new(Kind::MissingField(field), Position::new(0, 0))
+    }
+
+    fn duplicate_field(field: &'static str) -> Self {
+        Self::new(Kind::DuplicateField(field), Position::new(0, 0))
     }
 }
 
@@ -485,6 +494,17 @@ mod tests {
         assert_eq!(
             format!("{}", error),
             "missing field foo at line 32 column 33"
+        );
+    }
+
+    #[test]
+    fn duplicate_field() {
+        let mut error = Error::duplicate_field("foo");
+        error.set_position(Position::new(33, 34));
+
+        assert_eq!(
+            format!("{}", error),
+            "duplicate field foo at line 33 column 34"
         );
     }
 
