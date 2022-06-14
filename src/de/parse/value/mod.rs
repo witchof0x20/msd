@@ -2,7 +2,7 @@ mod clean;
 mod trim;
 
 use super::utf8_char_width::utf8_char_width;
-use crate::de::{error, Error, Result};
+use crate::de::{error, Error, Position, Result};
 use arrayvec::ArrayVec;
 use clean::Clean;
 use either::Either;
@@ -303,115 +303,102 @@ where
 #[derive(Debug, PartialEq)]
 pub(in crate::de) struct Value<'a> {
     bytes: &'a [u8],
-    line: usize,
-    column: usize,
+    position: Position,
 }
 
 impl<'a> Value<'a> {
-    pub(in crate::de) fn new(bytes: &'a [u8], line: usize, column: usize) -> Self {
-        Self {
-            bytes,
-            line,
-            column,
-        }
+    pub(in crate::de) fn new(bytes: &'a [u8], position: Position) -> Self {
+        Self { bytes, position }
+    }
+
+    pub(in crate::de) fn position(&self) -> Position {
+        self.position
     }
 
     pub(in crate::de) fn parse_bool(&self) -> Result<bool> {
         let mut value = Trim::new(Clean::new(self.bytes));
         match value
             .next()
-            .ok_or_else(|| Error::new(error::Kind::ExpectedBool, self.line, self.column))?
+            .ok_or_else(|| Error::new(error::Kind::ExpectedBool, self.position))?
         {
             b't' => {
                 if parse_ident(value, b"rue") {
                     Ok(true)
                 } else {
-                    Err(Error::new(
-                        error::Kind::ExpectedBool,
-                        self.line,
-                        self.column,
-                    ))
+                    Err(Error::new(error::Kind::ExpectedBool, self.position))
                 }
             }
             b'f' => {
                 if parse_ident(value, b"alse") {
                     Ok(false)
                 } else {
-                    Err(Error::new(
-                        error::Kind::ExpectedBool,
-                        self.line,
-                        self.column,
-                    ))
+                    Err(Error::new(error::Kind::ExpectedBool, self.position))
                 }
             }
-            _ => Err(Error::new(
-                error::Kind::ExpectedBool,
-                self.line,
-                self.column,
-            )),
+            _ => Err(Error::new(error::Kind::ExpectedBool, self.position)),
         }
     }
 
     pub(in crate::de) fn parse_i8(&self) -> Result<i8> {
         parse_signed_integer(Trim::new(Clean::new(self.bytes)))
-            .ok_or_else(|| Error::new(error::Kind::ExpectedI8, self.line, self.column))
+            .ok_or_else(|| Error::new(error::Kind::ExpectedI8, self.position))
     }
 
     pub(in crate::de) fn parse_i16(&self) -> Result<i16> {
         parse_signed_integer(Trim::new(Clean::new(self.bytes)))
-            .ok_or_else(|| Error::new(error::Kind::ExpectedI16, self.line, self.column))
+            .ok_or_else(|| Error::new(error::Kind::ExpectedI16, self.position))
     }
 
     pub(in crate::de) fn parse_i32(&self) -> Result<i32> {
         parse_signed_integer(Trim::new(Clean::new(self.bytes)))
-            .ok_or_else(|| Error::new(error::Kind::ExpectedI32, self.line, self.column))
+            .ok_or_else(|| Error::new(error::Kind::ExpectedI32, self.position))
     }
 
     pub(in crate::de) fn parse_i64(&self) -> Result<i64> {
         parse_signed_integer(Trim::new(Clean::new(self.bytes)))
-            .ok_or_else(|| Error::new(error::Kind::ExpectedI64, self.line, self.column))
+            .ok_or_else(|| Error::new(error::Kind::ExpectedI64, self.position))
     }
 
     #[cfg(has_i128)]
     pub(in crate::de) fn parse_i128(&self) -> Result<i128> {
         parse_signed_integer(Trim::new(Clean::new(self.bytes)))
-            .ok_or_else(|| Error::new(error::Kind::ExpectedI128, self.line, self.column))
+            .ok_or_else(|| Error::new(error::Kind::ExpectedI128, self.position))
     }
 
     pub(in crate::de) fn parse_u8(&self) -> Result<u8> {
         parse_unsigned_integer(Trim::new(Clean::new(self.bytes)))
-            .ok_or_else(|| Error::new(error::Kind::ExpectedU8, self.line, self.column))
+            .ok_or_else(|| Error::new(error::Kind::ExpectedU8, self.position))
     }
 
     pub(in crate::de) fn parse_u16(&self) -> Result<u16> {
         parse_unsigned_integer(Trim::new(Clean::new(self.bytes)))
-            .ok_or_else(|| Error::new(error::Kind::ExpectedU16, self.line, self.column))
+            .ok_or_else(|| Error::new(error::Kind::ExpectedU16, self.position))
     }
 
     pub(in crate::de) fn parse_u32(&self) -> Result<u32> {
         parse_unsigned_integer(Trim::new(Clean::new(self.bytes)))
-            .ok_or_else(|| Error::new(error::Kind::ExpectedU32, self.line, self.column))
+            .ok_or_else(|| Error::new(error::Kind::ExpectedU32, self.position))
     }
 
     pub(in crate::de) fn parse_u64(&self) -> Result<u64> {
         parse_unsigned_integer(Trim::new(Clean::new(self.bytes)))
-            .ok_or_else(|| Error::new(error::Kind::ExpectedU64, self.line, self.column))
+            .ok_or_else(|| Error::new(error::Kind::ExpectedU64, self.position))
     }
 
     #[cfg(has_i128)]
     pub(in crate::de) fn parse_u128(&self) -> Result<u128> {
         parse_unsigned_integer(Trim::new(Clean::new(self.bytes)))
-            .ok_or_else(|| Error::new(error::Kind::ExpectedU128, self.line, self.column))
+            .ok_or_else(|| Error::new(error::Kind::ExpectedU128, self.position))
     }
 
     pub(in crate::de) fn parse_f32(&self) -> Result<f32> {
         parse_float(Trim::new(Clean::new(self.bytes)).map(|b| b.to_ascii_lowercase()))
-            .ok_or_else(|| Error::new(error::Kind::ExpectedF32, self.line, self.column))
+            .ok_or_else(|| Error::new(error::Kind::ExpectedF32, self.position))
     }
 
     pub(in crate::de) fn parse_f64(&self) -> Result<f64> {
         parse_float(Trim::new(Clean::new(self.bytes)).map(|b| b.to_ascii_lowercase()))
-            .ok_or_else(|| Error::new(error::Kind::ExpectedF64, self.line, self.column))
+            .ok_or_else(|| Error::new(error::Kind::ExpectedF64, self.position))
     }
 
     pub(in crate::de) fn parse_char(&self) -> Result<char> {
@@ -425,30 +412,18 @@ impl<'a> Value<'a> {
             if let Some(byte) = value.next() {
                 byte
             } else {
-                return Err(Error::new(
-                    error::Kind::ExpectedChar,
-                    self.line,
-                    self.column,
-                ));
+                return Err(Error::new(error::Kind::ExpectedChar, self.position));
             }
         };
 
         let width = utf8_char_width(first_byte);
         if width == 0 {
-            Err(Error::new(
-                error::Kind::ExpectedChar,
-                self.line,
-                self.column,
-            ))
+            Err(Error::new(error::Kind::ExpectedChar, self.position))
         } else if width == 1 {
             if value.next().is_none() {
                 Ok(first_byte as char)
             } else {
-                Err(Error::new(
-                    error::Kind::ExpectedChar,
-                    self.line,
-                    self.column,
-                ))
+                Err(Error::new(error::Kind::ExpectedChar, self.position))
             }
         } else {
             let mut buffer = ArrayVec::<_, 4>::new();
@@ -466,25 +441,21 @@ impl<'a> Value<'a> {
             }
             if value.next().is_none() && buffer.len() == width {
                 Ok(str::from_utf8(buffer.as_slice())
-                    .map_err(|_| Error::new(error::Kind::ExpectedChar, self.line, self.column))
+                    .map_err(|_| Error::new(error::Kind::ExpectedChar, self.position))
                     .map(|s|
                         // SAFETY: Since `from_utf8()` returned a string, we can guarantee it has exactly
                         // one value, since the width indicated by the first byte was exactly the length of
                         // the input and the input was nonempty.
                         Ok(unsafe { s.chars().next().unwrap_unchecked() }))?)?
             } else {
-                Err(Error::new(
-                    error::Kind::ExpectedChar,
-                    self.line,
-                    self.column,
-                ))
+                Err(Error::new(error::Kind::ExpectedChar, self.position))
             }
         }
     }
 
     pub(in crate::de) fn parse_string(&self) -> Result<String> {
         String::from_utf8(Clean::new(self.bytes).collect::<Vec<u8>>())
-            .map_err(|_| Error::new(error::Kind::ExpectedString, self.line, self.column))
+            .map_err(|_| Error::new(error::Kind::ExpectedString, self.position))
     }
 
     pub(in crate::de) fn parse_byte_buf(&self) -> Vec<u8> {
@@ -496,578 +467,605 @@ impl<'a> Value<'a> {
         if Clean::new(self.bytes).all(|b| b.is_ascii_whitespace()) {
             Ok(())
         } else {
-            Err(Error::new(
-                error::Kind::ExpectedUnit,
-                self.line,
-                self.column,
-            ))
+            Err(Error::new(error::Kind::ExpectedUnit, self.position))
         }
     }
 
     pub(in crate::de) fn parse_identifier(&self) -> Result<String> {
         String::from_utf8(Trim::new(Clean::new(self.bytes)).collect::<Vec<u8>>())
-            .map_err(|_| Error::new(error::Kind::ExpectedIdentifier, self.line, self.column))
+            .map_err(|_| Error::new(error::Kind::ExpectedIdentifier, self.position))
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::Value;
-    use crate::de::{error, Error};
+    use crate::de::{error, Error, Position};
     use claim::{assert_err_eq, assert_ok, assert_ok_eq};
 
     #[test]
+    fn get_position() {
+        let value = Value::new(b"", Position::new(1, 2));
+
+        assert_eq!(value.position(), Position::new(1, 2));
+    }
+
+    #[test]
     fn parse_bool_true() {
-        let value = Value::new(b"true", 0, 0);
+        let value = Value::new(b"true", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_bool(), true);
     }
 
     #[test]
     fn parse_bool_false() {
-        let value = Value::new(b"false", 0, 0);
+        let value = Value::new(b"false", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_bool(), false);
     }
 
     #[test]
     fn parse_bool_invalid() {
-        let value = Value::new(b"not a bool", 0, 0);
+        let value = Value::new(b"not a bool", Position::new(0, 0));
 
         assert_err_eq!(
             value.parse_bool(),
-            Error::new(error::Kind::ExpectedBool, 0, 0)
+            Error::new(error::Kind::ExpectedBool, Position::new(0, 0))
         );
     }
 
     #[test]
     fn parse_i8_positive() {
-        let value = Value::new(b"42", 0, 0);
+        let value = Value::new(b"42", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_i8(), 42);
     }
 
     #[test]
     fn parse_i8_negative() {
-        let value = Value::new(b"-42", 0, 0);
+        let value = Value::new(b"-42", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_i8(), -42);
     }
 
     #[test]
     fn parse_i8_zero() {
-        let value = Value::new(b"0", 0, 0);
+        let value = Value::new(b"0", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_i8(), 0);
     }
 
     #[test]
     fn parse_i8_positive_overflow() {
-        let value = Value::new(b"128", 0, 0);
+        let value = Value::new(b"128", Position::new(0, 0));
 
-        assert_err_eq!(value.parse_i8(), Error::new(error::Kind::ExpectedI8, 0, 0));
+        assert_err_eq!(
+            value.parse_i8(),
+            Error::new(error::Kind::ExpectedI8, Position::new(0, 0))
+        );
     }
 
     #[test]
     fn parse_i8_negative_overflow() {
-        let value = Value::new(b"-129", 0, 0);
+        let value = Value::new(b"-129", Position::new(0, 0));
 
-        assert_err_eq!(value.parse_i8(), Error::new(error::Kind::ExpectedI8, 0, 0));
+        assert_err_eq!(
+            value.parse_i8(),
+            Error::new(error::Kind::ExpectedI8, Position::new(0, 0))
+        );
     }
 
     #[test]
     fn parse_i8_invalid() {
-        let value = Value::new(b"invalid", 0, 0);
+        let value = Value::new(b"invalid", Position::new(0, 0));
 
-        assert_err_eq!(value.parse_i8(), Error::new(error::Kind::ExpectedI8, 0, 0));
+        assert_err_eq!(
+            value.parse_i8(),
+            Error::new(error::Kind::ExpectedI8, Position::new(0, 0))
+        );
     }
 
     #[test]
     fn parse_i8_whitespace() {
-        let value = Value::new(b"  42 \n", 0, 0);
+        let value = Value::new(b"  42 \n", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_i8(), 42);
     }
 
     #[test]
     fn parse_i16_positive() {
-        let value = Value::new(b"42", 0, 0);
+        let value = Value::new(b"42", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_i16(), 42);
     }
 
     #[test]
     fn parse_i16_negative() {
-        let value = Value::new(b"-42", 0, 0);
+        let value = Value::new(b"-42", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_i16(), -42);
     }
 
     #[test]
     fn parse_i16_zero() {
-        let value = Value::new(b"0", 0, 0);
+        let value = Value::new(b"0", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_i16(), 0);
     }
 
     #[test]
     fn parse_i16_positive_overflow() {
-        let value = Value::new(b"32768", 0, 0);
+        let value = Value::new(b"32768", Position::new(0, 0));
 
         assert_err_eq!(
             value.parse_i16(),
-            Error::new(error::Kind::ExpectedI16, 0, 0)
+            Error::new(error::Kind::ExpectedI16, Position::new(0, 0))
         );
     }
 
     #[test]
     fn parse_i16_negative_overflow() {
-        let value = Value::new(b"-32769", 0, 0);
+        let value = Value::new(b"-32769", Position::new(0, 0));
 
         assert_err_eq!(
             value.parse_i16(),
-            Error::new(error::Kind::ExpectedI16, 0, 0)
+            Error::new(error::Kind::ExpectedI16, Position::new(0, 0))
         );
     }
 
     #[test]
     fn parse_i16_invalid() {
-        let value = Value::new(b"invalid", 0, 0);
+        let value = Value::new(b"invalid", Position::new(0, 0));
 
         assert_err_eq!(
             value.parse_i16(),
-            Error::new(error::Kind::ExpectedI16, 0, 0)
+            Error::new(error::Kind::ExpectedI16, Position::new(0, 0))
         );
     }
 
     #[test]
     fn parse_i16_whitespace() {
-        let value = Value::new(b"  42 \n", 0, 0);
+        let value = Value::new(b"  42 \n", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_i16(), 42);
     }
 
     #[test]
     fn parse_i32_positive() {
-        let value = Value::new(b"42", 0, 0);
+        let value = Value::new(b"42", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_i32(), 42);
     }
 
     #[test]
     fn parse_i32_negative() {
-        let value = Value::new(b"-42", 0, 0);
+        let value = Value::new(b"-42", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_i32(), -42);
     }
 
     #[test]
     fn parse_i32_zero() {
-        let value = Value::new(b"0", 0, 0);
+        let value = Value::new(b"0", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_i32(), 0);
     }
 
     #[test]
     fn parse_i32_positive_overflow() {
-        let value = Value::new(b"2147483648", 0, 0);
+        let value = Value::new(b"2147483648", Position::new(0, 0));
 
         assert_err_eq!(
             value.parse_i32(),
-            Error::new(error::Kind::ExpectedI32, 0, 0)
+            Error::new(error::Kind::ExpectedI32, Position::new(0, 0))
         );
     }
 
     #[test]
     fn parse_i32_negative_overflow() {
-        let value = Value::new(b"-2147483649", 0, 0);
+        let value = Value::new(b"-2147483649", Position::new(0, 0));
 
         assert_err_eq!(
             value.parse_i32(),
-            Error::new(error::Kind::ExpectedI32, 0, 0)
+            Error::new(error::Kind::ExpectedI32, Position::new(0, 0))
         );
     }
 
     #[test]
     fn parse_i32_invalid() {
-        let value = Value::new(b"invalid", 0, 0);
+        let value = Value::new(b"invalid", Position::new(0, 0));
 
         assert_err_eq!(
             value.parse_i32(),
-            Error::new(error::Kind::ExpectedI32, 0, 0)
+            Error::new(error::Kind::ExpectedI32, Position::new(0, 0))
         );
     }
 
     #[test]
     fn parse_i32_whitespace() {
-        let value = Value::new(b"  42 \n", 0, 0);
+        let value = Value::new(b"  42 \n", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_i32(), 42);
     }
 
     #[test]
     fn parse_i64_positive() {
-        let value = Value::new(b"42", 0, 0);
+        let value = Value::new(b"42", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_i64(), 42);
     }
 
     #[test]
     fn parse_i64_negative() {
-        let value = Value::new(b"-42", 0, 0);
+        let value = Value::new(b"-42", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_i64(), -42);
     }
 
     #[test]
     fn parse_i64_zero() {
-        let value = Value::new(b"0", 0, 0);
+        let value = Value::new(b"0", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_i64(), 0);
     }
 
     #[test]
     fn parse_i64_positive_overflow() {
-        let value = Value::new(b"9223372036854775808", 0, 0);
+        let value = Value::new(b"9223372036854775808", Position::new(0, 0));
 
         assert_err_eq!(
             value.parse_i64(),
-            Error::new(error::Kind::ExpectedI64, 0, 0)
+            Error::new(error::Kind::ExpectedI64, Position::new(0, 0))
         );
     }
 
     #[test]
     fn parse_i64_negative_overflow() {
-        let value = Value::new(b"-9223372036854775809", 0, 0);
+        let value = Value::new(b"-9223372036854775809", Position::new(0, 0));
 
         assert_err_eq!(
             value.parse_i64(),
-            Error::new(error::Kind::ExpectedI64, 0, 0)
+            Error::new(error::Kind::ExpectedI64, Position::new(0, 0))
         );
     }
 
     #[test]
     fn parse_i64_invalid() {
-        let value = Value::new(b"invalid", 0, 0);
+        let value = Value::new(b"invalid", Position::new(0, 0));
 
         assert_err_eq!(
             value.parse_i64(),
-            Error::new(error::Kind::ExpectedI64, 0, 0)
+            Error::new(error::Kind::ExpectedI64, Position::new(0, 0))
         );
     }
 
     #[test]
     fn parse_i64_whitespace() {
-        let value = Value::new(b"  42 \n", 0, 0);
+        let value = Value::new(b"  42 \n", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_i64(), 42);
     }
 
     #[test]
     fn parse_i128_positive() {
-        let value = Value::new(b"42", 0, 0);
+        let value = Value::new(b"42", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_i128(), 42);
     }
 
     #[test]
     fn parse_i128_negative() {
-        let value = Value::new(b"-42", 0, 0);
+        let value = Value::new(b"-42", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_i128(), -42);
     }
 
     #[test]
     fn parse_i128_zero() {
-        let value = Value::new(b"0", 0, 0);
+        let value = Value::new(b"0", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_i128(), 0);
     }
 
     #[test]
     fn parse_i128_positive_overflow() {
-        let value = Value::new(b"170141183460469231731687303715884105728", 0, 0);
+        let value = Value::new(
+            b"170141183460469231731687303715884105728",
+            Position::new(0, 0),
+        );
 
         assert_err_eq!(
             value.parse_i128(),
-            Error::new(error::Kind::ExpectedI128, 0, 0)
+            Error::new(error::Kind::ExpectedI128, Position::new(0, 0))
         );
     }
 
     #[test]
     fn parse_i128_negative_overflow() {
-        let value = Value::new(b"-170141183460469231731687303715884105729", 0, 0);
+        let value = Value::new(
+            b"-170141183460469231731687303715884105729",
+            Position::new(0, 0),
+        );
 
         assert_err_eq!(
             value.parse_i128(),
-            Error::new(error::Kind::ExpectedI128, 0, 0)
+            Error::new(error::Kind::ExpectedI128, Position::new(0, 0))
         );
     }
 
     #[test]
     fn parse_i128_invalid() {
-        let value = Value::new(b"invalid", 0, 0);
+        let value = Value::new(b"invalid", Position::new(0, 0));
 
         assert_err_eq!(
             value.parse_i128(),
-            Error::new(error::Kind::ExpectedI128, 0, 0)
+            Error::new(error::Kind::ExpectedI128, Position::new(0, 0))
         );
     }
 
     #[test]
     fn parse_i128_whitespace() {
-        let value = Value::new(b"  42 \n", 0, 0);
+        let value = Value::new(b"  42 \n", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_i128(), 42);
     }
 
     #[test]
     fn parse_u8() {
-        let value = Value::new(b"42", 0, 0);
+        let value = Value::new(b"42", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_u8(), 42);
     }
 
     #[test]
     fn parse_u8_zero() {
-        let value = Value::new(b"0", 0, 0);
+        let value = Value::new(b"0", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_u8(), 0);
     }
 
     #[test]
     fn parse_u8_overflow() {
-        let value = Value::new(b"256", 0, 0);
+        let value = Value::new(b"256", Position::new(0, 0));
 
-        assert_err_eq!(value.parse_u8(), Error::new(error::Kind::ExpectedU8, 0, 0));
+        assert_err_eq!(
+            value.parse_u8(),
+            Error::new(error::Kind::ExpectedU8, Position::new(0, 0))
+        );
     }
 
     #[test]
     fn parse_u8_invalid() {
-        let value = Value::new(b"invalid", 0, 0);
+        let value = Value::new(b"invalid", Position::new(0, 0));
 
-        assert_err_eq!(value.parse_u8(), Error::new(error::Kind::ExpectedU8, 0, 0));
+        assert_err_eq!(
+            value.parse_u8(),
+            Error::new(error::Kind::ExpectedU8, Position::new(0, 0))
+        );
     }
 
     #[test]
     fn parse_u8_whitespace() {
-        let value = Value::new(b"  42 \n", 0, 0);
+        let value = Value::new(b"  42 \n", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_u8(), 42);
     }
 
     #[test]
     fn parse_u16() {
-        let value = Value::new(b"42", 0, 0);
+        let value = Value::new(b"42", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_u16(), 42);
     }
 
     #[test]
     fn parse_u16_zero() {
-        let value = Value::new(b"0", 0, 0);
+        let value = Value::new(b"0", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_u16(), 0);
     }
 
     #[test]
     fn parse_u16_overflow() {
-        let value = Value::new(b"65536", 0, 0);
+        let value = Value::new(b"65536", Position::new(0, 0));
 
         assert_err_eq!(
             value.parse_u16(),
-            Error::new(error::Kind::ExpectedU16, 0, 0)
+            Error::new(error::Kind::ExpectedU16, Position::new(0, 0))
         );
     }
 
     #[test]
     fn parse_u16_invalid() {
-        let value = Value::new(b"invalid", 0, 0);
+        let value = Value::new(b"invalid", Position::new(0, 0));
 
         assert_err_eq!(
             value.parse_u16(),
-            Error::new(error::Kind::ExpectedU16, 0, 0)
+            Error::new(error::Kind::ExpectedU16, Position::new(0, 0))
         );
     }
 
     #[test]
     fn parse_u16_whitespace() {
-        let value = Value::new(b"  42 \n", 0, 0);
+        let value = Value::new(b"  42 \n", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_u16(), 42);
     }
 
     #[test]
     fn parse_u32() {
-        let value = Value::new(b"42", 0, 0);
+        let value = Value::new(b"42", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_u32(), 42);
     }
 
     #[test]
     fn parse_u32_zero() {
-        let value = Value::new(b"0", 0, 0);
+        let value = Value::new(b"0", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_u32(), 0);
     }
 
     #[test]
     fn parse_u32_overflow() {
-        let value = Value::new(b"4294967296", 0, 0);
+        let value = Value::new(b"4294967296", Position::new(0, 0));
 
         assert_err_eq!(
             value.parse_u32(),
-            Error::new(error::Kind::ExpectedU32, 0, 0)
+            Error::new(error::Kind::ExpectedU32, Position::new(0, 0))
         );
     }
 
     #[test]
     fn parse_u32_invalid() {
-        let value = Value::new(b"invalid", 0, 0);
+        let value = Value::new(b"invalid", Position::new(0, 0));
 
         assert_err_eq!(
             value.parse_u32(),
-            Error::new(error::Kind::ExpectedU32, 0, 0)
+            Error::new(error::Kind::ExpectedU32, Position::new(0, 0))
         );
     }
 
     #[test]
     fn parse_u32_whitespace() {
-        let value = Value::new(b"  42 \n", 0, 0);
+        let value = Value::new(b"  42 \n", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_u32(), 42);
     }
 
     #[test]
     fn parse_u64() {
-        let value = Value::new(b"42", 0, 0);
+        let value = Value::new(b"42", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_u64(), 42);
     }
 
     #[test]
     fn parse_u64_zero() {
-        let value = Value::new(b"0", 0, 0);
+        let value = Value::new(b"0", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_u64(), 0);
     }
 
     #[test]
     fn parse_u64_overflow() {
-        let value = Value::new(b"18446744073709551616", 0, 0);
+        let value = Value::new(b"18446744073709551616", Position::new(0, 0));
 
         assert_err_eq!(
             value.parse_u64(),
-            Error::new(error::Kind::ExpectedU64, 0, 0)
+            Error::new(error::Kind::ExpectedU64, Position::new(0, 0))
         );
     }
 
     #[test]
     fn parse_u64_invalid() {
-        let value = Value::new(b"invalid", 0, 0);
+        let value = Value::new(b"invalid", Position::new(0, 0));
 
         assert_err_eq!(
             value.parse_u64(),
-            Error::new(error::Kind::ExpectedU64, 0, 0)
+            Error::new(error::Kind::ExpectedU64, Position::new(0, 0))
         );
     }
 
     #[test]
     fn parse_u64_whitespace() {
-        let value = Value::new(b"  42 \n", 0, 0);
+        let value = Value::new(b"  42 \n", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_u64(), 42);
     }
 
     #[test]
     fn parse_u128() {
-        let value = Value::new(b"42", 0, 0);
+        let value = Value::new(b"42", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_u128(), 42);
     }
 
     #[test]
     fn parse_u128_zero() {
-        let value = Value::new(b"0", 0, 0);
+        let value = Value::new(b"0", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_u128(), 0);
     }
 
     #[test]
     fn parse_u128_overflow() {
-        let value = Value::new(b"340282366920938463463374607431768211456", 0, 0);
+        let value = Value::new(
+            b"340282366920938463463374607431768211456",
+            Position::new(0, 0),
+        );
 
         assert_err_eq!(
             value.parse_u128(),
-            Error::new(error::Kind::ExpectedU128, 0, 0)
+            Error::new(error::Kind::ExpectedU128, Position::new(0, 0))
         );
     }
 
     #[test]
     fn parse_u128_invalid() {
-        let value = Value::new(b"invalid", 0, 0);
+        let value = Value::new(b"invalid", Position::new(0, 0));
 
         assert_err_eq!(
             value.parse_u128(),
-            Error::new(error::Kind::ExpectedU128, 0, 0)
+            Error::new(error::Kind::ExpectedU128, Position::new(0, 0))
         );
     }
 
     #[test]
     fn parse_u128_whitespace() {
-        let value = Value::new(b"  42 \n", 0, 0);
+        let value = Value::new(b"  42 \n", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_u128(), 42);
     }
 
     #[test]
     fn parse_f32_positive() {
-        let value = Value::new(b"42.9", 0, 0);
+        let value = Value::new(b"42.9", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_f32(), 42.9);
     }
 
     #[test]
     fn parse_f32_negative() {
-        let value = Value::new(b"-42.9", 0, 0);
+        let value = Value::new(b"-42.9", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_f32(), -42.9);
     }
 
     #[test]
     fn parse_f32_zero() {
-        let value = Value::new(b"0", 0, 0);
+        let value = Value::new(b"0", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_f32(), 0.0);
     }
 
     #[test]
     fn parse_f32_positive_overflow() {
-        let value = Value::new(b"3.40282347E+39", 0, 0);
+        let value = Value::new(b"3.40282347E+39", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_f32(), f32::INFINITY,);
     }
 
     #[test]
     fn parse_f32_negative_overflow() {
-        let value = Value::new(b"-3.40282347E+39", 0, 0);
+        let value = Value::new(b"-3.40282347E+39", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_f32(), f32::NEG_INFINITY,);
     }
 
     #[test]
     fn parse_f32_invalid() {
-        let value = Value::new(b"invalid", 0, 0);
+        let value = Value::new(b"invalid", Position::new(0, 0));
 
         assert_err_eq!(
             value.parse_f32(),
-            Error::new(error::Kind::ExpectedF32, 0, 0)
+            Error::new(error::Kind::ExpectedF32, Position::new(0, 0))
         );
     }
 
     #[test]
     fn parse_f32_nan() {
-        let value = Value::new(b"NaN", 0, 0);
+        let value = Value::new(b"NaN", Position::new(0, 0));
 
         let result = assert_ok!(value.parse_f32());
         assert!(result.is_nan());
@@ -1075,7 +1073,7 @@ mod tests {
 
     #[test]
     fn parse_f32_negative_nan() {
-        let value = Value::new(b"-NaN", 0, 0);
+        let value = Value::new(b"-NaN", Position::new(0, 0));
 
         let result = assert_ok!(value.parse_f32());
         assert!(result.is_nan());
@@ -1083,80 +1081,80 @@ mod tests {
 
     #[test]
     fn parse_f32_infinity() {
-        let value = Value::new(b"INF", 0, 0);
+        let value = Value::new(b"INF", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_f32(), f32::INFINITY);
     }
 
     #[test]
     fn parse_f32_negative_infinity() {
-        let value = Value::new(b"-infinity", 0, 0);
+        let value = Value::new(b"-infinity", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_f32(), f32::NEG_INFINITY);
     }
 
     #[test]
     fn parse_f32_whitespace() {
-        let value = Value::new(b"  42.9 \n", 0, 0);
+        let value = Value::new(b"  42.9 \n", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_f32(), 42.9);
     }
 
     #[test]
     fn parse_f64_positive() {
-        let value = Value::new(b"42.9", 0, 0);
+        let value = Value::new(b"42.9", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_f64(), 42.9);
     }
 
     #[test]
     fn parse_f64_negative() {
-        let value = Value::new(b"-42.9", 0, 0);
+        let value = Value::new(b"-42.9", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_f64(), -42.9);
     }
 
     #[test]
     fn parse_f64_zero() {
-        let value = Value::new(b"0", 0, 0);
+        let value = Value::new(b"0", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_f64(), 0.0);
     }
 
     #[test]
     fn parse_f64_positive_overflow() {
-        let value = Value::new(b"1.7976931348623157E+309", 0, 0);
+        let value = Value::new(b"1.7976931348623157E+309", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_f64(), f64::INFINITY,);
     }
 
     #[test]
     fn parse_f64_negative_overflow() {
-        let value = Value::new(b"-1.7976931348623157E+309", 0, 0);
+        let value = Value::new(b"-1.7976931348623157E+309", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_f64(), f64::NEG_INFINITY,);
     }
 
     #[test]
     fn parse_f64_invalid() {
-        let value = Value::new(b"invalid", 0, 0);
+        let value = Value::new(b"invalid", Position::new(0, 0));
 
         assert_err_eq!(
             value.parse_f64(),
-            Error::new(error::Kind::ExpectedF64, 0, 0)
+            Error::new(error::Kind::ExpectedF64, Position::new(0, 0))
         );
     }
 
     #[test]
     fn parse_f64_whitespace() {
-        let value = Value::new(b"  42.9 \n", 0, 0);
+        let value = Value::new(b"  42.9 \n", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_f64(), 42.9);
     }
 
     #[test]
     fn parse_f64_nan() {
-        let value = Value::new(b"NaN", 0, 0);
+        let value = Value::new(b"NaN", Position::new(0, 0));
 
         let result = assert_ok!(value.parse_f64());
         assert!(result.is_nan());
@@ -1164,7 +1162,7 @@ mod tests {
 
     #[test]
     fn parse_f64_negative_nan() {
-        let value = Value::new(b"-NaN", 0, 0);
+        let value = Value::new(b"-NaN", Position::new(0, 0));
 
         let result = assert_ok!(value.parse_f64());
         assert!(result.is_nan());
@@ -1172,219 +1170,219 @@ mod tests {
 
     #[test]
     fn parse_f64_infinity() {
-        let value = Value::new(b"INF", 0, 0);
+        let value = Value::new(b"INF", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_f64(), f64::INFINITY);
     }
 
     #[test]
     fn parse_f64_negative_infinity() {
-        let value = Value::new(b"-infinity", 0, 0);
+        let value = Value::new(b"-infinity", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_f64(), f64::NEG_INFINITY);
     }
 
     #[test]
     fn parse_char() {
-        let value = Value::new(b"a", 0, 0);
+        let value = Value::new(b"a", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_char(), 'a');
     }
 
     #[test]
     fn parse_char_longer() {
-        let value = Value::new(b"\xF0\x9F\x92\xA3", 0, 0);
+        let value = Value::new(b"\xF0\x9F\x92\xA3", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_char(), '💣');
     }
 
     #[test]
     fn parse_char_surrounded_by_whitespace() {
-        let value = Value::new(b"\n \ta  \t", 0, 0);
+        let value = Value::new(b"\n \ta  \t", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_char(), 'a');
     }
 
     #[test]
     fn parse_char_whitespace() {
-        let value = Value::new(b"\t", 0, 0);
+        let value = Value::new(b"\t", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_char(), '\t');
     }
 
     #[test]
     fn parse_char_multiple_whitespaces() {
-        let value = Value::new(b"\t\n", 0, 0);
+        let value = Value::new(b"\t\n", Position::new(0, 0));
 
         // Can't deduce which whitespace character is meant.
         assert_err_eq!(
             value.parse_char(),
-            Error::new(error::Kind::ExpectedChar, 0, 0)
+            Error::new(error::Kind::ExpectedChar, Position::new(0, 0))
         );
     }
 
     #[test]
     fn parse_char_incomplete_char() {
-        let value = Value::new(b"\xF0", 0, 0);
+        let value = Value::new(b"\xF0", Position::new(0, 0));
 
         assert_err_eq!(
             value.parse_char(),
-            Error::new(error::Kind::ExpectedChar, 0, 0)
+            Error::new(error::Kind::ExpectedChar, Position::new(0, 0))
         );
     }
 
     #[test]
     fn parse_char_invalid_first_byte() {
-        let value = Value::new(b"\x92", 0, 0);
+        let value = Value::new(b"\x92", Position::new(0, 0));
 
         assert_err_eq!(
             value.parse_char(),
-            Error::new(error::Kind::ExpectedChar, 0, 0)
+            Error::new(error::Kind::ExpectedChar, Position::new(0, 0))
         );
     }
 
     #[test]
     fn parse_char_multiple_chars() {
-        let value = Value::new(b"abc", 0, 0);
+        let value = Value::new(b"abc", Position::new(0, 0));
 
         assert_err_eq!(
             value.parse_char(),
-            Error::new(error::Kind::ExpectedChar, 0, 0)
+            Error::new(error::Kind::ExpectedChar, Position::new(0, 0))
         );
     }
 
     #[test]
     fn parse_string() {
-        let value = Value::new(b"foo", 0, 0);
+        let value = Value::new(b"foo", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_string(), "foo".to_owned(),);
     }
 
     #[test]
     fn parse_string_escaped() {
-        let value = Value::new(b"\\#foo\\\\bar", 0, 0);
+        let value = Value::new(b"\\#foo\\\\bar", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_string(), "#foo\\bar".to_owned(),);
     }
 
     #[test]
     fn parse_string_comment() {
-        let value = Value::new(b"foo\n// comment\nbar", 0, 0);
+        let value = Value::new(b"foo\n// comment\nbar", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_string(), "foo\n\nbar".to_owned(),);
     }
 
     #[test]
     fn parse_string_fails() {
-        let value = Value::new(b"\xF0\x9Ffoo", 0, 0);
+        let value = Value::new(b"\xF0\x9Ffoo", Position::new(0, 0));
 
         assert_err_eq!(
             value.parse_string(),
-            Error::new(error::Kind::ExpectedString, 0, 0),
+            Error::new(error::Kind::ExpectedString, Position::new(0, 0)),
         );
     }
 
     #[test]
     fn parse_byte_buf() {
-        let value = Value::new(b"foo", 0, 0);
+        let value = Value::new(b"foo", Position::new(0, 0));
 
         assert_eq!(value.parse_byte_buf(), b"foo",);
     }
 
     #[test]
     fn parse_byte_buf_escaped() {
-        let value = Value::new(b"\\#foo\\\\bar", 0, 0);
+        let value = Value::new(b"\\#foo\\\\bar", Position::new(0, 0));
 
         assert_eq!(value.parse_byte_buf(), b"#foo\\bar",);
     }
 
     #[test]
     fn parse_byte_buf_comment() {
-        let value = Value::new(b"foo\n// comment\nbar", 0, 0);
+        let value = Value::new(b"foo\n// comment\nbar", Position::new(0, 0));
 
         assert_eq!(value.parse_byte_buf(), b"foo\n\nbar",);
     }
 
     #[test]
     fn parse_byte_buf_non_ascii() {
-        let value = Value::new(b"\xF0\x9Ffoo", 0, 0);
+        let value = Value::new(b"\xF0\x9Ffoo", Position::new(0, 0));
 
         assert_eq!(value.parse_byte_buf(), b"\xF0\x9Ffoo",);
     }
 
     #[test]
     fn parse_unit() {
-        let value = Value::new(b"", 0, 0);
+        let value = Value::new(b"", Position::new(0, 0));
 
         assert_ok!(value.parse_unit());
     }
 
     #[test]
     fn parse_unit_fails() {
-        let value = Value::new(b"foo", 0, 0);
+        let value = Value::new(b"foo", Position::new(0, 0));
 
         assert_err_eq!(
             value.parse_unit(),
-            Error::new(error::Kind::ExpectedUnit, 0, 0)
+            Error::new(error::Kind::ExpectedUnit, Position::new(0, 0))
         );
     }
 
     #[test]
     fn parse_unit_ignores_whitespace() {
-        let value = Value::new(b"  \n\t ", 0, 0);
+        let value = Value::new(b"  \n\t ", Position::new(0, 0));
 
         assert_ok!(value.parse_unit());
     }
 
     #[test]
     fn parse_unit_ignores_comments() {
-        let value = Value::new(b"//comment\n", 0, 0);
+        let value = Value::new(b"//comment\n", Position::new(0, 0));
 
         assert_ok!(value.parse_unit());
     }
 
     #[test]
     fn parse_identifier() {
-        let value = Value::new(b"foo", 0, 0);
+        let value = Value::new(b"foo", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_identifier(), "foo".to_owned());
     }
 
     #[test]
     fn parse_identifier_escaped() {
-        let value = Value::new(b"foo\\:", 0, 0);
+        let value = Value::new(b"foo\\:", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_identifier(), "foo:".to_owned());
     }
 
     #[test]
     fn parse_identifier_comment() {
-        let value = Value::new(b"foo//comment", 0, 0);
+        let value = Value::new(b"foo//comment", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_identifier(), "foo".to_owned());
     }
 
     #[test]
     fn parse_identifier_trim_whitespace() {
-        let value = Value::new(b" \t foo\n   \n", 0, 0);
+        let value = Value::new(b" \t foo\n   \n", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_identifier(), "foo".to_owned());
     }
 
     #[test]
     fn parse_identifier_whitespace_and_comment() {
-        let value = Value::new(b"foo   //comment", 0, 0);
+        let value = Value::new(b"foo   //comment", Position::new(0, 0));
 
         assert_ok_eq!(value.parse_identifier(), "foo".to_owned());
     }
 
     #[test]
     fn parse_identifier_invalid() {
-        let value = Value::new(b"\xF0\x9Ffoo", 0, 0);
+        let value = Value::new(b"\xF0\x9Ffoo", Position::new(0, 0));
 
         assert_err_eq!(
             value.parse_identifier(),
-            Error::new(error::Kind::ExpectedIdentifier, 0, 0)
+            Error::new(error::Kind::ExpectedIdentifier, Position::new(0, 0))
         );
     }
 }

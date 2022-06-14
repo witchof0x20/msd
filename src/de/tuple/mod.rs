@@ -35,13 +35,13 @@ impl<'a, 'b, 'de> SeqAccess<'de> for Access<'a, 'b> {
 #[cfg(test)]
 mod tests {
     use super::Access;
-    use crate::de::{error, parse::Values, Error};
+    use crate::de::{error, parse::Values, Error, Position};
     use claim::{assert_err_eq, assert_ok, assert_some_eq};
     use serde::de::SeqAccess;
 
     #[test]
     fn empty() {
-        let mut values = Values::new(b"", 0, 0);
+        let mut values = Values::new(b"", Position::new(0, 0));
         // Consume the single unit value, as all values are non-empty.
         assert_ok!(values.next());
         assert_ok!(values.assert_exhausted());
@@ -50,14 +50,14 @@ mod tests {
         assert_some_eq!(access.size_hint(), 0);
         assert_err_eq!(
             access.next_element::<()>(),
-            Error::new(error::Kind::EndOfValues, 0, 0)
+            Error::new(error::Kind::EndOfValues, Position::new(0, 0))
         );
         assert_some_eq!(access.size_hint(), 0);
     }
 
     #[test]
     fn one_value() {
-        let mut values = Values::new(b"42", 0, 0);
+        let mut values = Values::new(b"42", Position::new(0, 0));
         let mut access = Access::new(&mut values, 1);
 
         assert_some_eq!(access.size_hint(), 1);
@@ -65,14 +65,14 @@ mod tests {
         assert_some_eq!(access.size_hint(), 0);
         assert_err_eq!(
             access.next_element::<()>(),
-            Error::new(error::Kind::EndOfValues, 0, 2)
+            Error::new(error::Kind::EndOfValues, Position::new(0, 2))
         );
         assert_some_eq!(access.size_hint(), 0);
     }
 
     #[test]
     fn multiple_values() {
-        let mut values = Values::new(b"foo:42", 0, 0);
+        let mut values = Values::new(b"foo:42", Position::new(0, 0));
         let mut access = Access::new(&mut values, 2);
 
         assert_some_eq!(access.size_hint(), 2);
@@ -85,14 +85,14 @@ mod tests {
         assert_some_eq!(access.size_hint(), 0);
         assert_err_eq!(
             access.next_element::<()>(),
-            Error::new(error::Kind::EndOfValues, 0, 6)
+            Error::new(error::Kind::EndOfValues, Position::new(0, 6))
         );
         assert_some_eq!(access.size_hint(), 0);
     }
 
     #[test]
     fn nested_values() {
-        let mut values = Values::new(b"foo:42::1.2", 0, 0);
+        let mut values = Values::new(b"foo:42::1.2", Position::new(0, 0));
         let mut access = Access::new(&mut values, 3);
 
         assert_some_eq!(access.size_hint(), 3);
@@ -107,7 +107,7 @@ mod tests {
         assert_some_eq!(access.size_hint(), 0);
         assert_err_eq!(
             access.next_element::<()>(),
-            Error::new(error::Kind::EndOfValues, 0, 11)
+            Error::new(error::Kind::EndOfValues, Position::new(0, 11))
         );
         assert_some_eq!(access.size_hint(), 0);
     }
