@@ -35,6 +35,7 @@ pub enum Kind {
     Custom(String),
     InvalidType(String, String),
     InvalidValue(String, String),
+    InvalidLength(usize, String),
 }
 
 impl Display for Kind {
@@ -80,6 +81,13 @@ impl Display for Kind {
                     expected, unexpected
                 )
             }
+            Kind::InvalidLength(length, expected) => {
+                write!(
+                    formatter,
+                    "invalid length {}, expected {}",
+                    length, expected
+                )
+            }
         }
     }
 }
@@ -119,6 +127,13 @@ impl de::Error for Error {
     fn invalid_value(unexpected: Unexpected, expected: &dyn Expected) -> Self {
         Self::new(
             Kind::InvalidValue(unexpected.to_string(), expected.to_string()),
+            Position::new(0, 0),
+        )
+    }
+
+    fn invalid_length(len: usize, expected: &dyn Expected) -> Self {
+        Self::new(
+            Kind::InvalidLength(len, expected.to_string()),
             Position::new(0, 0),
         )
     }
@@ -386,6 +401,17 @@ mod tests {
         assert_eq!(
             format!("{}", error),
             "invalid value: expected foo, found boolean `true` at line 28 column 29"
+        );
+    }
+
+    #[test]
+    fn invalid_length() {
+        let mut error = Error::invalid_length(42, &"foo");
+        error.set_position(Position::new(29, 30));
+
+        assert_eq!(
+            format!("{}", error),
+            "invalid length 42, expected foo at line 29 column 30"
         );
     }
 
