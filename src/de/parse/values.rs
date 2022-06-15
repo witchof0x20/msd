@@ -40,9 +40,6 @@ impl StoredValues {
             escaping_state: EscapingState::None,
             exhausted: self.exhausted,
 
-            started_byte_index: self.current_byte_index,
-            started_position: self.current_position,
-
             current_byte_index: self.current_byte_index,
             current_position: self.current_position,
         }
@@ -57,9 +54,6 @@ pub(in crate::de) struct Values<'a> {
     escaping_state: EscapingState,
     exhausted: bool,
 
-    started_byte_index: usize,
-    started_position: Position,
-
     current_byte_index: usize,
     current_position: Position,
 }
@@ -73,9 +67,6 @@ impl<'a> Values<'a> {
             escaping_state: EscapingState::None,
             exhausted: false,
 
-            started_byte_index: 0,
-            started_position: position,
-
             current_byte_index: 0,
             current_position: position,
         }
@@ -83,8 +74,8 @@ impl<'a> Values<'a> {
 
     pub(in crate::de) fn next(&mut self) -> Result<Value<'a>> {
         let mut value = None;
-        self.started_byte_index = self.current_byte_index;
-        self.started_position = self.current_position;
+        let started_byte_index = self.current_byte_index;
+        let started_position = self.current_position;
         loop {
             if let Some(byte) = self.bytes.get(self.current_byte_index) {
                 if matches!(self.comment_state, CommentState::InComment) {
@@ -105,10 +96,10 @@ impl<'a> Values<'a> {
                                     // determined to be within the bounds of self.bytes.
                                     unsafe {
                                         self.bytes.get_unchecked(
-                                            self.started_byte_index..self.current_byte_index,
+                                            started_byte_index..self.current_byte_index,
                                         )
                                     },
-                                    self.started_position,
+                                    started_position,
                                 ));
                             }
                             b'\\' => {
@@ -146,9 +137,9 @@ impl<'a> Values<'a> {
                     // last value in the slice.
                     unsafe {
                         self.bytes
-                            .get_unchecked(self.started_byte_index..self.current_byte_index)
+                            .get_unchecked(started_byte_index..self.current_byte_index)
                     },
-                    self.started_position,
+                    started_position,
                 ));
             } else {
                 return Err(Error::new(error::Kind::EndOfValues, self.current_position));
