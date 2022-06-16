@@ -2,17 +2,11 @@ use super::{StoredValues, Values};
 use crate::de::{error, Error, Position, Result};
 use std::slice;
 
-#[derive(Debug, PartialEq)]
-enum CommentState {
+enum State {
+    None,
     MaybeEnteringComment,
     InComment,
-    None,
-}
-
-#[derive(Debug, PartialEq)]
-enum EscapingState {
     Escaping,
-    None,
 }
 
 // Tag without the lifetime. Used when storing within an Access.
@@ -41,8 +35,6 @@ impl StoredTag {
             // SAFETY: The lifetime of this slice is guaranteed by the caller.
             bytes: unsafe { slice::from_raw_parts(self.byte_ptr, self.byte_len) },
 
-            comment_state: CommentState::None,
-            escaping_state: EscapingState::None,
             first_values: self.first_values,
 
             current_byte_index: self.current_byte_index,
@@ -65,8 +57,6 @@ pub(in crate::de) struct Tag<'a> {
     // Should contain all bytes except the leading `#`.
     bytes: &'a [u8],
 
-    comment_state: CommentState,
-    escaping_state: EscapingState,
     first_values: bool,
 
     current_byte_index: usize,
@@ -82,8 +72,6 @@ impl<'a> Tag<'a> {
         Self {
             bytes,
 
-            comment_state: CommentState::None,
-            escaping_state: EscapingState::None,
             first_values: true,
 
             current_byte_index: 0,
@@ -103,22 +91,14 @@ impl<'a> Tag<'a> {
         let mut values = None;
         let started_byte_index = self.current_byte_index;
         let started_position = self.current_position;
+        let mut state = State::None;
         let mut encountered_non_whitespace = false;
         let mut last_byte_newline = false;
         loop {
             if let Some(byte) = self.bytes.get(self.current_byte_index) {
                 // Process byte.
-                // Check if in comment.
-                if matches!(self.comment_state, CommentState::InComment) {
-                    // Consume bytes until we are on a new line.
-                    if matches!(byte, b'\n') {
-                        self.comment_state = CommentState::None;
-                    }
-                } else {
-                    // Check if current character is escaped.
-                    if matches!(self.escaping_state, EscapingState::Escaping) {
-                        self.escaping_state = EscapingState::None;
-                    } else {
+                match state {
+                    State::None => {
                         match byte {
                             b';' => {
                                 // This is the end of a `Values`.
@@ -135,19 +115,49 @@ impl<'a> Tag<'a> {
                             }
                             b'\\' => {
                                 // Enter an escaping state.
-                                self.escaping_state = EscapingState::Escaping;
+                                state = State::Escaping;
                             }
                             b'/' => {
-                                // Handle comment state.
-                                if matches!(self.comment_state, CommentState::MaybeEnteringComment)
-                                {
-                                    self.comment_state = CommentState::InComment;
-                                } else {
-                                    self.comment_state = CommentState::MaybeEnteringComment;
-                                }
+                                state = State::MaybeEnteringComment;
                             }
                             _ => {}
                         }
+                    }
+                    State::MaybeEnteringComment => {
+                        match byte {
+                            b';' => {
+                                // This is the end of a `Values`.
+                                values = Some(Values::new(
+                                    // SAFETY: Both ends of the range used here have already been
+                                    // determined to be within the bounds of self.bytes.
+                                    unsafe {
+                                        self.bytes.get_unchecked(
+                                            started_byte_index..self.current_byte_index,
+                                        )
+                                    },
+                                    started_position,
+                                ));
+                            }
+                            b'\\' => {
+                                // Enter an escaping state.
+                                state = State::Escaping;
+                            }
+                            b'/' => {
+                                state = State::InComment;
+                            }
+                            _ => {
+                                state = State::None;
+                            }
+                        }
+                    }
+                    State::InComment => {
+                        // Consume bytes until we are on a new line.
+                        if matches!(byte, b'\n') {
+                            state = State::None;
+                        }
+                    }
+                    State::Escaping => {
+                        state = State::None;
                     }
                 }
                 if !byte.is_ascii_whitespace() {
