@@ -45,9 +45,6 @@ impl StoredTag {
             escaping_state: EscapingState::None,
             first_values: self.first_values,
 
-            started_byte_index: self.current_byte_index,
-            started_position: self.current_position,
-
             current_byte_index: self.current_byte_index,
             current_position: self.current_position,
 
@@ -72,10 +69,6 @@ pub(in crate::de) struct Tag<'a> {
     escaping_state: EscapingState,
     first_values: bool,
 
-    started_byte_index: usize,
-    // The position includes the implicit leading `#`. In reality, `bytes` starts at `column + 1`.
-    started_position: Position,
-
     current_byte_index: usize,
     current_position: Position,
 
@@ -93,9 +86,6 @@ impl<'a> Tag<'a> {
             escaping_state: EscapingState::None,
             first_values: true,
 
-            started_byte_index: 0,
-            started_position: position.increment_column(),
-
             current_byte_index: 0,
             current_position: position.increment_column(),
 
@@ -111,8 +101,8 @@ impl<'a> Tag<'a> {
         }
 
         let mut values = None;
-        self.started_byte_index = self.current_byte_index;
-        self.started_position = self.current_position;
+        let started_byte_index = self.current_byte_index;
+        let started_position = self.current_position;
         let mut encountered_non_whitespace = false;
         let mut last_byte_newline = false;
         loop {
@@ -137,10 +127,10 @@ impl<'a> Tag<'a> {
                                     // determined to be within the bounds of self.bytes.
                                     unsafe {
                                         self.bytes.get_unchecked(
-                                            self.started_byte_index..self.current_byte_index,
+                                            started_byte_index..self.current_byte_index,
                                         )
                                     },
-                                    self.started_position,
+                                    started_position,
                                 ));
                             }
                             b'\\' => {
@@ -188,9 +178,9 @@ impl<'a> Tag<'a> {
                         // last value in the slice.
                         unsafe {
                             self.bytes
-                                .get_unchecked(self.started_byte_index..ending_byte_index)
+                                .get_unchecked(started_byte_index..ending_byte_index)
                         },
-                        self.started_position,
+                        started_position,
                     ));
                 }
                 return Err(Error::new(error::Kind::EndOfTag, self.current_position));
@@ -200,7 +190,6 @@ impl<'a> Tag<'a> {
 
     pub(in crate::de) fn reset(&mut self) {
         self.first_values = true;
-        self.started_position = self.origin_position.increment_column();
         self.current_byte_index = 0;
         self.current_position = self.origin_position.increment_column();
     }
