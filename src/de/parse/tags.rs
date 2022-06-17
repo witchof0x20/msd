@@ -64,7 +64,7 @@ where
                 unsafe { revisit.into_tag() },
             );
         }
-        
+
         let mut state = State::None;
         let mut end_of_values = false;
         let mut starting_new_line = false;
@@ -113,21 +113,19 @@ where
                             }
                         }
                     }
-                    State::MaybeEnteringComment => {
-                        match byte {
-                            b'/' => {
-                                state = State::InComment;
-                            }
-                            _ => {
-                                let error = Error::new(
-                                    error::Kind::ExpectedTag,
-                                    self.current_position.decrement_column(),
-                                );
-                                self.encountered_error = Some(error.clone());
-                                return Err(error);
-                            }
+                    State::MaybeEnteringComment => match byte {
+                        b'/' => {
+                            state = State::InComment;
                         }
-                    }
+                        _ => {
+                            let error = Error::new(
+                                error::Kind::ExpectedTag,
+                                self.current_position.decrement_column(),
+                            );
+                            self.encountered_error = Some(error.clone());
+                            return Err(error);
+                        }
+                    },
                     State::InComment => {
                         // Consume bytes until we are on a new line.
                         if matches!(byte, b'\n') {
@@ -310,21 +308,19 @@ where
                             }
                         }
                     }
-                    State::MaybeEnteringComment => {
-                        match byte {
-                            b'/' => {
-                                state = State::InComment;
-                            }
-                            _ => {
-                                let error = Error::new(
-                                    error::Kind::ExpectedTag,
-                                    self.current_position.decrement_column(),
-                                );
-                                self.encountered_error = Some(error.clone());
-                                return Err(error);
-                            }
+                    State::MaybeEnteringComment => match byte {
+                        b'/' => {
+                            state = State::InComment;
                         }
-                    }
+                        _ => {
+                            let error = Error::new(
+                                error::Kind::ExpectedTag,
+                                self.current_position.decrement_column(),
+                            );
+                            self.encountered_error = Some(error.clone());
+                            return Err(error);
+                        }
+                    },
                     State::InComment => {
                         // Consume bytes until we are on a new line.
                         if matches!(byte, b'\n') {
