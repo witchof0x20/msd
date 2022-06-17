@@ -14,7 +14,6 @@ pub(in crate::de) struct Tags<R> {
     reader: Bytes<R>,
 
     buffer: Vec<u8>,
-    started_position: Position,
 
     first_tag: bool,
 
@@ -35,7 +34,6 @@ where
             reader: reader.bytes(),
 
             buffer: Vec::with_capacity(1024),
-            started_position: Position::new(0, 0),
 
             first_tag: true,
 
@@ -70,6 +68,7 @@ where
         let mut state = State::None;
         let mut end_of_values = false;
         let mut starting_new_line = false;
+        let mut started_position = self.current_position;
 
         // Find the first tag, if necessary.
         if self.first_tag {
@@ -96,7 +95,7 @@ where
                     State::None => {
                         match byte {
                             b'#' => {
-                                self.started_position = self.current_position;
+                                started_position = self.current_position;
                                 self.current_position = self.current_position.increment_column();
                                 break;
                             }
@@ -169,7 +168,7 @@ where
                         self.encountered_error = Some(error.clone());
                         return Err(error);
                     } else {
-                        return Ok(Tag::new(&self.buffer, self.started_position));
+                        return Ok(Tag::new(&self.buffer, started_position));
                     }
                 }
             };
@@ -187,8 +186,6 @@ where
                             // be escaped.
                             if starting_new_line || end_of_values {
                                 // Entering a new tag. Return the previous one.
-                                let started_position = self.started_position;
-                                self.started_position = self.current_position;
                                 return Ok(Tag::new(&self.buffer, started_position));
                             }
                             end_of_values = false;
@@ -221,8 +218,6 @@ where
                             // be escaped.
                             if starting_new_line {
                                 // Entering a new tag. Return the previous one.
-                                let started_position = self.started_position;
-                                self.started_position = self.current_position;
                                 return Ok(Tag::new(&self.buffer, started_position));
                             }
                             state = State::None;
@@ -299,7 +294,6 @@ where
                     State::None => {
                         match byte {
                             b'#' => {
-                                self.started_position = self.current_position;
                                 break;
                             }
                             b'/' => {
@@ -373,7 +367,7 @@ where
         } else {
             Err(Error::new(
                 error::Kind::UnexpectedTag,
-                self.started_position,
+                self.current_position,
             ))
         }
     }
