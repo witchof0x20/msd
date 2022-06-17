@@ -10,12 +10,6 @@ enum State {
 }
 
 #[derive(Debug)]
-enum NewlineState {
-    StartingNewline,
-    None,
-}
-
-#[derive(Debug)]
 pub(in crate::de) struct Tags<R> {
     reader: Bytes<R>,
 
@@ -23,7 +17,6 @@ pub(in crate::de) struct Tags<R> {
     started_position: Position,
 
     first_tag: bool,
-    newline_state: NewlineState,
 
     current_position: Position,
 
@@ -45,7 +38,6 @@ where
             started_position: Position::new(0, 0),
 
             first_tag: true,
-            newline_state: NewlineState::StartingNewline,
 
             current_position: Position::new(0, 0),
 
@@ -77,6 +69,7 @@ where
         
         let mut state = State::None;
         let mut end_of_values = false;
+        let mut starting_new_line = false;
 
         // Find the first tag, if necessary.
         if self.first_tag {
@@ -146,12 +139,6 @@ where
                 }
 
                 if matches!(byte, b'\n') {
-                    self.newline_state = NewlineState::StartingNewline;
-                } else {
-                    self.newline_state = NewlineState::None;
-                }
-
-                if matches!(self.newline_state, NewlineState::StartingNewline) {
                     self.current_position = self.current_position.increment_line();
                 } else {
                     self.current_position = self.current_position.increment_column();
@@ -198,7 +185,7 @@ where
                             // implementations of MSD didn't explicitly require the `;`).
                             // If we are in the middle of a line, we assume it was meant to
                             // be escaped.
-                            if matches!(self.newline_state, NewlineState::StartingNewline) || end_of_values {
+                            if starting_new_line || end_of_values {
                                 // Entering a new tag. Return the previous one.
                                 let started_position = self.started_position;
                                 self.started_position = self.current_position;
@@ -232,7 +219,7 @@ where
                             // implementations of MSD didn't explicitly require the `;`).
                             // If we are in the middle of a line, we assume it was meant to
                             // be escaped.
-                            if matches!(self.newline_state, NewlineState::StartingNewline) {
+                            if starting_new_line {
                                 // Entering a new tag. Return the previous one.
                                 let started_position = self.started_position;
                                 self.started_position = self.current_position;
@@ -272,15 +259,11 @@ where
             self.buffer.push(byte);
 
             if matches!(byte, b'\n') {
-                self.newline_state = NewlineState::StartingNewline;
-            } else {
-                self.newline_state = NewlineState::None;
-            }
-
-            if matches!(self.newline_state, NewlineState::StartingNewline) {
                 self.current_position = self.current_position.increment_line();
+                starting_new_line = true;
             } else {
                 self.current_position = self.current_position.increment_column();
+                starting_new_line = false;
             }
         }
     }
@@ -358,12 +341,6 @@ where
                 }
 
                 if matches!(byte, b'\n') {
-                    self.newline_state = NewlineState::StartingNewline;
-                } else {
-                    self.newline_state = NewlineState::None;
-                }
-
-                if matches!(self.newline_state, NewlineState::StartingNewline) {
                     self.current_position = self.current_position.increment_line();
                 } else {
                     self.current_position = self.current_position.increment_column();
