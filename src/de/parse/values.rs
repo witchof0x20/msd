@@ -2,17 +2,11 @@ use super::Value;
 use crate::de::{error, Error, Position, Result};
 use std::slice;
 
-#[derive(Debug, PartialEq)]
-enum CommentState {
+enum State {
+    None,
     MaybeEnteringComment,
     InComment,
-    None,
-}
-
-#[derive(Debug, PartialEq)]
-enum EscapingState {
     Escaping,
-    None,
 }
 
 #[derive(Debug)]
@@ -36,12 +30,7 @@ impl StoredValues {
             // SAFETY: The lifetime of this slice is guaranteed by the caller.
             bytes: unsafe { slice::from_raw_parts(self.byte_ptr, self.byte_len) },
 
-            comment_state: CommentState::None,
-            escaping_state: EscapingState::None,
             exhausted: self.exhausted,
-
-            started_byte_index: self.current_byte_index,
-            started_position: self.current_position,
 
             current_byte_index: self.current_byte_index,
             current_position: self.current_position,
@@ -53,12 +42,7 @@ impl StoredValues {
 pub(in crate::de) struct Values<'a> {
     bytes: &'a [u8],
 
-    comment_state: CommentState,
-    escaping_state: EscapingState,
     exhausted: bool,
-
-    started_byte_index: usize,
-    started_position: Position,
 
     current_byte_index: usize,
     current_position: Position,
@@ -69,12 +53,7 @@ impl<'a> Values<'a> {
         Self {
             bytes,
 
-            comment_state: CommentState::None,
-            escaping_state: EscapingState::None,
             exhausted: false,
-
-            started_byte_index: 0,
-            started_position: position,
 
             current_byte_index: 0,
             current_position: position,
@@ -83,20 +62,14 @@ impl<'a> Values<'a> {
 
     pub(in crate::de) fn next(&mut self) -> Result<Value<'a>> {
         let mut value = None;
-        self.started_byte_index = self.current_byte_index;
-        self.started_position = self.current_position;
+        let started_byte_index = self.current_byte_index;
+        let started_position = self.current_position;
+        let mut state = State::None;
         loop {
             if let Some(byte) = self.bytes.get(self.current_byte_index) {
-                if matches!(self.comment_state, CommentState::InComment) {
-                    // Consume bytes until we are on a new line.
-                    if matches!(byte, b'\n') {
-                        self.comment_state = CommentState::None;
-                    }
-                } else {
-                    // Check if current character is escaped.
-                    if matches!(self.escaping_state, EscapingState::Escaping) {
-                        self.escaping_state = EscapingState::None;
-                    } else {
+                // TODO: Put the parsing logic in here instead.
+                match state {
+                    State::None => {
                         match byte {
                             b':' => {
                                 // This is the end of a `Value`.
@@ -105,27 +78,58 @@ impl<'a> Values<'a> {
                                     // determined to be within the bounds of self.bytes.
                                     unsafe {
                                         self.bytes.get_unchecked(
-                                            self.started_byte_index..self.current_byte_index,
+                                            started_byte_index..self.current_byte_index,
                                         )
                                     },
-                                    self.started_position,
+                                    started_position,
                                 ));
                             }
                             b'\\' => {
                                 // Enter an escaping state.
-                                self.escaping_state = EscapingState::Escaping;
+                                state = State::Escaping;
                             }
                             b'/' => {
-                                // Handle comment state.
-                                if matches!(self.comment_state, CommentState::MaybeEnteringComment)
-                                {
-                                    self.comment_state = CommentState::InComment;
-                                } else {
-                                    self.comment_state = CommentState::MaybeEnteringComment;
-                                }
+                                state = State::MaybeEnteringComment;
                             }
                             _ => {}
                         }
+                    }
+                    State::MaybeEnteringComment => {
+                        match byte {
+                            b':' => {
+                                // This is the end of a `Value`.
+                                value = Some(Value::new(
+                                    // SAFETY: Both ends of the range used here have already been
+                                    // determined to be within the bounds of self.bytes.
+                                    unsafe {
+                                        self.bytes.get_unchecked(
+                                            started_byte_index..self.current_byte_index,
+                                        )
+                                    },
+                                    started_position,
+                                ));
+                            }
+                            b'\\' => {
+                                // Enter an escaping state.
+                                state = State::Escaping;
+                            }
+                            b'/' => {
+                                // Handle comment state.
+                                state = State::InComment;
+                            }
+                            _ => {
+                                state = State::None;
+                            }
+                        }
+                    }
+                    State::InComment => {
+                        // Consume bytes until we are on a new line.
+                        if matches!(byte, b'\n') {
+                            state = State::None;
+                        }
+                    }
+                    State::Escaping => {
+                        state = State::None;
                     }
                 }
 
@@ -146,9 +150,9 @@ impl<'a> Values<'a> {
                     // last value in the slice.
                     unsafe {
                         self.bytes
-                            .get_unchecked(self.started_byte_index..self.current_byte_index)
+                            .get_unchecked(started_byte_index..self.current_byte_index)
                     },
-                    self.started_position,
+                    started_position,
                 ));
             } else {
                 return Err(Error::new(error::Kind::EndOfValues, self.current_position));
@@ -233,6 +237,42 @@ mod tests {
         assert_err_eq!(
             values.next(),
             Error::new(error::Kind::EndOfValues, Position::new(1, 4))
+        );
+    }
+
+    #[test]
+    fn end_of_value_after_maybe_entering_comment() {
+        let mut values = Values::new(b"foo/:bar", Position::new(0, 0));
+
+        assert_ok_eq!(values.next(), Value::new(b"foo/", Position::new(0, 0)));
+        assert_ok_eq!(values.next(), Value::new(b"bar", Position::new(0, 5)));
+        assert_err_eq!(
+            values.next(),
+            Error::new(error::Kind::EndOfValues, Position::new(0, 8))
+        );
+    }
+
+    #[test]
+    fn escaping_after_maybe_entering_comment() {
+        let mut values = Values::new(b"foo/\\::bar", Position::new(0, 0));
+
+        assert_ok_eq!(values.next(), Value::new(b"foo/\\:", Position::new(0, 0)));
+        assert_ok_eq!(values.next(), Value::new(b"bar", Position::new(0, 7)));
+        assert_err_eq!(
+            values.next(),
+            Error::new(error::Kind::EndOfValues, Position::new(0, 10))
+        );
+    }
+
+    #[test]
+    fn normal_byte_after_maybe_entering_comment() {
+        let mut values = Values::new(b"fo/o:bar", Position::new(0, 0));
+
+        assert_ok_eq!(values.next(), Value::new(b"fo/o", Position::new(0, 0)));
+        assert_ok_eq!(values.next(), Value::new(b"bar", Position::new(0, 5)));
+        assert_err_eq!(
+            values.next(),
+            Error::new(error::Kind::EndOfValues, Position::new(0, 8))
         );
     }
 

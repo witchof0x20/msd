@@ -2,30 +2,11 @@ use super::Tag;
 use crate::de::{error, parse::StoredTag, Error, Position, Result};
 use std::io::{Bytes, Read};
 
-#[derive(Debug)]
-enum TagState {
-    InTag,
-    MaybeEndingTag,
+enum State {
     None,
-}
-
-#[derive(Debug)]
-enum NewlineState {
-    StartingNewline,
-    None,
-}
-
-#[derive(Debug)]
-enum EscapingState {
-    Escaping,
-    None,
-}
-
-#[derive(Debug)]
-enum CommentState {
     MaybeEnteringComment,
     InComment,
-    None,
+    Escaping,
 }
 
 #[derive(Debug)]
@@ -33,12 +14,8 @@ pub(in crate::de) struct Tags<R> {
     reader: Bytes<R>,
 
     buffer: Vec<u8>,
-    started_position: Position,
 
-    tag_state: TagState,
-    newline_state: NewlineState,
-    escaping_state: EscapingState,
-    comment_state: CommentState,
+    first_tag: bool,
 
     current_position: Position,
 
@@ -57,12 +34,8 @@ where
             reader: reader.bytes(),
 
             buffer: Vec::with_capacity(1024),
-            started_position: Position::new(0, 0),
 
-            tag_state: TagState::None,
-            newline_state: NewlineState::StartingNewline,
-            escaping_state: EscapingState::None,
-            comment_state: CommentState::None,
+            first_tag: true,
 
             current_position: Position::new(0, 0),
 
@@ -77,7 +50,7 @@ where
     ///
     /// Note that this is not an `Iterator::next()`, because it is impossible for an iterator to
     /// return items that have a shorter lifetime than the iterator itself. Each `Tag` returned
-    /// here only lives until the next call to `next()`, because it borrows from a reused internal
+    /// here only lives until the next call to `next()` because it borrows from a reused internal
     /// buffer.
     pub(in crate::de) fn next(&mut self) -> Result<Tag> {
         if let Some(error) = &self.encountered_error {
@@ -86,16 +59,94 @@ where
 
         if let Some(revisit) = self.revisit.take() {
             return Ok(
-                // `revisit` is guaranteed to point to valid contents on the currently buffer.
+                // SAFETY: `revisit` is guaranteed to point to valid contents on the current
+                // buffer.
                 unsafe { revisit.into_tag() },
             );
         }
 
+        let mut state = State::None;
+        let mut end_of_values = false;
+        let mut starting_new_line = false;
+        let mut started_position = self.current_position;
+
+        // Find the first tag, if necessary.
+        if self.first_tag {
+            loop {
+                let byte = match self.reader.next() {
+                    Some(byte) => match byte {
+                        Ok(byte) => byte,
+                        Err(_error) => {
+                            let error = Error::new(error::Kind::Io, self.current_position);
+                            self.encountered_error = Some(error.clone());
+                            self.exhausted = true;
+                            return Err(error);
+                        }
+                    },
+                    None => {
+                        self.exhausted = true;
+                        let error = Error::new(error::Kind::EndOfFile, self.current_position);
+                        self.encountered_error = Some(error.clone());
+                        return Err(error);
+                    }
+                };
+
+                match state {
+                    State::None => {
+                        match byte {
+                            b'#' => {
+                                started_position = self.current_position;
+                                self.current_position = self.current_position.increment_column();
+                                break;
+                            }
+                            b'/' => {
+                                state = State::MaybeEnteringComment;
+                            }
+                            _ => {
+                                // Non-whitespace bytes are not allowed before the first tag.
+                                if !byte.is_ascii_whitespace() {
+                                    let error =
+                                        Error::new(error::Kind::ExpectedTag, self.current_position);
+                                    self.encountered_error = Some(error.clone());
+                                    return Err(error);
+                                }
+                            }
+                        }
+                    }
+                    State::MaybeEnteringComment => match byte {
+                        b'/' => {
+                            state = State::InComment;
+                        }
+                        _ => {
+                            let error = Error::new(
+                                error::Kind::ExpectedTag,
+                                self.current_position.decrement_column(),
+                            );
+                            self.encountered_error = Some(error.clone());
+                            return Err(error);
+                        }
+                    },
+                    State::InComment => {
+                        // Consume bytes until we are on a new line.
+                        if matches!(byte, b'\n') {
+                            state = State::None;
+                        }
+                    }
+                    State::Escaping => unreachable!(),
+                }
+
+                if matches!(byte, b'\n') {
+                    self.current_position = self.current_position.increment_line();
+                } else {
+                    self.current_position = self.current_position.increment_column();
+                }
+            }
+
+            self.first_tag = false;
+        }
+
         // Reuse the same buffer.
         self.buffer.clear();
-        // Setting this value to a `Some(Position)` causes the function to return at the end of the
-        // current iteration. In other words, it indicates that the end of a tag has been reached.
-        let mut tag_position = None;
 
         loop {
             let byte = match self.reader.next() {
@@ -115,159 +166,81 @@ where
                         self.encountered_error = Some(error.clone());
                         return Err(error);
                     } else {
-                        return Ok(Tag::new(&self.buffer, self.started_position));
+                        return Ok(Tag::new(&self.buffer, started_position));
                     }
                 }
             };
 
             // Process byte.
-            if matches!(self.comment_state, CommentState::InComment) {
-                // Consume bytes until we are on a new line.
-                if matches!(byte, b'\n') {
-                    self.comment_state = CommentState::None;
-                }
-                if matches!(self.tag_state, TagState::InTag | TagState::MaybeEndingTag) {
-                    self.buffer.push(byte);
-                }
-            } else {
-                match self.tag_state {
-                    TagState::InTag => {
-                        if matches!(self.escaping_state, EscapingState::None) {
-                            match byte {
-                                b'#' => {
-                                    // We are lenient on the formatting here. If a `#` is at the
-                                    // start of a newline we begin a new tag and assume the
-                                    // previous tag was missing the closing `;` (some old
-                                    // specifications of MSD didn't explicitly require the `;`). If
-                                    // we are in the middle of a line, we assume it was meant to be
-                                    // escaped.
-                                    if matches!(self.newline_state, NewlineState::StartingNewline) {
-                                        // Entering a new tag. Return the previous one.
-                                        tag_position = Some(self.started_position);
-                                        self.started_position = self.current_position;
-                                        self.tag_state = TagState::InTag;
-                                    } else {
-                                        self.buffer.push(byte);
-                                    }
-                                }
-                                b';' => {
-                                    self.tag_state = TagState::MaybeEndingTag;
-                                    self.buffer.push(byte);
-                                }
-                                b'\\' => {
-                                    self.escaping_state = EscapingState::Escaping;
-                                    self.buffer.push(byte);
-                                }
-                                b'/' => {
-                                    if matches!(
-                                        self.comment_state,
-                                        CommentState::MaybeEnteringComment
-                                    ) {
-                                        self.comment_state = CommentState::InComment;
-                                    } else {
-                                        self.comment_state = CommentState::MaybeEnteringComment;
-                                    }
-                                    self.buffer.push(byte);
-                                }
-                                _ => {
-                                    self.buffer.push(byte);
-                                }
-                            }
-                        } else {
-                            // Escaping the current character.
-                            self.buffer.push(byte);
-                            self.escaping_state = EscapingState::None;
-                        }
-                    }
-                    TagState::MaybeEndingTag => {
-                        match byte {
-                            b'#' => {
+            match state {
+                State::None => {
+                    match byte {
+                        b'#' => {
+                            // We are lenient on the formatting here. If a `#` is at the
+                            // start of a newline we begin a new tag and assume the
+                            // previous tag was missing the closing `;` (some old
+                            // implementations of MSD didn't explicitly require the `;`).
+                            // If we are in the middle of a line, we assume it was meant to
+                            // be escaped.
+                            if starting_new_line || end_of_values {
                                 // Entering a new tag. Return the previous one.
-                                tag_position = Some(self.started_position);
-                                self.started_position = self.current_position;
-                                self.tag_state = TagState::InTag;
+                                return Ok(Tag::new(&self.buffer, started_position));
                             }
-                            b'\\' => {
-                                // Escaping the next character.
-                                self.tag_state = TagState::InTag;
-                                self.escaping_state = EscapingState::Escaping;
-                                self.buffer.push(byte);
-                            }
-                            b'/' => {
-                                // Possibly entering a comment.
-                                self.tag_state = TagState::InTag;
-                                self.comment_state = CommentState::MaybeEnteringComment;
-                                self.buffer.push(byte);
-                            }
-                            _ => {
-                                if !byte.is_ascii_whitespace() {
-                                    // Still in the tag.
-                                    self.tag_state = TagState::InTag;
-                                }
-                                self.buffer.push(byte);
+                            end_of_values = false;
+                        }
+                        b';' => {
+                            end_of_values = true;
+                        }
+                        b'\\' => {
+                            state = State::Escaping;
+                            end_of_values = false;
+                        }
+                        b'/' => {
+                            state = State::MaybeEnteringComment;
+                        }
+                        _ => {
+                            if !byte.is_ascii_whitespace() {
+                                end_of_values = false;
                             }
                         }
                     }
-                    TagState::None => {
-                        match byte {
-                            b'#' => {
-                                if matches!(self.comment_state, CommentState::MaybeEnteringComment)
-                                {
-                                    let error = Error::new(
-                                        error::Kind::ExpectedTag,
-                                        self.current_position.decrement_column(),
-                                    );
-                                    self.encountered_error = Some(error.clone());
-                                    return Err(error);
-                                }
-                                self.tag_state = TagState::InTag;
-                                self.started_position = self.current_position;
-                            }
-                            b'/' => {
-                                if matches!(self.comment_state, CommentState::MaybeEnteringComment)
-                                {
-                                    self.comment_state = CommentState::InComment;
-                                } else {
-                                    self.comment_state = CommentState::MaybeEnteringComment;
-                                }
-                            }
-                            _ => {
-                                if matches!(self.comment_state, CommentState::MaybeEnteringComment)
-                                {
-                                    let error = Error::new(
-                                        error::Kind::ExpectedTag,
-                                        self.current_position.decrement_column(),
-                                    );
-                                    self.encountered_error = Some(error.clone());
-                                    return Err(error);
-                                }
-                                // Non-whitespace bytes are not allowed before the first tag.
-                                if !byte.is_ascii_whitespace() {
-                                    let error =
-                                        Error::new(error::Kind::ExpectedTag, self.current_position);
-                                    self.encountered_error = Some(error.clone());
-                                    return Err(error);
-                                }
-                            }
-                        }
+                }
+                State::MaybeEnteringComment => match byte {
+                    b';' => {
+                        end_of_values = true;
+                        state = State::None;
                     }
+                    b'\\' => {
+                        state = State::Escaping;
+                        end_of_values = false;
+                    }
+                    b'/' => {
+                        state = State::InComment;
+                    }
+                    _ => {
+                        state = State::None;
+                        end_of_values = false;
+                    }
+                },
+                State::InComment => {
+                    // Consume bytes until we are on a new line.
+                    if matches!(byte, b'\n') {
+                        state = State::None;
+                    }
+                }
+                State::Escaping => {
+                    state = State::None;
+                    end_of_values = false;
                 }
             }
+            self.buffer.push(byte);
 
             if matches!(byte, b'\n') {
-                self.newline_state = NewlineState::StartingNewline;
-            } else {
-                self.newline_state = NewlineState::None;
-            }
-
-            if matches!(self.newline_state, NewlineState::StartingNewline) {
                 self.current_position = self.current_position.increment_line();
+                starting_new_line = true;
             } else {
                 self.current_position = self.current_position.increment_column();
-            }
-
-            if let Some(position) = tag_position {
-                return Ok(Tag::new(&self.buffer, position));
+                starting_new_line = false;
             }
         }
     }
@@ -278,7 +251,9 @@ where
     pub(in crate::de) fn has_next(&mut self) -> Result<bool> {
         // The iterator will only be in the state below if no tags have been returned yet.
         // Simply find the first tag if it exists.
-        if matches!(self.tag_state, TagState::None) {
+        if self.first_tag {
+            let mut state = State::None;
+
             loop {
                 let byte = match self.reader.next() {
                     Some(byte) => match byte {
@@ -297,72 +272,62 @@ where
                 };
 
                 // Process byte.
-                if matches!(self.comment_state, CommentState::InComment) {
-                    // Consume bytes until we are on a new line.
-                    if matches!(byte, b'\n') {
-                        self.comment_state = CommentState::None;
-                    }
-                } else {
-                    match byte {
-                        b'#' => {
-                            if matches!(self.comment_state, CommentState::MaybeEnteringComment) {
-                                let error = Error::new(
-                                    error::Kind::ExpectedTag,
-                                    self.current_position.decrement_column(),
-                                );
-                                self.encountered_error = Some(error);
+                match state {
+                    State::None => {
+                        match byte {
+                            b'#' => {
                                 break;
                             }
-                            self.tag_state = TagState::InTag;
-                            self.started_position = self.current_position;
-                            break;
-                        }
-                        b'/' => {
-                            if matches!(self.comment_state, CommentState::MaybeEnteringComment) {
-                                self.comment_state = CommentState::InComment;
-                            } else {
-                                self.comment_state = CommentState::MaybeEnteringComment;
+                            b'/' => {
+                                state = State::MaybeEnteringComment;
                             }
+                            _ => {
+                                // Non-whitespace bytes are not allowed before the first tag.
+                                if !byte.is_ascii_whitespace() {
+                                    let error =
+                                        Error::new(error::Kind::ExpectedTag, self.current_position);
+                                    self.encountered_error = Some(error.clone());
+                                    return Err(error);
+                                }
+                            }
+                        }
+                    }
+                    State::MaybeEnteringComment => match byte {
+                        b'/' => {
+                            state = State::InComment;
                         }
                         _ => {
-                            if matches!(self.comment_state, CommentState::MaybeEnteringComment) {
-                                let error = Error::new(
-                                    error::Kind::ExpectedTag,
-                                    self.current_position.decrement_column(),
-                                );
-                                self.encountered_error = Some(error);
-                                break;
-                            }
-                            // Non-whitespace bytes are not allowed before the first tag.
-                            if !byte.is_ascii_whitespace() {
-                                let error =
-                                    Error::new(error::Kind::ExpectedTag, self.current_position);
-                                self.encountered_error = Some(error);
-                                break;
-                            }
+                            let error = Error::new(
+                                error::Kind::ExpectedTag,
+                                self.current_position.decrement_column(),
+                            );
+                            self.encountered_error = Some(error.clone());
+                            return Err(error);
+                        }
+                    },
+                    State::InComment => {
+                        // Consume bytes until we are on a new line.
+                        if matches!(byte, b'\n') {
+                            state = State::None;
                         }
                     }
+                    State::Escaping => unreachable!(),
                 }
 
                 if matches!(byte, b'\n') {
-                    self.newline_state = NewlineState::StartingNewline;
-                } else {
-                    self.newline_state = NewlineState::None;
-                }
-
-                if matches!(self.newline_state, NewlineState::StartingNewline) {
                     self.current_position = self.current_position.increment_line();
                 } else {
                     self.current_position = self.current_position.increment_column();
                 }
             }
+
+            self.first_tag = false;
         }
 
         if let Some(error) = &self.encountered_error {
             Err(error.clone())
         } else {
-            Ok(!self.exhausted
-                && matches!(self.tag_state, TagState::InTag | TagState::MaybeEndingTag))
+            Ok(!self.exhausted)
         }
     }
 
@@ -382,7 +347,7 @@ where
         } else {
             Err(Error::new(
                 error::Kind::UnexpectedTag,
-                self.started_position,
+                self.current_position,
             ))
         }
     }
@@ -526,6 +491,41 @@ mod tests {
     }
 
     #[test]
+    fn comment_within_tag() {
+        let input = b"#foo//comment;#\n:bar;\n";
+        let mut tags = Tags::new(input.as_slice());
+
+        assert_ok_eq!(
+            tags.next(),
+            Tag::new(b"foo//comment;#\n:bar;\n", Position::new(0, 0))
+        );
+    }
+
+    #[test]
+    fn tag_with_single_slash() {
+        let input = b"#/;\n";
+        let mut tags = Tags::new(input.as_slice());
+
+        assert_ok_eq!(tags.next(), Tag::new(b"/;\n", Position::new(0, 0)));
+    }
+
+    #[test]
+    fn escaping_after_maybe_entering_comment() {
+        let input = b"#/\\;;\n";
+        let mut tags = Tags::new(input.as_slice());
+
+        assert_ok_eq!(tags.next(), Tag::new(b"/\\;;\n", Position::new(0, 0)));
+    }
+
+    #[test]
+    fn normal_byte_after_maybe_entering_comment() {
+        let input = b"#/foo;\n";
+        let mut tags = Tags::new(input.as_slice());
+
+        assert_ok_eq!(tags.next(), Tag::new(b"/foo;\n", Position::new(0, 0)));
+    }
+
+    #[test]
     fn escaped_semicolon() {
         let input = b"#foo:bar\\;#baz;\n";
         let mut tags = Tags::new(input.as_slice());
@@ -568,6 +568,43 @@ mod tests {
 
         assert_ok_eq!(tags.has_next(), true);
         assert_ok_eq!(tags.next(), Tag::new(b"foo:bar;\n", Position::new(1, 1)));
+    }
+
+    #[test]
+    fn has_next_character_before_first_tag() {
+        let input = b"foo#bar;\n";
+        let mut tags = Tags::new(input.as_slice());
+
+        assert_err_eq!(
+            tags.has_next(),
+            Error::new(error::Kind::ExpectedTag, Position::new(0, 0))
+        );
+    }
+
+    #[test]
+    fn has_next_slash_before_first_tag() {
+        let input = b"/#bar;\n";
+        let mut tags = Tags::new(input.as_slice());
+
+        assert_err_eq!(
+            tags.has_next(),
+            Error::new(error::Kind::ExpectedTag, Position::new(0, 0))
+        );
+    }
+
+    #[test]
+    fn has_next_repeats_error() {
+        let input = b"foo#bar;\n";
+        let mut tags = Tags::new(input.as_slice());
+
+        assert_err_eq!(
+            tags.has_next(),
+            Error::new(error::Kind::ExpectedTag, Position::new(0, 0))
+        );
+        assert_err_eq!(
+            tags.has_next(),
+            Error::new(error::Kind::ExpectedTag, Position::new(0, 0))
+        );
     }
 
     #[test]

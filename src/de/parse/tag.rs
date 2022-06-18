@@ -2,17 +2,11 @@ use super::{StoredValues, Values};
 use crate::de::{error, Error, Position, Result};
 use std::slice;
 
-#[derive(Debug, PartialEq)]
-enum CommentState {
+enum State {
+    None,
     MaybeEnteringComment,
     InComment,
-    None,
-}
-
-#[derive(Debug, PartialEq)]
-enum EscapingState {
     Escaping,
-    None,
 }
 
 // Tag without the lifetime. Used when storing within an Access.
@@ -41,12 +35,7 @@ impl StoredTag {
             // SAFETY: The lifetime of this slice is guaranteed by the caller.
             bytes: unsafe { slice::from_raw_parts(self.byte_ptr, self.byte_len) },
 
-            comment_state: CommentState::None,
-            escaping_state: EscapingState::None,
             first_values: self.first_values,
-
-            started_byte_index: self.current_byte_index,
-            started_position: self.current_position,
 
             current_byte_index: self.current_byte_index,
             current_position: self.current_position,
@@ -68,13 +57,7 @@ pub(in crate::de) struct Tag<'a> {
     // Should contain all bytes except the leading `#`.
     bytes: &'a [u8],
 
-    comment_state: CommentState,
-    escaping_state: EscapingState,
     first_values: bool,
-
-    started_byte_index: usize,
-    // The position includes the implicit leading `#`. In reality, `bytes` starts at `column + 1`.
-    started_position: Position,
 
     current_byte_index: usize,
     current_position: Position,
@@ -89,12 +72,7 @@ impl<'a> Tag<'a> {
         Self {
             bytes,
 
-            comment_state: CommentState::None,
-            escaping_state: EscapingState::None,
             first_values: true,
-
-            started_byte_index: 0,
-            started_position: position.increment_column(),
 
             current_byte_index: 0,
             current_position: position.increment_column(),
@@ -111,24 +89,16 @@ impl<'a> Tag<'a> {
         }
 
         let mut values = None;
-        self.started_byte_index = self.current_byte_index;
-        self.started_position = self.current_position;
+        let started_byte_index = self.current_byte_index;
+        let started_position = self.current_position;
+        let mut state = State::None;
         let mut encountered_non_whitespace = false;
         let mut last_byte_newline = false;
         loop {
             if let Some(byte) = self.bytes.get(self.current_byte_index) {
                 // Process byte.
-                // Check if in comment.
-                if matches!(self.comment_state, CommentState::InComment) {
-                    // Consume bytes until we are on a new line.
-                    if matches!(byte, b'\n') {
-                        self.comment_state = CommentState::None;
-                    }
-                } else {
-                    // Check if current character is escaped.
-                    if matches!(self.escaping_state, EscapingState::Escaping) {
-                        self.escaping_state = EscapingState::None;
-                    } else {
+                match state {
+                    State::None => {
                         match byte {
                             b';' => {
                                 // This is the end of a `Values`.
@@ -137,27 +107,57 @@ impl<'a> Tag<'a> {
                                     // determined to be within the bounds of self.bytes.
                                     unsafe {
                                         self.bytes.get_unchecked(
-                                            self.started_byte_index..self.current_byte_index,
+                                            started_byte_index..self.current_byte_index,
                                         )
                                     },
-                                    self.started_position,
+                                    started_position,
                                 ));
                             }
                             b'\\' => {
                                 // Enter an escaping state.
-                                self.escaping_state = EscapingState::Escaping;
+                                state = State::Escaping;
                             }
                             b'/' => {
-                                // Handle comment state.
-                                if matches!(self.comment_state, CommentState::MaybeEnteringComment)
-                                {
-                                    self.comment_state = CommentState::InComment;
-                                } else {
-                                    self.comment_state = CommentState::MaybeEnteringComment;
-                                }
+                                state = State::MaybeEnteringComment;
                             }
                             _ => {}
                         }
+                    }
+                    State::MaybeEnteringComment => {
+                        match byte {
+                            b';' => {
+                                // This is the end of a `Values`.
+                                values = Some(Values::new(
+                                    // SAFETY: Both ends of the range used here have already been
+                                    // determined to be within the bounds of self.bytes.
+                                    unsafe {
+                                        self.bytes.get_unchecked(
+                                            started_byte_index..self.current_byte_index,
+                                        )
+                                    },
+                                    started_position,
+                                ));
+                            }
+                            b'\\' => {
+                                // Enter an escaping state.
+                                state = State::Escaping;
+                            }
+                            b'/' => {
+                                state = State::InComment;
+                            }
+                            _ => {
+                                state = State::None;
+                            }
+                        }
+                    }
+                    State::InComment => {
+                        // Consume bytes until we are on a new line.
+                        if matches!(byte, b'\n') {
+                            state = State::None;
+                        }
+                    }
+                    State::Escaping => {
+                        state = State::None;
                     }
                 }
                 if !byte.is_ascii_whitespace() {
@@ -188,9 +188,9 @@ impl<'a> Tag<'a> {
                         // last value in the slice.
                         unsafe {
                             self.bytes
-                                .get_unchecked(self.started_byte_index..ending_byte_index)
+                                .get_unchecked(started_byte_index..ending_byte_index)
                         },
-                        self.started_position,
+                        started_position,
                     ));
                 }
                 return Err(Error::new(error::Kind::EndOfTag, self.current_position));
@@ -200,7 +200,6 @@ impl<'a> Tag<'a> {
 
     pub(in crate::de) fn reset(&mut self) {
         self.first_values = true;
-        self.started_position = self.origin_position.increment_column();
         self.current_byte_index = 0;
         self.current_position = self.origin_position.increment_column();
     }
@@ -316,6 +315,39 @@ mod tests {
         assert_err_eq!(
             tag.next(),
             Error::new(error::Kind::EndOfTag, Position::new(2, 0))
+        );
+    }
+
+    #[test]
+    fn end_of_values_after_maybe_entering_comment() {
+        let mut tag = Tag::new(b"foo: /;\n", Position::new(0, 0));
+
+        assert_ok_eq!(tag.next(), Values::new(b"foo: /", Position::new(0, 1)));
+        assert_err_eq!(
+            tag.next(),
+            Error::new(error::Kind::EndOfTag, Position::new(1, 0))
+        );
+    }
+
+    #[test]
+    fn escaping_after_maybe_entering_comment() {
+        let mut tag = Tag::new(b"foo: /\\;;\n", Position::new(0, 0));
+
+        assert_ok_eq!(tag.next(), Values::new(b"foo: /\\;", Position::new(0, 1)));
+        assert_err_eq!(
+            tag.next(),
+            Error::new(error::Kind::EndOfTag, Position::new(1, 0))
+        );
+    }
+
+    #[test]
+    fn normal_byte_after_maybe_entering_comment() {
+        let mut tag = Tag::new(b"foo: /bar;\n", Position::new(0, 0));
+
+        assert_ok_eq!(tag.next(), Values::new(b"foo: /bar", Position::new(0, 1)));
+        assert_err_eq!(
+            tag.next(),
+            Error::new(error::Kind::EndOfTag, Position::new(1, 0))
         );
     }
 
