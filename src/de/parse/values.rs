@@ -241,6 +241,42 @@ mod tests {
     }
 
     #[test]
+    fn end_of_values_after_maybe_entering_comment() {
+        let mut values = Values::new(b"foo/:bar", Position::new(0, 0));
+
+        assert_ok_eq!(values.next(), Value::new(b"foo/", Position::new(0, 0)));
+        assert_ok_eq!(values.next(), Value::new(b"bar", Position::new(0, 5)));
+        assert_err_eq!(
+            values.next(),
+            Error::new(error::Kind::EndOfValues, Position::new(0, 8))
+        );
+    }
+
+    #[test]
+    fn escaping_after_maybe_entering_comment() {
+        let mut values = Values::new(b"foo/\\::bar", Position::new(0, 0));
+
+        assert_ok_eq!(values.next(), Value::new(b"foo/\\:", Position::new(0, 0)));
+        assert_ok_eq!(values.next(), Value::new(b"bar", Position::new(0, 7)));
+        assert_err_eq!(
+            values.next(),
+            Error::new(error::Kind::EndOfValues, Position::new(0, 10))
+        );
+    }
+
+    #[test]
+    fn normal_byte_after_maybe_entering_comment() {
+        let mut values = Values::new(b"fo/o:bar", Position::new(0, 0));
+
+        assert_ok_eq!(values.next(), Value::new(b"fo/o", Position::new(0, 0)));
+        assert_ok_eq!(values.next(), Value::new(b"bar", Position::new(0, 5)));
+        assert_err_eq!(
+            values.next(),
+            Error::new(error::Kind::EndOfValues, Position::new(0, 8))
+        );
+    }
+
+    #[test]
     fn escaped_comment() {
         let mut values = Values::new(b"foo\\/\\/comment:\n:bar", Position::new(0, 0));
 
