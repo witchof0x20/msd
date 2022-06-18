@@ -319,6 +319,39 @@ mod tests {
     }
 
     #[test]
+    fn end_of_values_after_maybe_entering_comment() {
+        let mut tag = Tag::new(b"foo: /;\n", Position::new(0, 0));
+
+        assert_ok_eq!(tag.next(), Values::new(b"foo: /", Position::new(0, 1)));
+        assert_err_eq!(
+            tag.next(),
+            Error::new(error::Kind::EndOfTag, Position::new(1, 0))
+        );
+    }
+
+    #[test]
+    fn escaping_after_maybe_entering_comment() {
+        let mut tag = Tag::new(b"foo: /\\;;\n", Position::new(0, 0));
+
+        assert_ok_eq!(tag.next(), Values::new(b"foo: /\\;", Position::new(0, 1)));
+        assert_err_eq!(
+            tag.next(),
+            Error::new(error::Kind::EndOfTag, Position::new(1, 0))
+        );
+    }
+
+    #[test]
+    fn normal_byte_after_maybe_entering_comment() {
+        let mut tag = Tag::new(b"foo: /bar;\n", Position::new(0, 0));
+
+        assert_ok_eq!(tag.next(), Values::new(b"foo: /bar", Position::new(0, 1)));
+        assert_err_eq!(
+            tag.next(),
+            Error::new(error::Kind::EndOfTag, Position::new(1, 0))
+        );
+    }
+
+    #[test]
     fn escaped_comment() {
         let mut tag = Tag::new(b"foo: \\/\\/comment;\nbar;\n", Position::new(0, 0));
 
