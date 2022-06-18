@@ -571,6 +571,43 @@ mod tests {
     }
 
     #[test]
+    fn has_next_character_before_first_tag() {
+        let input = b"foo#bar;\n";
+        let mut tags = Tags::new(input.as_slice());
+
+        assert_err_eq!(
+            tags.has_next(),
+            Error::new(error::Kind::ExpectedTag, Position::new(0, 0))
+        );
+    }
+
+    #[test]
+    fn has_next_slash_before_first_tag() {
+        let input = b"/#bar;\n";
+        let mut tags = Tags::new(input.as_slice());
+
+        assert_err_eq!(
+            tags.has_next(),
+            Error::new(error::Kind::ExpectedTag, Position::new(0, 0))
+        );
+    }
+
+    #[test]
+    fn has_next_repeats_error() {
+        let input = b"foo#bar;\n";
+        let mut tags = Tags::new(input.as_slice());
+
+        assert_err_eq!(
+            tags.has_next(),
+            Error::new(error::Kind::ExpectedTag, Position::new(0, 0))
+        );
+        assert_err_eq!(
+            tags.has_next(),
+            Error::new(error::Kind::ExpectedTag, Position::new(0, 0))
+        );
+    }
+
+    #[test]
     fn revisit() {
         let input = b"#foo;\n";
         let mut tags = Tags::new(input.as_slice());
