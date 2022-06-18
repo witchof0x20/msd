@@ -205,39 +205,23 @@ where
                         }
                     }
                 }
-                State::MaybeEnteringComment => {
-                    match byte {
-                        b'#' => {
-                            // We are lenient on the formatting here. If a `#` is at the
-                            // start of a newline we begin a new tag and assume the
-                            // previous tag was missing the closing `;` (some old
-                            // implementations of MSD didn't explicitly require the `;`).
-                            // If we are in the middle of a line, we assume it was meant to
-                            // be escaped.
-                            if starting_new_line {
-                                // Entering a new tag. Return the previous one.
-                                return Ok(Tag::new(&self.buffer, started_position));
-                            }
-                            state = State::None;
-                            end_of_values = false;
-                        }
-                        b';' => {
-                            end_of_values = true;
-                            state = State::None;
-                        }
-                        b'\\' => {
-                            state = State::Escaping;
-                            end_of_values = false;
-                        }
-                        b'/' => {
-                            state = State::InComment;
-                        }
-                        _ => {
-                            state = State::None;
-                            end_of_values = false;
-                        }
+                State::MaybeEnteringComment => match byte {
+                    b';' => {
+                        end_of_values = true;
+                        state = State::None;
                     }
-                }
+                    b'\\' => {
+                        state = State::Escaping;
+                        end_of_values = false;
+                    }
+                    b'/' => {
+                        state = State::InComment;
+                    }
+                    _ => {
+                        state = State::None;
+                        end_of_values = false;
+                    }
+                },
                 State::InComment => {
                     // Consume bytes until we are on a new line.
                     if matches!(byte, b'\n') {
@@ -504,6 +488,41 @@ mod tests {
             tags.next(),
             Error::new(error::Kind::EndOfFile, Position::new(1, 0))
         );
+    }
+
+    #[test]
+    fn comment_within_tag() {
+        let input = b"#foo//comment;#\n:bar;\n";
+        let mut tags = Tags::new(input.as_slice());
+
+        assert_ok_eq!(
+            tags.next(),
+            Tag::new(b"foo//comment;#\n:bar;\n", Position::new(0, 0))
+        );
+    }
+
+    #[test]
+    fn tag_with_single_slash() {
+        let input = b"#/;\n";
+        let mut tags = Tags::new(input.as_slice());
+
+        assert_ok_eq!(tags.next(), Tag::new(b"/;\n", Position::new(0, 0)));
+    }
+
+    #[test]
+    fn escaping_after_maybe_entering_comment() {
+        let input = b"#/\\;;\n";
+        let mut tags = Tags::new(input.as_slice());
+
+        assert_ok_eq!(tags.next(), Tag::new(b"/\\;;\n", Position::new(0, 0)));
+    }
+
+    #[test]
+    fn normal_byte_after_maybe_entering_comment() {
+        let input = b"#/foo;\n";
+        let mut tags = Tags::new(input.as_slice());
+
+        assert_ok_eq!(tags.next(), Tag::new(b"/foo;\n", Position::new(0, 0)));
     }
 
     #[test]
