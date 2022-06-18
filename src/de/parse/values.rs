@@ -241,7 +241,7 @@ mod tests {
     }
 
     #[test]
-    fn end_of_values_after_maybe_entering_comment() {
+    fn end_of_value_after_maybe_entering_comment() {
         let mut values = Values::new(b"foo/:bar", Position::new(0, 0));
 
         assert_ok_eq!(values.next(), Value::new(b"foo/", Position::new(0, 0)));
