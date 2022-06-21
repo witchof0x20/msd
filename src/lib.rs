@@ -10,19 +10,17 @@
 //! ```
 //! use std::collections::HashMap;
 //!
-//! fn main() {
-//!     let mut map: HashMap<String, usize> = HashMap::new();
-//!     map.insert("foo".to_owned(), 1);
-//!     map.insert("bar".to_owned(), 2);
+//! let mut map: HashMap<String, usize> = HashMap::new();
+//! map.insert("foo".to_owned(), 1);
+//! map.insert("bar".to_owned(), 2);
 //!
-//!     // Serialize the map into a byte buffer.
-//!     let serialized = msd::to_bytes(&map).unwrap();
+//! // Serialize the map into a byte buffer.
+//! let serialized = msd::to_bytes(&map).unwrap();
 //!
-//!     // Deserialize back into a map again.
-//!     let deserialized = msd::from_bytes(&serialized).unwrap();
+//! // Deserialize back into a map again.
+//! let deserialized = msd::from_bytes(&serialized).unwrap();
 //!
-//!     assert_eq!(map, deserialized);
-//! }
+//! assert_eq!(map, deserialized);
 //! ```
 
 #![warn(unsafe_op_in_unsafe_fn)]
