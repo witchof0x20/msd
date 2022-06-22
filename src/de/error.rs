@@ -7,6 +7,7 @@ use std::{fmt, fmt::Display};
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Kind {
+    // Formatting errors.
     EndOfFile,
     ExpectedTag,
     UnexpectedTag,
@@ -14,6 +15,8 @@ pub enum Kind {
     UnexpectedValues,
     UnexpectedValue,
     EndOfValues,
+
+    // Value errors.
     ExpectedBool,
     ExpectedI8,
     ExpectedI16,
@@ -31,7 +34,11 @@ pub enum Kind {
     ExpectedString,
     ExpectedUnit,
     ExpectedIdentifier,
+
+    // IO-related errors.
     Io,
+
+    // User-provided errors (provided through `serde::de::Error` trait methods).
     Custom(String),
     InvalidType(String, String),
     InvalidValue(String, String),
@@ -40,6 +47,9 @@ pub enum Kind {
     UnknownField(String, &'static [&'static str]),
     MissingField(&'static str),
     DuplicateField(&'static str),
+
+    // Unrepresentable type errors.
+    CannotDeserializeAsSelfDescribing,
 }
 
 impl Display for Kind {
@@ -114,6 +124,7 @@ impl Display for Kind {
             Kind::DuplicateField(field) => {
                 write!(formatter, "duplicate field {}", field)
             }
+            Kind::CannotDeserializeAsSelfDescribing => formatter.write_str("cannot deserialize as self-describing"),
         }
     }
 }
@@ -505,6 +516,14 @@ mod tests {
         assert_eq!(
             format!("{}", error),
             "duplicate field foo at line 33 column 34"
+        );
+    }
+
+    #[test]
+    fn cannot_deserialize_as_self_describing() {
+        assert_eq!(
+            format!("{}", Error::new(Kind::CannotDeserializeAsSelfDescribing, Position::new(34, 35))),
+            "cannot deserialize as self-describing at line 34 column 35"
         );
     }
 

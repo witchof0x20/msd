@@ -46,6 +46,10 @@ where
         }
     }
 
+    pub(in crate::de) fn current_position(&self) -> Position {
+        self.current_position
+    }
+
     /// Returns the next tag in the input, if there is one.
     ///
     /// Note that this is not an `Iterator::next()`, because it is impossible for an iterator to
@@ -652,5 +656,23 @@ mod tests {
             tags.assert_exhausted(),
             Error::new(error::Kind::UnexpectedTag, Position::new(0, 0))
         );
+    }
+
+    #[test]
+    fn current_position() {
+        let input = b"#foo;\n";
+        let tags = Tags::new(input.as_slice());
+
+        assert_eq!(tags.current_position(), Position::new(0, 0));
+    }
+
+    #[test]
+    fn current_position_after_iteration() {
+        let input = b"#foo;\n#bar;\n";
+        let mut tags = Tags::new(input.as_slice());
+
+        assert_ok!(tags.next());
+
+        assert_eq!(tags.current_position(), Position::new(1, 0));
     }
 }

@@ -83,7 +83,7 @@ where
     where
         V: Visitor<'de>,
     {
-        todo!()
+        Err(Error::new(error::Kind::CannotDeserializeAsSelfDescribing, self.tags.current_position()))
     }
 
     fn deserialize_bool<V>(self, visitor: V) -> Result<V::Value>
@@ -572,7 +572,7 @@ where
     where
         V: Visitor<'de>,
     {
-        todo!()
+        Err(Error::new(error::Kind::CannotDeserializeAsSelfDescribing, self.tags.current_position()))
     }
 }
 
@@ -2697,5 +2697,57 @@ mod tests {
             CustomIdentifier::deserialize(&mut deserializer),
             Error::new(error::Kind::Custom("foo".to_string()), Position::new(0, 1))
         );
+    }
+
+    #[test]
+    fn any() {
+        #[derive(Debug)]
+        struct Any;
+
+        impl<'de> Deserialize<'de> for Any {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: de::Deserializer<'de> {
+                struct AnyVisitor;
+
+                impl<'de> Visitor<'de> for AnyVisitor {
+                    type Value = Any;
+
+                    fn expecting(&self, _f: &mut fmt::Formatter) -> fmt::Result {
+                        unimplemented!()
+                    }
+                }
+
+                deserializer.deserialize_any(AnyVisitor)
+            }
+        }
+
+        let mut deserializer = Deserializer::new(b"".as_slice());
+
+        assert_err_eq!(Any::deserialize(&mut deserializer), Error::new(error::Kind::CannotDeserializeAsSelfDescribing, Position::new(0, 0)));
+    }
+
+    #[test]
+    fn ignored_any() {
+        #[derive(Debug)]
+        struct IgnoredAny;
+
+        impl<'de> Deserialize<'de> for IgnoredAny {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: de::Deserializer<'de> {
+                struct IgnoredAnyVisitor;
+
+                impl<'de> Visitor<'de> for IgnoredAnyVisitor {
+                    type Value = IgnoredAny;
+
+                    fn expecting(&self, _f: &mut fmt::Formatter) -> fmt::Result {
+                        unimplemented!()
+                    }
+                }
+
+                deserializer.deserialize_ignored_any(IgnoredAnyVisitor)
+            }
+        }
+
+        let mut deserializer = Deserializer::new(b"".as_slice());
+
+        assert_err_eq!(IgnoredAny::deserialize(&mut deserializer), Error::new(error::Kind::CannotDeserializeAsSelfDescribing, Position::new(0, 0)));
     }
 }
