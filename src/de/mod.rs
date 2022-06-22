@@ -83,7 +83,10 @@ where
     where
         V: Visitor<'de>,
     {
-        Err(Error::new(error::Kind::CannotDeserializeAsSelfDescribing, self.tags.current_position()))
+        Err(Error::new(
+            error::Kind::CannotDeserializeAsSelfDescribing,
+            self.tags.current_position(),
+        ))
     }
 
     fn deserialize_bool<V>(self, visitor: V) -> Result<V::Value>
@@ -572,7 +575,10 @@ where
     where
         V: Visitor<'de>,
     {
-        Err(Error::new(error::Kind::CannotDeserializeAsSelfDescribing, self.tags.current_position()))
+        Err(Error::new(
+            error::Kind::CannotDeserializeAsSelfDescribing,
+            self.tags.current_position(),
+        ))
     }
 }
 
@@ -2705,7 +2711,10 @@ mod tests {
         struct Any;
 
         impl<'de> Deserialize<'de> for Any {
-            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: de::Deserializer<'de> {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: de::Deserializer<'de>,
+            {
                 struct AnyVisitor;
 
                 impl<'de> Visitor<'de> for AnyVisitor {
@@ -2722,7 +2731,13 @@ mod tests {
 
         let mut deserializer = Deserializer::new(b"".as_slice());
 
-        assert_err_eq!(Any::deserialize(&mut deserializer), Error::new(error::Kind::CannotDeserializeAsSelfDescribing, Position::new(0, 0)));
+        assert_err_eq!(
+            Any::deserialize(&mut deserializer),
+            Error::new(
+                error::Kind::CannotDeserializeAsSelfDescribing,
+                Position::new(0, 0)
+            )
+        );
     }
 
     #[test]
@@ -2731,7 +2746,10 @@ mod tests {
         struct IgnoredAny;
 
         impl<'de> Deserialize<'de> for IgnoredAny {
-            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: de::Deserializer<'de> {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: de::Deserializer<'de>,
+            {
                 struct IgnoredAnyVisitor;
 
                 impl<'de> Visitor<'de> for IgnoredAnyVisitor {
@@ -2748,6 +2766,12 @@ mod tests {
 
         let mut deserializer = Deserializer::new(b"".as_slice());
 
-        assert_err_eq!(IgnoredAny::deserialize(&mut deserializer), Error::new(error::Kind::CannotDeserializeAsSelfDescribing, Position::new(0, 0)));
+        assert_err_eq!(
+            IgnoredAny::deserialize(&mut deserializer),
+            Error::new(
+                error::Kind::CannotDeserializeAsSelfDescribing,
+                Position::new(0, 0)
+            )
+        );
     }
 }

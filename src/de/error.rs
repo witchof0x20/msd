@@ -50,6 +50,10 @@ pub enum Kind {
 
     // Unrepresentable type errors.
     CannotDeserializeAsSelfDescribing,
+    CannotDeserializeAsOptionInTuple,
+    CannotDeserializeAsSeqInTuple,
+    CannotDeserializeAsMapInTuple,
+    CannotDeserializeAsStructInTuple,
 }
 
 impl Display for Kind {
@@ -124,7 +128,21 @@ impl Display for Kind {
             Kind::DuplicateField(field) => {
                 write!(formatter, "duplicate field {}", field)
             }
-            Kind::CannotDeserializeAsSelfDescribing => formatter.write_str("cannot deserialize as self-describing"),
+            Kind::CannotDeserializeAsSelfDescribing => {
+                formatter.write_str("cannot deserialize as self-describing")
+            }
+            Kind::CannotDeserializeAsOptionInTuple => {
+                formatter.write_str("cannot deserialize as option in tuple")
+            }
+            Kind::CannotDeserializeAsSeqInTuple => {
+                formatter.write_str("cannot deserialize as seq in tuple")
+            }
+            Kind::CannotDeserializeAsMapInTuple => {
+                formatter.write_str("cannot deserialize as map in tuple")
+            }
+            Kind::CannotDeserializeAsStructInTuple => {
+                formatter.write_str("cannot deserialize as struct in tuple")
+            }
         }
     }
 }
@@ -522,8 +540,64 @@ mod tests {
     #[test]
     fn cannot_deserialize_as_self_describing() {
         assert_eq!(
-            format!("{}", Error::new(Kind::CannotDeserializeAsSelfDescribing, Position::new(34, 35))),
+            format!(
+                "{}",
+                Error::new(
+                    Kind::CannotDeserializeAsSelfDescribing,
+                    Position::new(34, 35)
+                )
+            ),
             "cannot deserialize as self-describing at line 34 column 35"
+        );
+    }
+
+    #[test]
+    fn cannot_deserialize_as_option_in_tuple() {
+        assert_eq!(
+            format!(
+                "{}",
+                Error::new(
+                    Kind::CannotDeserializeAsOptionInTuple,
+                    Position::new(35, 36)
+                )
+            ),
+            "cannot deserialize as option in tuple at line 35 column 36"
+        );
+    }
+
+    #[test]
+    fn cannot_deserialize_as_seq_in_tuple() {
+        assert_eq!(
+            format!(
+                "{}",
+                Error::new(Kind::CannotDeserializeAsSeqInTuple, Position::new(36, 37))
+            ),
+            "cannot deserialize as seq in tuple at line 36 column 37"
+        );
+    }
+
+    #[test]
+    fn cannot_deserialize_as_map_in_tuple() {
+        assert_eq!(
+            format!(
+                "{}",
+                Error::new(Kind::CannotDeserializeAsMapInTuple, Position::new(37, 38))
+            ),
+            "cannot deserialize as map in tuple at line 37 column 38"
+        );
+    }
+
+    #[test]
+    fn cannot_deserialize_as_struct_in_tuple() {
+        assert_eq!(
+            format!(
+                "{}",
+                Error::new(
+                    Kind::CannotDeserializeAsStructInTuple,
+                    Position::new(38, 39)
+                )
+            ),
+            "cannot deserialize as struct in tuple at line 38 column 39"
         );
     }
 
