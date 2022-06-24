@@ -609,10 +609,8 @@ mod tests {
     fn cannot_deserialize_nested_struct() {
         assert_eq!(
             format!(
-                "{}", Error::new(
-                    Kind::CannotDeserializeNestedStruct,
-                    Position::new(39, 40)
-                )
+                "{}",
+                Error::new(Kind::CannotDeserializeNestedStruct, Position::new(39, 40))
             ),
             "cannot deserialize nested struct at line 39 column 40"
         );

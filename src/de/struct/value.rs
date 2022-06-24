@@ -1,6 +1,5 @@
 use crate::de::{
-    error,
-    map,
+    error, map,
     parse::{StoredTag, StoredValues, Tags},
     r#enum, seq, tuple, Error, Result,
 };
