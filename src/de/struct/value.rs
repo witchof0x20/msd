@@ -1,4 +1,5 @@
 use crate::de::{
+    error,
     map,
     parse::{StoredTag, StoredValues, Tags},
     r#enum, seq, tuple, Error, Result,
@@ -40,7 +41,11 @@ where
     where
         V: Visitor<'de>,
     {
-        todo!()
+        let values = unsafe { self.values.into_values() };
+        Err(Error::new(
+            error::Kind::CannotDeserializeAsSelfDescribing,
+            values.current_position(),
+        ))
     }
 
     fn deserialize_bool<V>(self, visitor: V) -> Result<V::Value>
@@ -478,7 +483,11 @@ where
     where
         V: Visitor<'de>,
     {
-        todo!()
+        let values = unsafe { self.values.into_values() };
+        Err(Error::new(
+            error::Kind::CannotDeserializeAsSelfDescribing,
+            values.current_position(),
+        ))
     }
 }
 
@@ -2868,6 +2877,88 @@ mod tests {
         assert_err_eq!(
             CustomIdentifier::deserialize(deserializer),
             Error::new(error::Kind::Custom("foo".to_string()), Position::new(0, 5))
+        );
+    }
+
+    #[test]
+    fn any() {
+        #[derive(Debug)]
+        struct Any;
+
+        impl<'de> Deserialize<'de> for Any {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: de::Deserializer<'de>,
+            {
+                struct AnyVisitor;
+
+                impl<'de> Visitor<'de> for AnyVisitor {
+                    type Value = Any;
+
+                    fn expecting(&self, _f: &mut fmt::Formatter) -> fmt::Result {
+                        unimplemented!()
+                    }
+                }
+
+                deserializer.deserialize_any(AnyVisitor)
+            }
+        }
+
+        let mut tags = Tags::new(b"#foo:foo;\n".as_slice());
+        let mut tag = assert_ok!(tags.next());
+        let mut values = assert_ok!(tag.next());
+        let _field = assert_ok!(values.next());
+        let stored_tag = tag.into_stored();
+        let stored_values = values.into_stored();
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+
+        assert_err_eq!(
+            Any::deserialize(deserializer),
+            Error::new(
+                error::Kind::CannotDeserializeAsSelfDescribing,
+                Position::new(0, 5)
+            )
+        );
+    }
+
+    #[test]
+    fn ignored_any() {
+        #[derive(Debug)]
+        struct IgnoredAny;
+
+        impl<'de> Deserialize<'de> for IgnoredAny {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: de::Deserializer<'de>,
+            {
+                struct IgnoredAnyVisitor;
+
+                impl<'de> Visitor<'de> for IgnoredAnyVisitor {
+                    type Value = IgnoredAny;
+
+                    fn expecting(&self, _f: &mut fmt::Formatter) -> fmt::Result {
+                        unimplemented!()
+                    }
+                }
+
+                deserializer.deserialize_ignored_any(IgnoredAnyVisitor)
+            }
+        }
+
+        let mut tags = Tags::new(b"#foo:foo;\n".as_slice());
+        let mut tag = assert_ok!(tags.next());
+        let mut values = assert_ok!(tag.next());
+        let _field = assert_ok!(values.next());
+        let stored_tag = tag.into_stored();
+        let stored_values = values.into_stored();
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+
+        assert_err_eq!(
+            IgnoredAny::deserialize(deserializer),
+            Error::new(
+                error::Kind::CannotDeserializeAsSelfDescribing,
+                Position::new(0, 5)
+            )
         );
     }
 }
