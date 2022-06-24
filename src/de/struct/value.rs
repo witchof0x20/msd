@@ -444,7 +444,11 @@ where
     where
         V: Visitor<'de>,
     {
-        todo!()
+        let values = unsafe { self.values.into_values() };
+        Err(Error::new(
+            error::Kind::CannotDeserializeNestedStruct,
+            values.current_position(),
+        ))
     }
 
     fn deserialize_enum<V>(
@@ -2957,6 +2961,31 @@ mod tests {
             IgnoredAny::deserialize(deserializer),
             Error::new(
                 error::Kind::CannotDeserializeAsSelfDescribing,
+                Position::new(0, 5)
+            )
+        );
+    }
+
+    #[test]
+    fn r#struct() {
+        #[derive(Debug, Deserialize)]
+        struct Struct {
+            _foo: usize,
+            _bar: bool,
+        }
+
+        let mut tags = Tags::new(b"#foo:foo;\n".as_slice());
+        let mut tag = assert_ok!(tags.next());
+        let mut values = assert_ok!(tag.next());
+        let _field = assert_ok!(values.next());
+        let stored_tag = tag.into_stored();
+        let stored_values = values.into_stored();
+        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
+
+        assert_err_eq!(
+            Struct::deserialize(deserializer),
+            Error::new(
+                error::Kind::CannotDeserializeNestedStruct,
                 Position::new(0, 5)
             )
         );

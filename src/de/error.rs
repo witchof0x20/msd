@@ -54,6 +54,7 @@ pub enum Kind {
     CannotDeserializeAsSeqInTuple,
     CannotDeserializeAsMapInTuple,
     CannotDeserializeAsStructInTuple,
+    CannotDeserializeNestedStruct,
 }
 
 impl Display for Kind {
@@ -142,6 +143,9 @@ impl Display for Kind {
             }
             Kind::CannotDeserializeAsStructInTuple => {
                 formatter.write_str("cannot deserialize as struct in tuple")
+            }
+            Kind::CannotDeserializeNestedStruct => {
+                formatter.write_str("cannot deserialize nested struct")
             }
         }
     }
@@ -598,6 +602,19 @@ mod tests {
                 )
             ),
             "cannot deserialize as struct in tuple at line 38 column 39"
+        );
+    }
+
+    #[test]
+    fn cannot_deserialize_nested_struct() {
+        assert_eq!(
+            format!(
+                "{}", Error::new(
+                    Kind::CannotDeserializeNestedStruct,
+                    Position::new(39, 40)
+                )
+            ),
+            "cannot deserialize nested struct at line 39 column 40"
         );
     }
 
