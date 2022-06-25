@@ -42,7 +42,7 @@ impl<'a, 'de> de::Deserializer<'de> for Deserializer<'a> {
     where
         V: Visitor<'de>,
     {
-         Err(Error::new(
+        Err(Error::new(
             error::Kind::MustDeserializeStructFieldAsIdentifier,
             self.position,
         ))
@@ -52,7 +52,7 @@ impl<'a, 'de> de::Deserializer<'de> for Deserializer<'a> {
     where
         V: Visitor<'de>,
     {
-         Err(Error::new(
+        Err(Error::new(
             error::Kind::MustDeserializeStructFieldAsIdentifier,
             self.position,
         ))
@@ -62,7 +62,7 @@ impl<'a, 'de> de::Deserializer<'de> for Deserializer<'a> {
     where
         V: Visitor<'de>,
     {
-         Err(Error::new(
+        Err(Error::new(
             error::Kind::MustDeserializeStructFieldAsIdentifier,
             self.position,
         ))
@@ -72,7 +72,7 @@ impl<'a, 'de> de::Deserializer<'de> for Deserializer<'a> {
     where
         V: Visitor<'de>,
     {
-         Err(Error::new(
+        Err(Error::new(
             error::Kind::MustDeserializeStructFieldAsIdentifier,
             self.position,
         ))
@@ -83,7 +83,7 @@ impl<'a, 'de> de::Deserializer<'de> for Deserializer<'a> {
     where
         V: Visitor<'de>,
     {
-         Err(Error::new(
+        Err(Error::new(
             error::Kind::MustDeserializeStructFieldAsIdentifier,
             self.position,
         ))
@@ -93,7 +93,7 @@ impl<'a, 'de> de::Deserializer<'de> for Deserializer<'a> {
     where
         V: Visitor<'de>,
     {
-         Err(Error::new(
+        Err(Error::new(
             error::Kind::MustDeserializeStructFieldAsIdentifier,
             self.position,
         ))
@@ -103,7 +103,7 @@ impl<'a, 'de> de::Deserializer<'de> for Deserializer<'a> {
     where
         V: Visitor<'de>,
     {
-         Err(Error::new(
+        Err(Error::new(
             error::Kind::MustDeserializeStructFieldAsIdentifier,
             self.position,
         ))
@@ -113,7 +113,7 @@ impl<'a, 'de> de::Deserializer<'de> for Deserializer<'a> {
     where
         V: Visitor<'de>,
     {
-         Err(Error::new(
+        Err(Error::new(
             error::Kind::MustDeserializeStructFieldAsIdentifier,
             self.position,
         ))
@@ -123,7 +123,7 @@ impl<'a, 'de> de::Deserializer<'de> for Deserializer<'a> {
     where
         V: Visitor<'de>,
     {
-         Err(Error::new(
+        Err(Error::new(
             error::Kind::MustDeserializeStructFieldAsIdentifier,
             self.position,
         ))
@@ -134,7 +134,7 @@ impl<'a, 'de> de::Deserializer<'de> for Deserializer<'a> {
     where
         V: Visitor<'de>,
     {
-         Err(Error::new(
+        Err(Error::new(
             error::Kind::MustDeserializeStructFieldAsIdentifier,
             self.position,
         ))
@@ -144,7 +144,7 @@ impl<'a, 'de> de::Deserializer<'de> for Deserializer<'a> {
     where
         V: Visitor<'de>,
     {
-         Err(Error::new(
+        Err(Error::new(
             error::Kind::MustDeserializeStructFieldAsIdentifier,
             self.position,
         ))
@@ -154,7 +154,7 @@ impl<'a, 'de> de::Deserializer<'de> for Deserializer<'a> {
     where
         V: Visitor<'de>,
     {
-         Err(Error::new(
+        Err(Error::new(
             error::Kind::MustDeserializeStructFieldAsIdentifier,
             self.position,
         ))
@@ -164,7 +164,7 @@ impl<'a, 'de> de::Deserializer<'de> for Deserializer<'a> {
     where
         V: Visitor<'de>,
     {
-         Err(Error::new(
+        Err(Error::new(
             error::Kind::MustDeserializeStructFieldAsIdentifier,
             self.position,
         ))
@@ -184,7 +184,7 @@ impl<'a, 'de> de::Deserializer<'de> for Deserializer<'a> {
     where
         V: Visitor<'de>,
     {
-         Err(Error::new(
+        Err(Error::new(
             error::Kind::MustDeserializeStructFieldAsIdentifier,
             self.position,
         ))
@@ -194,7 +194,7 @@ impl<'a, 'de> de::Deserializer<'de> for Deserializer<'a> {
     where
         V: Visitor<'de>,
     {
-         Err(Error::new(
+        Err(Error::new(
             error::Kind::MustDeserializeStructFieldAsIdentifier,
             self.position,
         ))
@@ -204,7 +204,7 @@ impl<'a, 'de> de::Deserializer<'de> for Deserializer<'a> {
     where
         V: Visitor<'de>,
     {
-         Err(Error::new(
+        Err(Error::new(
             error::Kind::MustDeserializeStructFieldAsIdentifier,
             self.position,
         ))
@@ -214,7 +214,7 @@ impl<'a, 'de> de::Deserializer<'de> for Deserializer<'a> {
     where
         V: Visitor<'de>,
     {
-         Err(Error::new(
+        Err(Error::new(
             error::Kind::MustDeserializeStructFieldAsIdentifier,
             self.position,
         ))
@@ -224,7 +224,7 @@ impl<'a, 'de> de::Deserializer<'de> for Deserializer<'a> {
     where
         V: Visitor<'de>,
     {
-         Err(Error::new(
+        Err(Error::new(
             error::Kind::MustDeserializeStructFieldAsIdentifier,
             self.position,
         ))
@@ -234,7 +234,7 @@ impl<'a, 'de> de::Deserializer<'de> for Deserializer<'a> {
     where
         V: Visitor<'de>,
     {
-         Err(Error::new(
+        Err(Error::new(
             error::Kind::MustDeserializeStructFieldAsIdentifier,
             self.position,
         ))
@@ -244,7 +244,7 @@ impl<'a, 'de> de::Deserializer<'de> for Deserializer<'a> {
     where
         V: Visitor<'de>,
     {
-         Err(Error::new(
+        Err(Error::new(
             error::Kind::MustDeserializeStructFieldAsIdentifier,
             self.position,
         ))
@@ -254,7 +254,7 @@ impl<'a, 'de> de::Deserializer<'de> for Deserializer<'a> {
     where
         V: Visitor<'de>,
     {
-         Err(Error::new(
+        Err(Error::new(
             error::Kind::MustDeserializeStructFieldAsIdentifier,
             self.position,
         ))
@@ -264,7 +264,7 @@ impl<'a, 'de> de::Deserializer<'de> for Deserializer<'a> {
     where
         V: Visitor<'de>,
     {
-         Err(Error::new(
+        Err(Error::new(
             error::Kind::MustDeserializeStructFieldAsIdentifier,
             self.position,
         ))
@@ -279,7 +279,7 @@ impl<'a, 'de> de::Deserializer<'de> for Deserializer<'a> {
     where
         V: Visitor<'de>,
     {
-         Err(Error::new(
+        Err(Error::new(
             error::Kind::MustDeserializeStructFieldAsIdentifier,
             self.position,
         ))
@@ -289,7 +289,7 @@ impl<'a, 'de> de::Deserializer<'de> for Deserializer<'a> {
     where
         V: Visitor<'de>,
     {
-         Err(Error::new(
+        Err(Error::new(
             error::Kind::MustDeserializeStructFieldAsIdentifier,
             self.position,
         ))
@@ -304,7 +304,7 @@ impl<'a, 'de> de::Deserializer<'de> for Deserializer<'a> {
     where
         V: Visitor<'de>,
     {
-         Err(Error::new(
+        Err(Error::new(
             error::Kind::MustDeserializeStructFieldAsIdentifier,
             self.position,
         ))
@@ -319,7 +319,7 @@ impl<'a, 'de> de::Deserializer<'de> for Deserializer<'a> {
     where
         V: Visitor<'de>,
     {
-         Err(Error::new(
+        Err(Error::new(
             error::Kind::MustDeserializeStructFieldAsIdentifier,
             self.position,
         ))

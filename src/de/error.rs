@@ -625,7 +625,10 @@ mod tests {
         assert_eq!(
             format!(
                 "{}",
-                Error::new(Kind::MustDeserializeStructFieldAsIdentifier, Position::new(40, 41))
+                Error::new(
+                    Kind::MustDeserializeStructFieldAsIdentifier,
+                    Position::new(40, 41)
+                )
             ),
             "must deserialize struct field as identifier at line 40 column 41"
         );
