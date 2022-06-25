@@ -55,6 +55,7 @@ pub enum Kind {
     CannotDeserializeAsMapInTuple,
     CannotDeserializeAsStructInTuple,
     CannotDeserializeNestedStruct,
+    MustDeserializeStructFieldAsIdentifier,
 }
 
 impl Display for Kind {
@@ -146,6 +147,9 @@ impl Display for Kind {
             }
             Kind::CannotDeserializeNestedStruct => {
                 formatter.write_str("cannot deserialize nested struct")
+            }
+            Kind::MustDeserializeStructFieldAsIdentifier => {
+                formatter.write_str("must deserialize struct field as identifier")
             }
         }
     }
@@ -613,6 +617,17 @@ mod tests {
                 Error::new(Kind::CannotDeserializeNestedStruct, Position::new(39, 40))
             ),
             "cannot deserialize nested struct at line 39 column 40"
+        );
+    }
+
+    #[test]
+    fn must_deserialize_struct_field_as_identifier() {
+        assert_eq!(
+            format!(
+                "{}",
+                Error::new(Kind::MustDeserializeStructFieldAsIdentifier, Position::new(40, 41))
+            ),
+            "must deserialize struct field as identifier at line 40 column 41"
         );
     }
 
