@@ -72,7 +72,6 @@ where
         let mut state = State::None;
         let mut end_of_values = false;
         let mut starting_new_line = false;
-        let mut started_position = self.current_position;
 
         // Find the first tag, if necessary.
         if self.first_tag {
@@ -99,8 +98,6 @@ where
                     State::None => {
                         match byte {
                             b'#' => {
-                                started_position = self.current_position;
-                                self.current_position = self.current_position.increment_column();
                                 break;
                             }
                             b'/' => {
@@ -151,6 +148,10 @@ where
 
         // Reuse the same buffer.
         self.buffer.clear();
+
+        let started_position = self.current_position;
+        // Consume the `#` that has already been encountered.
+        self.current_position = self.current_position.increment_column();
 
         loop {
             let byte = match self.reader.next() {
@@ -411,6 +412,16 @@ mod tests {
 
         assert_ok_eq!(tags.next(), Tag::new(b"foo:bar;\n", Position::new(0, 0)));
         assert_ok_eq!(tags.next(), Tag::new(b"baz;\n", Position::new(1, 0)));
+    }
+
+    #[test]
+    fn finds_three_tags() {
+        let input = b"#foo;#bar;#baz;";
+        let mut tags = Tags::new(input.as_slice());
+
+        assert_ok_eq!(tags.next(), Tag::new(b"foo;", Position::new(0, 0)));
+        assert_ok_eq!(tags.next(), Tag::new(b"bar;", Position::new(0, 5)));
+        assert_ok_eq!(tags.next(), Tag::new(b"baz;", Position::new(0, 10)));
     }
 
     #[test]
