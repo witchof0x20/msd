@@ -46,8 +46,85 @@ where
         }
     }
 
-    pub(in crate::de) fn current_position(&self) -> Position {
-        self.current_position
+    pub fn to_first_tag(&mut self) -> Result<()> {
+        enum State {
+            None,
+            MaybeEnteringComment,
+            InComment,
+        }
+
+        let mut state = State::None;
+
+        if self.first_tag {
+            self.first_tag = false;
+            loop {
+                let byte = match self.reader.next() {
+                    Some(byte) => match byte {
+                        Ok(byte) => byte,
+                        Err(_error) => {
+                            let error = Error::new(error::Kind::Io, self.current_position);
+                            self.encountered_error = Some(error.clone());
+                            self.exhausted = true;
+                            break Err(error);
+                        }
+                    },
+                    None => {
+                        self.exhausted = true;
+                        break Ok(());
+                    }
+                };
+
+                match state {
+                    State::None => {
+                        match byte {
+                            b'#' => {
+                                break Ok(());
+                            }
+                            b'/' => {
+                                state = State::MaybeEnteringComment;
+                            }
+                            _ => {
+                                // Non-whitespace bytes are not allowed before the first tag.
+                                if !byte.is_ascii_whitespace() {
+                                    let error =
+                                        Error::new(error::Kind::ExpectedTag, self.current_position);
+                                    self.encountered_error = Some(error.clone());
+                                    break Err(error);
+                                }
+                            }
+                        }
+                    }
+                    State::MaybeEnteringComment => match byte {
+                        b'/' => {
+                            state = State::InComment;
+                        }
+                        _ => {
+                            let error = Error::new(
+                                error::Kind::ExpectedTag,
+                                self.current_position.decrement_column(),
+                            );
+                            self.encountered_error = Some(error.clone());
+                            break Err(error);
+                        }
+                    },
+                    State::InComment => {
+                        // Consume bytes until we are on a new line.
+                        if matches!(byte, b'\n') {
+                            state = State::None;
+                        }
+                    }
+                }
+
+                if matches!(byte, b'\n') {
+                    self.current_position = self.current_position.increment_line();
+                } else {
+                    self.current_position = self.current_position.increment_column();
+                }
+            }
+        } else {
+            // Already found the first tag.
+            Ok(())
+        }
     }
 
     /// Returns the next tag in the input, if there is one.
@@ -75,75 +152,12 @@ where
 
         // Find the first tag, if necessary.
         if self.first_tag {
-            loop {
-                let byte = match self.reader.next() {
-                    Some(byte) => match byte {
-                        Ok(byte) => byte,
-                        Err(_error) => {
-                            let error = Error::new(error::Kind::Io, self.current_position);
-                            self.encountered_error = Some(error.clone());
-                            self.exhausted = true;
-                            return Err(error);
-                        }
-                    },
-                    None => {
-                        self.exhausted = true;
-                        let error = Error::new(error::Kind::EndOfFile, self.current_position);
-                        self.encountered_error = Some(error.clone());
-                        return Err(error);
-                    }
-                };
-
-                match state {
-                    State::None => {
-                        match byte {
-                            b'#' => {
-                                break;
-                            }
-                            b'/' => {
-                                state = State::MaybeEnteringComment;
-                            }
-                            _ => {
-                                // Non-whitespace bytes are not allowed before the first tag.
-                                if !byte.is_ascii_whitespace() {
-                                    let error =
-                                        Error::new(error::Kind::ExpectedTag, self.current_position);
-                                    self.encountered_error = Some(error.clone());
-                                    return Err(error);
-                                }
-                            }
-                        }
-                    }
-                    State::MaybeEnteringComment => match byte {
-                        b'/' => {
-                            state = State::InComment;
-                        }
-                        _ => {
-                            let error = Error::new(
-                                error::Kind::ExpectedTag,
-                                self.current_position.decrement_column(),
-                            );
-                            self.encountered_error = Some(error.clone());
-                            return Err(error);
-                        }
-                    },
-                    State::InComment => {
-                        // Consume bytes until we are on a new line.
-                        if matches!(byte, b'\n') {
-                            state = State::None;
-                        }
-                    }
-                    State::Escaping => unreachable!(),
-                }
-
-                if matches!(byte, b'\n') {
-                    self.current_position = self.current_position.increment_line();
-                } else {
-                    self.current_position = self.current_position.increment_column();
-                }
+            self.to_first_tag()?;
+            if self.exhausted {
+                let error = Error::new(error::Kind::EndOfFile, self.current_position);
+                self.encountered_error = Some(error.clone());
+                return Err(error);
             }
-
-            self.first_tag = false;
         }
 
         // Reuse the same buffer.
@@ -256,78 +270,7 @@ where
     pub(in crate::de) fn has_next(&mut self) -> Result<bool> {
         // The iterator will only be in the state below if no tags have been returned yet.
         // Simply find the first tag if it exists.
-        if self.first_tag {
-            let mut state = State::None;
-
-            loop {
-                let byte = match self.reader.next() {
-                    Some(byte) => match byte {
-                        Ok(byte) => byte,
-                        Err(_error) => {
-                            let error = Error::new(error::Kind::Io, self.current_position);
-                            self.encountered_error = Some(error);
-                            self.exhausted = true;
-                            break;
-                        }
-                    },
-                    None => {
-                        self.exhausted = true;
-                        break;
-                    }
-                };
-
-                // Process byte.
-                match state {
-                    State::None => {
-                        match byte {
-                            b'#' => {
-                                break;
-                            }
-                            b'/' => {
-                                state = State::MaybeEnteringComment;
-                            }
-                            _ => {
-                                // Non-whitespace bytes are not allowed before the first tag.
-                                if !byte.is_ascii_whitespace() {
-                                    let error =
-                                        Error::new(error::Kind::ExpectedTag, self.current_position);
-                                    self.encountered_error = Some(error.clone());
-                                    return Err(error);
-                                }
-                            }
-                        }
-                    }
-                    State::MaybeEnteringComment => match byte {
-                        b'/' => {
-                            state = State::InComment;
-                        }
-                        _ => {
-                            let error = Error::new(
-                                error::Kind::ExpectedTag,
-                                self.current_position.decrement_column(),
-                            );
-                            self.encountered_error = Some(error.clone());
-                            return Err(error);
-                        }
-                    },
-                    State::InComment => {
-                        // Consume bytes until we are on a new line.
-                        if matches!(byte, b'\n') {
-                            state = State::None;
-                        }
-                    }
-                    State::Escaping => unreachable!(),
-                }
-
-                if matches!(byte, b'\n') {
-                    self.current_position = self.current_position.increment_line();
-                } else {
-                    self.current_position = self.current_position.increment_column();
-                }
-            }
-
-            self.first_tag = false;
-        }
+        self.to_first_tag()?;
 
         if let Some(error) = &self.encountered_error {
             Err(error.clone())
@@ -354,6 +297,24 @@ where
                 error::Kind::UnexpectedTag,
                 self.current_position,
             ))
+        }
+    }
+
+    pub(in crate::de) fn error_at_current_tag(&mut self, kind: error::Kind) -> Error {
+        if let Err(error) = self.to_first_tag() {
+            error
+        }
+        else if self.exhausted {
+            Error::new(
+                error::Kind::EndOfFile,
+                self.current_position,
+            )
+        } else {
+            Error::new(
+                kind,
+                // Increment past the tag's `#` byte, which is the current byte.
+                self.current_position.increment_column(),
+            )
         }
     }
 }
@@ -667,23 +628,5 @@ mod tests {
             tags.assert_exhausted(),
             Error::new(error::Kind::UnexpectedTag, Position::new(0, 0))
         );
-    }
-
-    #[test]
-    fn current_position() {
-        let input = b"#foo;\n";
-        let tags = Tags::new(input.as_slice());
-
-        assert_eq!(tags.current_position(), Position::new(0, 0));
-    }
-
-    #[test]
-    fn current_position_after_iteration() {
-        let input = b"#foo;\n#bar;\n";
-        let mut tags = Tags::new(input.as_slice());
-
-        assert_ok!(tags.next());
-
-        assert_eq!(tags.current_position(), Position::new(1, 0));
     }
 }

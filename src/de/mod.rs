@@ -83,10 +83,7 @@ where
     where
         V: Visitor<'de>,
     {
-        Err(Error::new(
-            error::Kind::CannotDeserializeAsSelfDescribing,
-            self.tags.current_position(),
-        ))
+        Err(self.tags.error_at_current_tag(error::Kind::CannotDeserializeAsSelfDescribing))
     }
 
     fn deserialize_bool<V>(self, visitor: V) -> Result<V::Value>
@@ -575,10 +572,7 @@ where
     where
         V: Visitor<'de>,
     {
-        Err(Error::new(
-            error::Kind::CannotDeserializeAsSelfDescribing,
-            self.tags.current_position(),
-        ))
+        Err(self.tags.error_at_current_tag(error::Kind::CannotDeserializeAsSelfDescribing))
     }
 }
 
@@ -2729,13 +2723,13 @@ mod tests {
             }
         }
 
-        let mut deserializer = Deserializer::new(b"".as_slice());
+        let mut deserializer = Deserializer::new(b"#foo;".as_slice());
 
         assert_err_eq!(
             Any::deserialize(&mut deserializer),
             Error::new(
                 error::Kind::CannotDeserializeAsSelfDescribing,
-                Position::new(0, 0)
+                Position::new(0, 1)
             )
         );
     }
@@ -2764,13 +2758,13 @@ mod tests {
             }
         }
 
-        let mut deserializer = Deserializer::new(b"".as_slice());
+        let mut deserializer = Deserializer::new(b"#foo;".as_slice());
 
         assert_err_eq!(
             IgnoredAny::deserialize(&mut deserializer),
             Error::new(
                 error::Kind::CannotDeserializeAsSelfDescribing,
-                Position::new(0, 0)
+                Position::new(0, 1)
             )
         );
     }
