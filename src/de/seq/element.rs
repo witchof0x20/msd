@@ -339,7 +339,7 @@ where
     where
         V: Visitor<'de>,
     {
-        todo!()
+        Err(self.tags.error_at_current_tag(error::Kind::CannotDeserializeAsOptionInSeq))
     }
 
     fn deserialize_unit<V>(self, visitor: V) -> Result<V::Value>
@@ -387,7 +387,7 @@ where
     where
         V: Visitor<'de>,
     {
-        todo!()
+        Err(self.tags.error_at_current_tag(error::Kind::CannotDeserializeNestedSeq))
     }
 
     fn deserialize_tuple<V>(self, len: usize, visitor: V) -> Result<V::Value>

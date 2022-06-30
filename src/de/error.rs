@@ -56,6 +56,8 @@ pub enum Kind {
     CannotDeserializeAsStructInTuple,
     CannotDeserializeNestedStruct,
     MustDeserializeStructFieldAsIdentifier,
+    CannotDeserializeAsOptionInSeq,
+    CannotDeserializeNestedSeq,
 }
 
 impl Display for Kind {
@@ -150,6 +152,12 @@ impl Display for Kind {
             }
             Kind::MustDeserializeStructFieldAsIdentifier => {
                 formatter.write_str("must deserialize struct field as identifier")
+            }
+            Kind::CannotDeserializeAsOptionInSeq => {
+                formatter.write_str("cannot deserialize as option in seq")
+            }
+            Kind::CannotDeserializeNestedSeq => {
+                formatter.write_str("cannot deserialize nested seq")
             }
         }
     }
@@ -631,6 +639,34 @@ mod tests {
                 )
             ),
             "must deserialize struct field as identifier at line 40 column 41"
+        );
+    }
+
+    #[test]
+    fn cannot_deserialize_as_option_in_seq() {
+        assert_eq!(
+            format!(
+                "{}",
+                Error::new(
+                    Kind::CannotDeserializeAsOptionInSeq,
+                    Position::new(41, 42)
+                )
+            ),
+            "cannot deserialize as option in seq at line 41 column 42"
+        );
+    }
+
+    #[test]
+    fn cannot_deserialize_nested_seq() {
+        assert_eq!(
+            format!(
+                "{}",
+                Error::new(
+                    Kind::CannotDeserializeNestedSeq,
+                    Position::new(42, 43)
+                )
+            ),
+            "cannot deserialize nested seq at line 42 column 43"
         );
     }
 
