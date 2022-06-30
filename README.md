@@ -34,10 +34,29 @@ fn main() {
 }
 ```
 
+### Unrepresentable Types
+Not all [`serde` types](https://serde.rs/data-model.html#types) can be represented in MSD format.
+Some compound types cannot be encoded due to the ambiguity that would arise when decoding them.
+Specifically, these unrepresentable `serde` types are:
+
+- `tuple` or `tuple_struct` containing `option`.
+- `tuple` or `tuple_struct` containing `seq`.
+- `tuple` or `tuple_struct` containing `map`.
+- `tuple` or `tuple_struct` containing `struct`.
+- `struct` containing another `struct` as a field value.
+- `seq` containing `option`.
+- `seq` containing another `seq` as an element.
+
+Additionally, this library cannot deserialize types that are intended to be deserialized as
+self-describing, and both `struct` fields and `enum` variants must be deserialized as identifiers.
+See `serde`'s
+[`Deserializer` documentation](https://docs.rs/serde/latest/serde/de/trait.Deserializer.html) for
+more details.
+
 ## About MSD Files
 MSD is a configuration file format that has been in use since the late 90s. It has mainly seen
-usage in rhythm dance games such as [Stepmania](https://github.com/stepmania/stepmania) and
-[Dancing With Intensity](http://dwi.ddruk.com/), but it is suitable to be used in many other
+usage in rhythm dance games such as [*Stepmania*](https://github.com/stepmania/stepmania) and
+[*Dancing With Intensity*](http://dwi.ddruk.com/), but it is suitable to be used in many other
 contexts. MSD files benefit from being human-readable and easily modifiable.
 
 ### Format
