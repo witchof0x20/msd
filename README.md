@@ -36,8 +36,8 @@ fn main() {
 
 ## About MSD Files
 MSD is a configuration file format that has been in use since the late 90s. It has mainly seen
-usage in rhythm dance games such as [Stepmania](https://github.com/stepmania/stepmania) and
-[Dancing With Intensity](http://dwi.ddruk.com/), but it is suitable to be used in many other
+usage in rhythm dance games such as [*Stepmania*](https://github.com/stepmania/stepmania) and
+[*Dancing With Intensity*](http://dwi.ddruk.com/), but it is suitable to be used in many other
 contexts. MSD files benefit from being human-readable and easily modifiable.
 
 ### Format
