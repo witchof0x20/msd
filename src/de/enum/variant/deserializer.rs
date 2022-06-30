@@ -1,4 +1,4 @@
-use crate::de::{parse::Value, Error, Result};
+use crate::de::{error, parse::Value, Error, Result};
 use serde::{de, de::Visitor};
 
 pub(in super::super) struct Deserializer<'a> {
@@ -18,7 +18,10 @@ impl<'a, 'de> de::Deserializer<'de> for Deserializer<'a> {
     where
         V: Visitor<'de>,
     {
-        todo!()
+        Err(Error::new(
+            error::Kind::CannotDeserializeAsSelfDescribing,
+            self.value.position(),
+        ))
     }
 
     fn deserialize_bool<V>(self, _visitor: V) -> Result<V::Value>
@@ -250,7 +253,10 @@ impl<'a, 'de> de::Deserializer<'de> for Deserializer<'a> {
     where
         V: Visitor<'de>,
     {
-        todo!()
+        Err(Error::new(
+            error::Kind::CannotDeserializeAsSelfDescribing,
+            self.value.position(),
+        ))
     }
 }
 
@@ -347,6 +353,76 @@ mod tests {
         assert_err_eq!(
             CustomIdentifier::deserialize(deserializer),
             Error::new(error::Kind::Custom("foo".to_string()), Position::new(1, 2))
+        );
+    }
+
+    #[test]
+    fn any() {
+        #[derive(Debug)]
+        struct Any;
+
+        impl<'de> Deserialize<'de> for Any {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: de::Deserializer<'de>,
+            {
+                struct AnyVisitor;
+
+                impl<'de> Visitor<'de> for AnyVisitor {
+                    type Value = Any;
+
+                    fn expecting(&self, _f: &mut fmt::Formatter) -> fmt::Result {
+                        unimplemented!()
+                    }
+                }
+
+                deserializer.deserialize_any(AnyVisitor)
+            }
+        }
+
+        let deserializer = Deserializer::new(Value::new(b"foo", Position::new(1, 2)));
+
+        assert_err_eq!(
+            Any::deserialize(deserializer),
+            Error::new(
+                error::Kind::CannotDeserializeAsSelfDescribing,
+                Position::new(1, 2)
+            )
+        );
+    }
+
+    #[test]
+    fn ignored_any() {
+        #[derive(Debug)]
+        struct IgnoredAny;
+
+        impl<'de> Deserialize<'de> for IgnoredAny {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: de::Deserializer<'de>,
+            {
+                struct IgnoredAnyVisitor;
+
+                impl<'de> Visitor<'de> for IgnoredAnyVisitor {
+                    type Value = IgnoredAny;
+
+                    fn expecting(&self, _f: &mut fmt::Formatter) -> fmt::Result {
+                        unimplemented!()
+                    }
+                }
+
+                deserializer.deserialize_ignored_any(IgnoredAnyVisitor)
+            }
+        }
+
+        let deserializer = Deserializer::new(Value::new(b"foo", Position::new(1, 2)));
+
+        assert_err_eq!(
+            IgnoredAny::deserialize(deserializer),
+            Error::new(
+                error::Kind::CannotDeserializeAsSelfDescribing,
+                Position::new(1, 2)
+            )
         );
     }
 }
