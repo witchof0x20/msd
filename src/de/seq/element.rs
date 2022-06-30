@@ -2413,7 +2413,7 @@ mod tests {
             )
         );
     }
-    
+
     #[test]
     fn seq() {
         let mut tags = Tags::new(b"#foo;".as_slice());
@@ -2421,10 +2421,7 @@ mod tests {
 
         assert_err_eq!(
             Vec::<()>::deserialize(deserializer),
-            Error::new(
-                error::Kind::CannotDeserializeNestedSeq,
-                Position::new(0, 1)
-            )
+            Error::new(error::Kind::CannotDeserializeNestedSeq, Position::new(0, 1))
         );
     }
 }
