@@ -2399,4 +2399,32 @@ mod tests {
             )
         );
     }
+
+    #[test]
+    fn option() {
+        let mut tags = Tags::new(b"#foo;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
+
+        assert_err_eq!(
+            Option::<()>::deserialize(deserializer),
+            Error::new(
+                error::Kind::CannotDeserializeAsOptionInSeq,
+                Position::new(0, 1)
+            )
+        );
+    }
+    
+    #[test]
+    fn seq() {
+        let mut tags = Tags::new(b"#foo;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
+
+        assert_err_eq!(
+            Vec::<()>::deserialize(deserializer),
+            Error::new(
+                error::Kind::CannotDeserializeNestedSeq,
+                Position::new(0, 1)
+            )
+        );
+    }
 }
