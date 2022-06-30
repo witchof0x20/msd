@@ -60,6 +60,10 @@ impl<'a> Values<'a> {
         }
     }
 
+    pub(in crate::de) fn current_position(&self) -> Position {
+        self.current_position
+    }
+
     pub(in crate::de) fn next(&mut self) -> Result<Value<'a>> {
         let mut value = None;
         let started_byte_index = self.current_byte_index;
@@ -369,5 +373,12 @@ mod tests {
             unstored_values.next(),
             Error::new(error::Kind::EndOfValues, Position::new(0, 7))
         );
+    }
+
+    #[test]
+    fn current_position() {
+        let values = Values::new(b"foo", Position::new(1, 2));
+
+        assert_eq!(values.current_position(), Position::new(1, 2));
     }
 }

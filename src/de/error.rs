@@ -7,6 +7,7 @@ use std::{fmt, fmt::Display};
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Kind {
+    // Formatting errors.
     EndOfFile,
     ExpectedTag,
     UnexpectedTag,
@@ -14,6 +15,8 @@ pub enum Kind {
     UnexpectedValues,
     UnexpectedValue,
     EndOfValues,
+
+    // Value errors.
     ExpectedBool,
     ExpectedI8,
     ExpectedI16,
@@ -31,7 +34,11 @@ pub enum Kind {
     ExpectedString,
     ExpectedUnit,
     ExpectedIdentifier,
+
+    // IO-related errors.
     Io,
+
+    // User-provided errors (provided through `serde::de::Error` trait methods).
     Custom(String),
     InvalidType(String, String),
     InvalidValue(String, String),
@@ -40,6 +47,18 @@ pub enum Kind {
     UnknownField(String, &'static [&'static str]),
     MissingField(&'static str),
     DuplicateField(&'static str),
+
+    // Unrepresentable type errors.
+    CannotDeserializeAsSelfDescribing,
+    CannotDeserializeAsOptionInTuple,
+    CannotDeserializeAsSeqInTuple,
+    CannotDeserializeAsMapInTuple,
+    CannotDeserializeAsStructInTuple,
+    CannotDeserializeNestedStruct,
+    MustDeserializeStructFieldAsIdentifier,
+    CannotDeserializeAsOptionInSeq,
+    CannotDeserializeNestedSeq,
+    MustDeserializeEnumVariantAsIdentifier,
 }
 
 impl Display for Kind {
@@ -113,6 +132,36 @@ impl Display for Kind {
 
             Kind::DuplicateField(field) => {
                 write!(formatter, "duplicate field {}", field)
+            }
+            Kind::CannotDeserializeAsSelfDescribing => {
+                formatter.write_str("cannot deserialize as self-describing")
+            }
+            Kind::CannotDeserializeAsOptionInTuple => {
+                formatter.write_str("cannot deserialize as option in tuple")
+            }
+            Kind::CannotDeserializeAsSeqInTuple => {
+                formatter.write_str("cannot deserialize as seq in tuple")
+            }
+            Kind::CannotDeserializeAsMapInTuple => {
+                formatter.write_str("cannot deserialize as map in tuple")
+            }
+            Kind::CannotDeserializeAsStructInTuple => {
+                formatter.write_str("cannot deserialize as struct in tuple")
+            }
+            Kind::CannotDeserializeNestedStruct => {
+                formatter.write_str("cannot deserialize nested struct")
+            }
+            Kind::MustDeserializeStructFieldAsIdentifier => {
+                formatter.write_str("must deserialize struct field as identifier")
+            }
+            Kind::CannotDeserializeAsOptionInSeq => {
+                formatter.write_str("cannot deserialize as option in seq")
+            }
+            Kind::CannotDeserializeNestedSeq => {
+                formatter.write_str("cannot deserialize nested seq")
+            }
+            Kind::MustDeserializeEnumVariantAsIdentifier => {
+                formatter.write_str("must deserialize enum variant as identifier")
             }
         }
     }
@@ -505,6 +554,131 @@ mod tests {
         assert_eq!(
             format!("{}", error),
             "duplicate field foo at line 33 column 34"
+        );
+    }
+
+    #[test]
+    fn cannot_deserialize_as_self_describing() {
+        assert_eq!(
+            format!(
+                "{}",
+                Error::new(
+                    Kind::CannotDeserializeAsSelfDescribing,
+                    Position::new(34, 35)
+                )
+            ),
+            "cannot deserialize as self-describing at line 34 column 35"
+        );
+    }
+
+    #[test]
+    fn cannot_deserialize_as_option_in_tuple() {
+        assert_eq!(
+            format!(
+                "{}",
+                Error::new(
+                    Kind::CannotDeserializeAsOptionInTuple,
+                    Position::new(35, 36)
+                )
+            ),
+            "cannot deserialize as option in tuple at line 35 column 36"
+        );
+    }
+
+    #[test]
+    fn cannot_deserialize_as_seq_in_tuple() {
+        assert_eq!(
+            format!(
+                "{}",
+                Error::new(Kind::CannotDeserializeAsSeqInTuple, Position::new(36, 37))
+            ),
+            "cannot deserialize as seq in tuple at line 36 column 37"
+        );
+    }
+
+    #[test]
+    fn cannot_deserialize_as_map_in_tuple() {
+        assert_eq!(
+            format!(
+                "{}",
+                Error::new(Kind::CannotDeserializeAsMapInTuple, Position::new(37, 38))
+            ),
+            "cannot deserialize as map in tuple at line 37 column 38"
+        );
+    }
+
+    #[test]
+    fn cannot_deserialize_as_struct_in_tuple() {
+        assert_eq!(
+            format!(
+                "{}",
+                Error::new(
+                    Kind::CannotDeserializeAsStructInTuple,
+                    Position::new(38, 39)
+                )
+            ),
+            "cannot deserialize as struct in tuple at line 38 column 39"
+        );
+    }
+
+    #[test]
+    fn cannot_deserialize_nested_struct() {
+        assert_eq!(
+            format!(
+                "{}",
+                Error::new(Kind::CannotDeserializeNestedStruct, Position::new(39, 40))
+            ),
+            "cannot deserialize nested struct at line 39 column 40"
+        );
+    }
+
+    #[test]
+    fn must_deserialize_struct_field_as_identifier() {
+        assert_eq!(
+            format!(
+                "{}",
+                Error::new(
+                    Kind::MustDeserializeStructFieldAsIdentifier,
+                    Position::new(40, 41)
+                )
+            ),
+            "must deserialize struct field as identifier at line 40 column 41"
+        );
+    }
+
+    #[test]
+    fn cannot_deserialize_as_option_in_seq() {
+        assert_eq!(
+            format!(
+                "{}",
+                Error::new(Kind::CannotDeserializeAsOptionInSeq, Position::new(41, 42))
+            ),
+            "cannot deserialize as option in seq at line 41 column 42"
+        );
+    }
+
+    #[test]
+    fn cannot_deserialize_nested_seq() {
+        assert_eq!(
+            format!(
+                "{}",
+                Error::new(Kind::CannotDeserializeNestedSeq, Position::new(42, 43))
+            ),
+            "cannot deserialize nested seq at line 42 column 43"
+        );
+    }
+
+    #[test]
+    fn must_deserialize_enum_variant_as_identifier() {
+        assert_eq!(
+            format!(
+                "{}",
+                Error::new(
+                    Kind::MustDeserializeEnumVariantAsIdentifier,
+                    Position::new(43, 44)
+                )
+            ),
+            "must deserialize enum variant as identifier at line 43 column 44"
         );
     }
 

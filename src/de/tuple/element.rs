@@ -1,4 +1,4 @@
-use crate::de::{parse::Values, r#enum, Error, Result};
+use crate::de::{error, parse::Values, r#enum, Error, Result};
 use serde::de::Visitor;
 
 pub(in crate::de) struct Deserializer<'a, 'b> {
@@ -18,7 +18,10 @@ impl<'a, 'b, 'de> serde::Deserializer<'de> for Deserializer<'a, 'b> {
     where
         V: Visitor<'de>,
     {
-        todo!()
+        Err(Error::new(
+            error::Kind::CannotDeserializeAsSelfDescribing,
+            self.values.current_position(),
+        ))
     }
 
     fn deserialize_bool<V>(self, visitor: V) -> Result<V::Value>
@@ -261,7 +264,10 @@ impl<'a, 'b, 'de> serde::Deserializer<'de> for Deserializer<'a, 'b> {
     where
         V: Visitor<'de>,
     {
-        todo!()
+        Err(Error::new(
+            error::Kind::CannotDeserializeAsOptionInTuple,
+            self.values.current_position(),
+        ))
     }
 
     fn deserialize_unit<V>(self, visitor: V) -> Result<V::Value>
@@ -299,7 +305,10 @@ impl<'a, 'b, 'de> serde::Deserializer<'de> for Deserializer<'a, 'b> {
     where
         V: Visitor<'de>,
     {
-        todo!()
+        Err(Error::new(
+            error::Kind::CannotDeserializeAsSeqInTuple,
+            self.values.current_position(),
+        ))
     }
 
     fn deserialize_tuple<V>(self, len: usize, visitor: V) -> Result<V::Value>
@@ -325,7 +334,10 @@ impl<'a, 'b, 'de> serde::Deserializer<'de> for Deserializer<'a, 'b> {
     where
         V: Visitor<'de>,
     {
-        todo!()
+        Err(Error::new(
+            error::Kind::CannotDeserializeAsMapInTuple,
+            self.values.current_position(),
+        ))
     }
 
     fn deserialize_struct<V>(
@@ -337,7 +349,10 @@ impl<'a, 'b, 'de> serde::Deserializer<'de> for Deserializer<'a, 'b> {
     where
         V: Visitor<'de>,
     {
-        todo!()
+        Err(Error::new(
+            error::Kind::CannotDeserializeAsStructInTuple,
+            self.values.current_position(),
+        ))
     }
 
     fn deserialize_enum<V>(
@@ -369,7 +384,10 @@ impl<'a, 'b, 'de> serde::Deserializer<'de> for Deserializer<'a, 'b> {
     where
         V: Visitor<'de>,
     {
-        todo!()
+        Err(Error::new(
+            error::Kind::CannotDeserializeAsSelfDescribing,
+            self.values.current_position(),
+        ))
     }
 }
 
@@ -381,7 +399,7 @@ mod tests {
     use serde::{de, de::Visitor, Deserialize};
     use serde_bytes::ByteBuf;
     use serde_derive::Deserialize;
-    use std::fmt;
+    use std::{collections::HashMap, fmt};
 
     #[test]
     fn bool_true() {
@@ -1855,6 +1873,140 @@ mod tests {
         assert_err_eq!(
             CustomIdentifier::deserialize(deserializer),
             Error::new(error::Kind::Custom("foo".to_string()), Position::new(1, 2))
+        );
+    }
+
+    #[test]
+    fn any() {
+        #[derive(Debug)]
+        struct Any;
+
+        impl<'de> Deserialize<'de> for Any {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: de::Deserializer<'de>,
+            {
+                struct AnyVisitor;
+
+                impl<'de> Visitor<'de> for AnyVisitor {
+                    type Value = Any;
+
+                    fn expecting(&self, _f: &mut fmt::Formatter) -> fmt::Result {
+                        unimplemented!()
+                    }
+                }
+
+                deserializer.deserialize_any(AnyVisitor)
+            }
+        }
+
+        let mut values = Values::new(b"", Position::new(1, 2));
+        let deserializer = Deserializer::new(&mut values);
+
+        assert_err_eq!(
+            Any::deserialize(deserializer),
+            Error::new(
+                error::Kind::CannotDeserializeAsSelfDescribing,
+                Position::new(1, 2)
+            )
+        );
+    }
+
+    #[test]
+    fn ignored_any() {
+        #[derive(Debug)]
+        struct IgnoredAny;
+
+        impl<'de> Deserialize<'de> for IgnoredAny {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: de::Deserializer<'de>,
+            {
+                struct IgnoredAnyVisitor;
+
+                impl<'de> Visitor<'de> for IgnoredAnyVisitor {
+                    type Value = IgnoredAny;
+
+                    fn expecting(&self, _f: &mut fmt::Formatter) -> fmt::Result {
+                        unimplemented!()
+                    }
+                }
+
+                deserializer.deserialize_ignored_any(IgnoredAnyVisitor)
+            }
+        }
+
+        let mut values = Values::new(b"", Position::new(1, 2));
+        let deserializer = Deserializer::new(&mut values);
+
+        assert_err_eq!(
+            IgnoredAny::deserialize(deserializer),
+            Error::new(
+                error::Kind::CannotDeserializeAsSelfDescribing,
+                Position::new(1, 2)
+            )
+        );
+    }
+
+    #[test]
+    fn option() {
+        let mut values = Values::new(b"", Position::new(1, 2));
+        let deserializer = Deserializer::new(&mut values);
+
+        assert_err_eq!(
+            Option::<()>::deserialize(deserializer),
+            Error::new(
+                error::Kind::CannotDeserializeAsOptionInTuple,
+                Position::new(1, 2)
+            )
+        );
+    }
+
+    #[test]
+    fn seq() {
+        let mut values = Values::new(b"", Position::new(1, 2));
+        let deserializer = Deserializer::new(&mut values);
+
+        assert_err_eq!(
+            Vec::<()>::deserialize(deserializer),
+            Error::new(
+                error::Kind::CannotDeserializeAsSeqInTuple,
+                Position::new(1, 2)
+            )
+        );
+    }
+
+    #[test]
+    fn map() {
+        let mut values = Values::new(b"", Position::new(1, 2));
+        let deserializer = Deserializer::new(&mut values);
+
+        assert_err_eq!(
+            HashMap::<(), ()>::deserialize(deserializer),
+            Error::new(
+                error::Kind::CannotDeserializeAsMapInTuple,
+                Position::new(1, 2)
+            )
+        );
+    }
+
+    #[test]
+    fn r#struct() {
+        #[derive(Debug, Deserialize)]
+        struct Struct {
+            _foo: usize,
+            _bar: bool,
+        }
+
+        let mut values = Values::new(b"", Position::new(1, 2));
+        let deserializer = Deserializer::new(&mut values);
+
+        assert_err_eq!(
+            Struct::deserialize(deserializer),
+            Error::new(
+                error::Kind::CannotDeserializeAsStructInTuple,
+                Position::new(1, 2)
+            )
         );
     }
 }

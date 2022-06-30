@@ -1,4 +1,4 @@
-use crate::de::{map, parse::Tags, r#enum, r#struct, tuple, Error, Result};
+use crate::de::{error, map, parse::Tags, r#enum, r#struct, tuple, Error, Result};
 use serde::{de, de::Visitor};
 use std::io::Read;
 
@@ -22,7 +22,9 @@ where
     where
         V: Visitor<'de>,
     {
-        todo!()
+        Err(self
+            .tags
+            .error_at_current_tag(error::Kind::CannotDeserializeAsSelfDescribing))
     }
 
     fn deserialize_bool<V>(self, visitor: V) -> Result<V::Value>
@@ -339,7 +341,9 @@ where
     where
         V: Visitor<'de>,
     {
-        todo!()
+        Err(self
+            .tags
+            .error_at_current_tag(error::Kind::CannotDeserializeAsOptionInSeq))
     }
 
     fn deserialize_unit<V>(self, visitor: V) -> Result<V::Value>
@@ -387,7 +391,9 @@ where
     where
         V: Visitor<'de>,
     {
-        todo!()
+        Err(self
+            .tags
+            .error_at_current_tag(error::Kind::CannotDeserializeNestedSeq))
     }
 
     fn deserialize_tuple<V>(self, len: usize, visitor: V) -> Result<V::Value>
@@ -486,7 +492,9 @@ where
     where
         V: Visitor<'de>,
     {
-        todo!()
+        Err(self
+            .tags
+            .error_at_current_tag(error::Kind::CannotDeserializeAsSelfDescribing))
     }
 }
 
@@ -2317,6 +2325,103 @@ mod tests {
         assert_err_eq!(
             CustomIdentifier::deserialize(deserializer),
             Error::new(error::Kind::Custom("foo".to_string()), Position::new(0, 1))
+        );
+    }
+
+    #[test]
+    fn any() {
+        #[derive(Debug)]
+        struct Any;
+
+        impl<'de> Deserialize<'de> for Any {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: de::Deserializer<'de>,
+            {
+                struct AnyVisitor;
+
+                impl<'de> Visitor<'de> for AnyVisitor {
+                    type Value = Any;
+
+                    fn expecting(&self, _f: &mut fmt::Formatter) -> fmt::Result {
+                        unimplemented!()
+                    }
+                }
+
+                deserializer.deserialize_any(AnyVisitor)
+            }
+        }
+
+        let mut tags = Tags::new(b"#foo;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
+
+        assert_err_eq!(
+            Any::deserialize(deserializer),
+            Error::new(
+                error::Kind::CannotDeserializeAsSelfDescribing,
+                Position::new(0, 1)
+            )
+        );
+    }
+
+    #[test]
+    fn ignored_any() {
+        #[derive(Debug)]
+        struct IgnoredAny;
+
+        impl<'de> Deserialize<'de> for IgnoredAny {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: de::Deserializer<'de>,
+            {
+                struct IgnoredAnyVisitor;
+
+                impl<'de> Visitor<'de> for IgnoredAnyVisitor {
+                    type Value = IgnoredAny;
+
+                    fn expecting(&self, _f: &mut fmt::Formatter) -> fmt::Result {
+                        unimplemented!()
+                    }
+                }
+
+                deserializer.deserialize_ignored_any(IgnoredAnyVisitor)
+            }
+        }
+
+        let mut tags = Tags::new(b"#foo;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
+
+        assert_err_eq!(
+            IgnoredAny::deserialize(deserializer),
+            Error::new(
+                error::Kind::CannotDeserializeAsSelfDescribing,
+                Position::new(0, 1)
+            )
+        );
+    }
+
+    #[test]
+    fn option() {
+        let mut tags = Tags::new(b"#foo;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
+
+        assert_err_eq!(
+            Option::<()>::deserialize(deserializer),
+            Error::new(
+                error::Kind::CannotDeserializeAsOptionInSeq,
+                Position::new(0, 1)
+            )
+        );
+    }
+
+    #[test]
+    fn seq() {
+        let mut tags = Tags::new(b"#foo;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
+
+        assert_err_eq!(
+            Vec::<()>::deserialize(deserializer),
+            Error::new(error::Kind::CannotDeserializeNestedSeq, Position::new(0, 1))
         );
     }
 }
