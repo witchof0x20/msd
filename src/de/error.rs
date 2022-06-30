@@ -58,6 +58,7 @@ pub enum Kind {
     MustDeserializeStructFieldAsIdentifier,
     CannotDeserializeAsOptionInSeq,
     CannotDeserializeNestedSeq,
+    MustDeserializeEnumVariantAsIdentifier,
 }
 
 impl Display for Kind {
@@ -158,6 +159,9 @@ impl Display for Kind {
             }
             Kind::CannotDeserializeNestedSeq => {
                 formatter.write_str("cannot deserialize nested seq")
+            }
+            Kind::MustDeserializeEnumVariantAsIdentifier => {
+                formatter.write_str("must deserialize enum variant as identifier")
             }
         }
     }
@@ -647,10 +651,7 @@ mod tests {
         assert_eq!(
             format!(
                 "{}",
-                Error::new(
-                    Kind::CannotDeserializeAsOptionInSeq,
-                    Position::new(41, 42)
-                )
+                Error::new(Kind::CannotDeserializeAsOptionInSeq, Position::new(41, 42))
             ),
             "cannot deserialize as option in seq at line 41 column 42"
         );
@@ -661,12 +662,23 @@ mod tests {
         assert_eq!(
             format!(
                 "{}",
-                Error::new(
-                    Kind::CannotDeserializeNestedSeq,
-                    Position::new(42, 43)
-                )
+                Error::new(Kind::CannotDeserializeNestedSeq, Position::new(42, 43))
             ),
             "cannot deserialize nested seq at line 42 column 43"
+        );
+    }
+
+    #[test]
+    fn must_deserialize_enum_variant_as_identifier() {
+        assert_eq!(
+            format!(
+                "{}",
+                Error::new(
+                    Kind::MustDeserializeEnumVariantAsIdentifier,
+                    Position::new(43, 44)
+                )
+            ),
+            "must deserialize enum variant as identifier at line 43 column 44"
         );
     }
 

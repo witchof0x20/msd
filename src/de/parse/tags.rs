@@ -303,12 +303,8 @@ where
     pub(in crate::de) fn error_at_current_tag(&mut self, kind: error::Kind) -> Error {
         if let Err(error) = self.to_first_tag() {
             error
-        }
-        else if self.exhausted {
-            Error::new(
-                error::Kind::EndOfFile,
-                self.current_position,
-            )
+        } else if self.exhausted {
+            Error::new(error::Kind::EndOfFile, self.current_position)
         } else {
             Error::new(
                 kind,

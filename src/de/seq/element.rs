@@ -22,7 +22,9 @@ where
     where
         V: Visitor<'de>,
     {
-        Err(self.tags.error_at_current_tag(error::Kind::CannotDeserializeAsSelfDescribing))
+        Err(self
+            .tags
+            .error_at_current_tag(error::Kind::CannotDeserializeAsSelfDescribing))
     }
 
     fn deserialize_bool<V>(self, visitor: V) -> Result<V::Value>
@@ -339,7 +341,9 @@ where
     where
         V: Visitor<'de>,
     {
-        Err(self.tags.error_at_current_tag(error::Kind::CannotDeserializeAsOptionInSeq))
+        Err(self
+            .tags
+            .error_at_current_tag(error::Kind::CannotDeserializeAsOptionInSeq))
     }
 
     fn deserialize_unit<V>(self, visitor: V) -> Result<V::Value>
@@ -387,7 +391,9 @@ where
     where
         V: Visitor<'de>,
     {
-        Err(self.tags.error_at_current_tag(error::Kind::CannotDeserializeNestedSeq))
+        Err(self
+            .tags
+            .error_at_current_tag(error::Kind::CannotDeserializeNestedSeq))
     }
 
     fn deserialize_tuple<V>(self, len: usize, visitor: V) -> Result<V::Value>
@@ -486,7 +492,9 @@ where
     where
         V: Visitor<'de>,
     {
-        Err(self.tags.error_at_current_tag(error::Kind::CannotDeserializeAsSelfDescribing))
+        Err(self
+            .tags
+            .error_at_current_tag(error::Kind::CannotDeserializeAsSelfDescribing))
     }
 }
 

@@ -83,7 +83,9 @@ where
     where
         V: Visitor<'de>,
     {
-        Err(self.tags.error_at_current_tag(error::Kind::CannotDeserializeAsSelfDescribing))
+        Err(self
+            .tags
+            .error_at_current_tag(error::Kind::CannotDeserializeAsSelfDescribing))
     }
 
     fn deserialize_bool<V>(self, visitor: V) -> Result<V::Value>
@@ -572,7 +574,9 @@ where
     where
         V: Visitor<'de>,
     {
-        Err(self.tags.error_at_current_tag(error::Kind::CannotDeserializeAsSelfDescribing))
+        Err(self
+            .tags
+            .error_at_current_tag(error::Kind::CannotDeserializeAsSelfDescribing))
     }
 }
 
