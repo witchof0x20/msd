@@ -295,7 +295,8 @@ where
 #[cfg(test)]
 mod tests {
     use super::Serializer;
-    use claim::assert_ok;
+    use crate::ser::Error;
+    use claim::{assert_err_eq, assert_ok};
     use serde::{
         ser::{SerializeMap, SerializeTupleStruct, SerializeTupleVariant},
         Serialize,
@@ -1141,6 +1142,37 @@ mod tests {
         assert_eq!(
             output,
             b"#foo:\n   abc:1;\n   def:2;\n   ghi:3;\n   jkl:4;\n"
+        );
+    }
+
+    #[test]
+    fn r#struct() {
+        #[derive(Default, Serialize)]
+        struct Struct {
+            foo: u64,
+            bar: bool,
+        }
+
+        let mut output = Vec::new();
+
+        assert_err_eq!(
+            Struct::default().serialize(Serializer::new(&mut output, b"foo".to_vec())),
+            Error::UnsupportedType
+        );
+    }
+
+    #[test]
+    fn struct_variant() {
+        #[derive(Serialize)]
+        enum Struct {
+            Variant { foo: u64, bar: bool },
+        }
+
+        let mut output = Vec::new();
+
+        assert_err_eq!(
+            Struct::Variant { foo: 0, bar: false }.serialize(Serializer::new(&mut output, b"foo".to_vec())),
+            Error::UnsupportedType
         );
     }
 }
