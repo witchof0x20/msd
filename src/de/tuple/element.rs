@@ -1367,6 +1367,103 @@ mod tests {
         );
     }
 
+    #[derive(Debug, PartialEq)]
+    struct Str(String);
+
+    impl<'de> Deserialize<'de> for Str {
+        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where
+            D: de::Deserializer<'de>,
+        {
+            struct StrVisitor;
+
+            impl<'de> Visitor<'de> for StrVisitor {
+                type Value = Str;
+
+                fn expecting(&self, _f: &mut fmt::Formatter) -> fmt::Result {
+                    unimplemented!()
+                }
+
+                fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+                where
+                    E: de::Error,
+                {
+                    Ok(Str(value.to_owned()))
+                }
+            }
+
+            deserializer.deserialize_str(StrVisitor)
+        }
+    }
+
+    #[test]
+    fn str_valid() {
+        let mut values = Values::new(b"foo", Position::new(0, 0));
+        let deserializer = Deserializer::new(&mut values);
+
+        assert_ok_eq!(Str::deserialize(deserializer), Str("foo".to_owned()));
+    }
+
+    #[test]
+    fn str_invalid() {
+        let mut values = Values::new(b"\xF0\x9Ffoo", Position::new(0, 0));
+        let deserializer = Deserializer::new(&mut values);
+
+        assert_err_eq!(
+            Str::deserialize(deserializer),
+            Error::new(error::Kind::ExpectedString, Position::new(0, 0))
+        );
+    }
+
+    #[test]
+    fn str_multiple_values() {
+        // The entire values iterator is not consumed. Just the first value is returned.
+        let mut values = Values::new(b"foo:bar", Position::new(0, 0));
+        let deserializer = Deserializer::new(&mut values);
+
+        assert_ok_eq!(Str::deserialize(deserializer), Str("foo".to_owned()));
+    }
+
+    #[test]
+    fn str_custom_error() {
+        #[derive(Debug)]
+        struct CustomStr;
+
+        impl<'de> Deserialize<'de> for CustomStr {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: de::Deserializer<'de>,
+            {
+                struct CustomStrVisitor;
+
+                impl<'de> Visitor<'de> for CustomStrVisitor {
+                    type Value = CustomStr;
+
+                    fn expecting(&self, _f: &mut fmt::Formatter) -> fmt::Result {
+                        unimplemented!()
+                    }
+
+                    fn visit_str<E>(self, _value: &str) -> Result<Self::Value, E>
+                    where
+                        E: de::Error,
+                    {
+                        Err(de::Error::custom("foo"))
+                    }
+                }
+
+                deserializer.deserialize_str(CustomStrVisitor)
+            }
+        }
+
+        let mut values = Values::new(b"a", Position::new(1, 2));
+        let deserializer = Deserializer::new(&mut values);
+
+        assert_err_eq!(
+            CustomStr::deserialize(deserializer),
+            Error::new(error::Kind::Custom("foo".to_string()), Position::new(1, 2))
+        );
+    }
+
     #[test]
     fn string_valid() {
         let mut values = Values::new(b"foo", Position::new(0, 0));
@@ -1431,6 +1528,92 @@ mod tests {
 
         assert_err_eq!(
             CustomString::deserialize(deserializer),
+            Error::new(error::Kind::Custom("foo".to_string()), Position::new(1, 2))
+        );
+    }
+
+    #[derive(Debug, PartialEq)]
+    struct Bytes(Vec<u8>);
+
+    impl<'de> Deserialize<'de> for Bytes {
+        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where
+            D: de::Deserializer<'de>,
+        {
+            struct BytesVisitor;
+
+            impl<'de> Visitor<'de> for BytesVisitor {
+                type Value = Bytes;
+
+                fn expecting(&self, _f: &mut fmt::Formatter) -> fmt::Result {
+                    unimplemented!()
+                }
+
+                fn visit_bytes<E>(self, value: &[u8]) -> Result<Self::Value, E>
+                where
+                    E: de::Error,
+                {
+                    Ok(Bytes(value.to_owned()))
+                }
+            }
+
+            deserializer.deserialize_bytes(BytesVisitor)
+        }
+    }
+
+    #[test]
+    fn bytes() {
+        let mut values = Values::new(b"foo", Position::new(0, 0));
+        let deserializer = Deserializer::new(&mut values);
+
+        assert_ok_eq!(Bytes::deserialize(deserializer), Bytes(b"foo".to_vec()));
+    }
+
+    #[test]
+    fn bytes_multiple_values() {
+        // The entire values iterator is not consumed. Just the first value is returned.
+        let mut values = Values::new(b"foo:bar", Position::new(0, 0));
+        let deserializer = Deserializer::new(&mut values);
+
+        assert_ok_eq!(Bytes::deserialize(deserializer), Bytes(b"foo".to_vec()));
+    }
+
+    #[test]
+    fn bytes_custom_error() {
+        #[derive(Debug)]
+        struct CustomBytes;
+
+        impl<'de> Deserialize<'de> for CustomBytes {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: de::Deserializer<'de>,
+            {
+                struct CustomBytesVisitor;
+
+                impl<'de> Visitor<'de> for CustomBytesVisitor {
+                    type Value = CustomBytes;
+
+                    fn expecting(&self, _f: &mut fmt::Formatter) -> fmt::Result {
+                        unimplemented!()
+                    }
+
+                    fn visit_bytes<E>(self, _value: &[u8]) -> Result<Self::Value, E>
+                    where
+                        E: de::Error,
+                    {
+                        Err(de::Error::custom("foo"))
+                    }
+                }
+
+                deserializer.deserialize_bytes(CustomBytesVisitor)
+            }
+        }
+
+        let mut values = Values::new(b"a", Position::new(1, 2));
+        let deserializer = Deserializer::new(&mut values);
+
+        assert_err_eq!(
+            CustomBytes::deserialize(deserializer),
             Error::new(error::Kind::Custom("foo".to_string()), Position::new(1, 2))
         );
     }
