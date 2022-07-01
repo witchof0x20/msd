@@ -2031,7 +2031,10 @@ mod tests {
     fn bytes_non_ascii() {
         let mut deserializer = Deserializer::new(b"#\xF0\x9Ffoo;\n".as_slice());
 
-        assert_ok_eq!(Bytes::deserialize(&mut deserializer), Bytes(b"\xF0\x9Ffoo".to_vec()));
+        assert_ok_eq!(
+            Bytes::deserialize(&mut deserializer),
+            Bytes(b"\xF0\x9Ffoo".to_vec())
+        );
     }
 
     #[test]
