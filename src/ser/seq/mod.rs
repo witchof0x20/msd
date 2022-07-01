@@ -77,9 +77,8 @@ mod tests {
         assert_ok!(serializer.serialize_element(&42));
         assert_ok!(serializer.serialize_element(&"bar"));
         assert_ok!(serializer.serialize_element(&()));
-        assert_ok!(serializer.serialize_element::<Option<()>>(&None));
         assert_ok!(serializer.end());
 
-        assert_eq!(output, b"#foo:42;\n#foo:bar;\n#foo:;\n#foo:;\n");
+        assert_eq!(output, b"#foo:42;\n#foo:bar;\n#foo:;\n");
     }
 }

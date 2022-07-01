@@ -123,14 +123,14 @@ where
     }
 
     fn serialize_none(self) -> Result<Self::Ok> {
-        self.writer.write_tag_name_unescaped(b"")
+        Err(Error::UnsupportedType)
     }
 
-    fn serialize_some<T>(self, v: &T) -> Result<Self::Ok>
+    fn serialize_some<T>(self, _v: &T) -> Result<Self::Ok>
     where
         T: ?Sized + Serialize,
     {
-        v.serialize(self)
+        Err(Error::UnsupportedType)
     }
 
     fn serialize_unit(self) -> Result<Self::Ok> {
@@ -220,7 +220,8 @@ where
 #[cfg(test)]
 mod tests {
     use super::Serializer;
-    use claim::assert_ok;
+    use crate::ser::Error;
+    use claim::{assert_err_eq, assert_ok};
     use serde::{
         ser::{SerializeTupleStruct, SerializeTupleVariant},
         Serialize,
@@ -586,18 +587,20 @@ mod tests {
     fn none() {
         let mut output = Vec::new();
 
-        assert_ok!(Option::<()>::None.serialize(Serializer::new(&mut output)));
-
-        assert_eq!(output, b"#");
+        assert_err_eq!(
+            Option::<()>::None.serialize(Serializer::new(&mut output)),
+            Error::UnsupportedType
+        );
     }
 
     #[test]
     fn some() {
         let mut output = Vec::new();
 
-        assert_ok!(Some(42).serialize(Serializer::new(&mut output)));
-
-        assert_eq!(output, b"#42");
+        assert_err_eq!(
+            Some(42).serialize(Serializer::new(&mut output)),
+            Error::UnsupportedType
+        );
     }
 
     #[test]

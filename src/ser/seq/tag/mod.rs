@@ -67,9 +67,8 @@ mod tests {
         assert_ok!(serializer.serialize_element(&42));
         assert_ok!(serializer.serialize_element(&"bar"));
         assert_ok!(serializer.serialize_element(&()));
-        assert_ok!(serializer.serialize_element::<Option<()>>(&None));
         assert_ok!(serializer.end());
 
-        assert_eq!(output, b"#42;\n#bar;\n#;\n#;\n");
+        assert_eq!(output, b"#42;\n#bar;\n#;\n");
     }
 }
