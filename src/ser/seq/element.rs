@@ -967,4 +967,14 @@ mod tests {
 
         assert_eq!(output, b":Variant;\n#foo:42;\n#bar:test;\n#baz:;\n");
     }
+
+    #[test]
+    fn seq() {
+        let mut output = Vec::new();
+
+        assert_err_eq!(
+            Vec::<()>::new().serialize(Serializer::new(&mut output)),
+            Error::UnsupportedType
+        );
+    }
 }
