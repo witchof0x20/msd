@@ -220,8 +220,8 @@ where
 #[cfg(test)]
 mod tests {
     use super::Serializer;
-    use claim::{assert_err_eq, assert_ok};
     use crate::ser::Error;
+    use claim::{assert_err_eq, assert_ok};
     use serde::{
         ser::{SerializeTupleStruct, SerializeTupleVariant},
         Serialize,
@@ -587,14 +587,20 @@ mod tests {
     fn none() {
         let mut output = Vec::new();
 
-        assert_err_eq!(Option::<()>::None.serialize(Serializer::new(&mut output)), Error::UnsupportedType);
+        assert_err_eq!(
+            Option::<()>::None.serialize(Serializer::new(&mut output)),
+            Error::UnsupportedType
+        );
     }
 
     #[test]
     fn some() {
         let mut output = Vec::new();
 
-        assert_err_eq!(Some(42).serialize(Serializer::new(&mut output)), Error::UnsupportedType);
+        assert_err_eq!(
+            Some(42).serialize(Serializer::new(&mut output)),
+            Error::UnsupportedType
+        );
     }
 
     #[test]
