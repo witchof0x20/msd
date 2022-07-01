@@ -254,6 +254,7 @@ mod tests {
     };
     use serde_bytes::Bytes;
     use serde_derive::Serialize;
+    use std::collections::HashMap;
 
     #[test]
     fn r#true() {
@@ -837,5 +838,56 @@ mod tests {
         );
 
         assert_eq!(output, b":Variant:1:2:3:4:5:6:7;\n");
+    }
+
+    #[test]
+    fn seq() {
+        let mut output = Vec::new();
+
+        assert_err_eq!(
+            Vec::<()>::new().serialize(Serializer::new(&mut output)),
+            Error::UnsupportedType
+        );
+    }
+
+    #[test]
+    fn map() {
+        let mut output = Vec::new();
+
+        assert_err_eq!(
+            HashMap::<(), ()>::new().serialize(Serializer::new(&mut output)),
+            Error::UnsupportedType
+        );
+    }
+
+    #[test]
+    fn r#struct() {
+        #[derive(Default, Serialize)]
+        struct Struct {
+            foo: u64,
+            bar: bool,
+        }
+
+        let mut output = Vec::new();
+
+        assert_err_eq!(
+            Struct::default().serialize(Serializer::new(&mut output)),
+            Error::UnsupportedType
+        );
+    }
+
+    #[test]
+    fn struct_variant() {
+        #[derive(Serialize)]
+        enum Struct {
+            Variant { foo: u64, bar: bool },
+        }
+
+        let mut output = Vec::new();
+
+        assert_err_eq!(
+            Struct::Variant { foo: 0, bar: false }.serialize(Serializer::new(&mut output)),
+            Error::UnsupportedType
+        );
     }
 }
