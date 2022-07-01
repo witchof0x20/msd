@@ -1636,6 +1636,116 @@ mod tests {
         );
     }
 
+    #[derive(Debug, PartialEq)]
+    struct Str(String);
+
+    impl<'de> Deserialize<'de> for Str {
+        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where
+            D: de::Deserializer<'de>,
+        {
+            struct StrVisitor;
+
+            impl<'de> Visitor<'de> for StrVisitor {
+                type Value = Str;
+
+                fn expecting(&self, _f: &mut fmt::Formatter) -> fmt::Result {
+                    unimplemented!()
+                }
+
+                fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+                where
+                    E: de::Error,
+                {
+                    Ok(Str(value.to_owned()))
+                }
+            }
+
+            deserializer.deserialize_str(StrVisitor)
+        }
+    }
+
+    #[test]
+    fn str() {
+        let mut tags = Tags::new(b"#foo;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
+
+        assert_ok_eq!(Str::deserialize(deserializer), Str("foo".to_owned()));
+    }
+
+    #[test]
+    fn str_invalid() {
+        let mut tags = Tags::new(b"#\xF0\x9Ffoo;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
+
+        assert_err_eq!(
+            Str::deserialize(deserializer),
+            Error::new(error::Kind::ExpectedString, Position::new(0, 1))
+        );
+    }
+
+    #[test]
+    fn str_too_many_values() {
+        let mut tags = Tags::new(b"#foo:bar;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
+
+        assert_err_eq!(
+            Str::deserialize(deserializer),
+            Error::new(error::Kind::UnexpectedValue, Position::new(0, 5))
+        );
+    }
+
+    #[test]
+    fn str_unexpected_values() {
+        let mut tags = Tags::new(b"#foo;bar;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
+
+        assert_err_eq!(
+            Str::deserialize(deserializer),
+            Error::new(error::Kind::UnexpectedValues, Position::new(0, 5))
+        );
+    }
+
+    #[test]
+    fn str_custom_error() {
+        #[derive(Debug)]
+        struct CustomStr;
+
+        impl<'de> Deserialize<'de> for CustomStr {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: de::Deserializer<'de>,
+            {
+                struct CustomStrVisitor;
+
+                impl<'de> Visitor<'de> for CustomStrVisitor {
+                    type Value = CustomStr;
+
+                    fn expecting(&self, _f: &mut fmt::Formatter) -> fmt::Result {
+                        unimplemented!()
+                    }
+
+                    fn visit_str<E>(self, _value: &str) -> Result<Self::Value, E>
+                    where
+                        E: de::Error,
+                    {
+                        Err(de::Error::custom("foo"))
+                    }
+                }
+
+                deserializer.deserialize_str(CustomStrVisitor)
+            }
+        }
+
+        let mut tags = Tags::new(b"#foo;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
+
+        assert_err_eq!(
+            CustomStr::deserialize(deserializer),
+            Error::new(error::Kind::Custom("foo".to_string()), Position::new(0, 1))
+        );
+    }
+
     #[test]
     fn string() {
         let mut tags = Tags::new(b"#foo;".as_slice());
@@ -1713,6 +1823,105 @@ mod tests {
 
         assert_err_eq!(
             CustomString::deserialize(deserializer),
+            Error::new(error::Kind::Custom("foo".to_string()), Position::new(0, 1))
+        );
+    }
+
+    #[derive(Debug, PartialEq)]
+    struct Bytes(Vec<u8>);
+
+    impl<'de> Deserialize<'de> for Bytes {
+        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where
+            D: de::Deserializer<'de>,
+        {
+            struct BytesVisitor;
+
+            impl<'de> Visitor<'de> for BytesVisitor {
+                type Value = Bytes;
+
+                fn expecting(&self, _f: &mut fmt::Formatter) -> fmt::Result {
+                    unimplemented!()
+                }
+
+                fn visit_bytes<E>(self, value: &[u8]) -> Result<Self::Value, E>
+                where
+                    E: de::Error,
+                {
+                    Ok(Bytes(value.to_owned()))
+                }
+            }
+
+            deserializer.deserialize_bytes(BytesVisitor)
+        }
+    }
+
+    #[test]
+    fn bytes() {
+        let mut tags = Tags::new(b"#foo;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
+
+        assert_ok_eq!(Bytes::deserialize(deserializer), Bytes(b"foo".to_vec()));
+    }
+
+    #[test]
+    fn bytes_too_many_values() {
+        let mut tags = Tags::new(b"#foo:bar;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
+
+        assert_err_eq!(
+            Bytes::deserialize(deserializer),
+            Error::new(error::Kind::UnexpectedValue, Position::new(0, 5))
+        );
+    }
+
+    #[test]
+    fn bytes_unexpected_values() {
+        let mut tags = Tags::new(b"#foo;bar;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
+
+        assert_err_eq!(
+            Bytes::deserialize(deserializer),
+            Error::new(error::Kind::UnexpectedValues, Position::new(0, 5))
+        );
+    }
+
+    #[test]
+    fn bytes_custom_error() {
+        #[derive(Debug)]
+        struct CustomBytes;
+
+        impl<'de> Deserialize<'de> for CustomBytes {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: de::Deserializer<'de>,
+            {
+                struct CustomBytesVisitor;
+
+                impl<'de> Visitor<'de> for CustomBytesVisitor {
+                    type Value = CustomBytes;
+
+                    fn expecting(&self, _f: &mut fmt::Formatter) -> fmt::Result {
+                        unimplemented!()
+                    }
+
+                    fn visit_bytes<E>(self, _value: &[u8]) -> Result<Self::Value, E>
+                    where
+                        E: de::Error,
+                    {
+                        Err(de::Error::custom("foo"))
+                    }
+                }
+
+                deserializer.deserialize_bytes(CustomBytesVisitor)
+            }
+        }
+
+        let mut tags = Tags::new(b"#foo;".as_slice());
+        let deserializer = Deserializer::new(&mut tags);
+
+        assert_err_eq!(
+            CustomBytes::deserialize(deserializer),
             Error::new(error::Kind::Custom("foo".to_string()), Position::new(0, 1))
         );
     }
