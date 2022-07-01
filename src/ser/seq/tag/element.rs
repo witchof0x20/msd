@@ -143,16 +143,14 @@ where
     }
 
     fn serialize_none(self) -> Result<Self::Ok> {
-        self.writer.write_tag_name_unescaped(b"")?;
-
-        self.writer.close_tag()
+        Err(Error::UnsupportedType)
     }
 
-    fn serialize_some<T>(self, v: &T) -> Result<Self::Ok>
+    fn serialize_some<T>(self, _v: &T) -> Result<Self::Ok>
     where
         T: ?Sized + Serialize,
     {
-        v.serialize(self)
+        Err(Error::UnsupportedType)
     }
 
     fn serialize_unit(self) -> Result<Self::Ok> {
@@ -251,13 +249,15 @@ where
 #[cfg(test)]
 mod tests {
     use super::Serializer;
-    use claim::assert_ok;
+    use crate::ser::Error;
+    use claim::{assert_err_eq, assert_ok};
     use serde::{
         ser::{SerializeTupleStruct, SerializeTupleVariant},
         Serialize,
     };
     use serde_bytes::Bytes;
     use serde_derive::Serialize;
+    use std::collections::HashMap;
 
     #[test]
     fn r#true() {
@@ -617,18 +617,20 @@ mod tests {
     fn none() {
         let mut output = Vec::new();
 
-        assert_ok!(Option::<()>::None.serialize(Serializer::new(&mut output)));
-
-        assert_eq!(output, b"#;\n");
+        assert_err_eq!(
+            Option::<()>::None.serialize(Serializer::new(&mut output)),
+            Error::UnsupportedType
+        );
     }
 
     #[test]
     fn some() {
         let mut output = Vec::new();
 
-        assert_ok!(Some(42).serialize(Serializer::new(&mut output)));
-
-        assert_eq!(output, b"#42;\n");
+        assert_err_eq!(
+            Some(42).serialize(Serializer::new(&mut output)),
+            Error::UnsupportedType
+        );
     }
 
     #[test]
@@ -864,5 +866,41 @@ mod tests {
         .serialize(Serializer::new(&mut output)));
 
         assert_eq!(output, b"#Variant:;\n#foo:42;\n#bar:test;\n#baz:;\n");
+    }
+
+    #[test]
+    fn seq() {
+        let mut output = Vec::new();
+
+        assert_err_eq!(
+            Vec::<()>::new().serialize(Serializer::new(&mut output)),
+            Error::UnsupportedType
+        );
+    }
+
+    #[test]
+    fn map() {
+        let mut output = Vec::new();
+
+        assert_err_eq!(
+            HashMap::<(), ()>::new().serialize(Serializer::new(&mut output)),
+            Error::UnsupportedType
+        );
+    }
+
+    #[test]
+    fn r#struct() {
+        #[derive(Default, Serialize)]
+        struct Struct {
+            foo: u64,
+            bar: bool,
+        }
+
+        let mut output = Vec::new();
+
+        assert_err_eq!(
+            Struct::default().serialize(Serializer::new(&mut output)),
+            Error::UnsupportedType
+        );
     }
 }
