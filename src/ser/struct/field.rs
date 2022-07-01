@@ -1171,7 +1171,8 @@ mod tests {
         let mut output = Vec::new();
 
         assert_err_eq!(
-            Struct::Variant { foo: 0, bar: false }.serialize(Serializer::new(&mut output, b"foo".to_vec())),
+            Struct::Variant { foo: 0, bar: false }
+                .serialize(Serializer::new(&mut output, b"foo".to_vec())),
             Error::UnsupportedType
         );
     }
