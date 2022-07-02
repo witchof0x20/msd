@@ -46,7 +46,7 @@ where
         }
     }
 
-    pub fn to_first_tag(&mut self) -> Result<()> {
+    fn iterate_to_first_tag(&mut self) -> Result<()> {
         enum State {
             None,
             MaybeEnteringComment,
@@ -152,7 +152,7 @@ where
 
         // Find the first tag, if necessary.
         if self.first_tag {
-            self.to_first_tag()?;
+            self.iterate_to_first_tag()?;
             if self.exhausted {
                 let error = Error::new(error::Kind::EndOfFile, self.current_position);
                 self.encountered_error = Some(error.clone());
@@ -270,7 +270,7 @@ where
     pub(in crate::de) fn has_next(&mut self) -> Result<bool> {
         // The iterator will only be in the state below if no tags have been returned yet.
         // Simply find the first tag if it exists.
-        self.to_first_tag()?;
+        self.iterate_to_first_tag()?;
 
         if let Some(error) = &self.encountered_error {
             Err(error.clone())
@@ -301,7 +301,7 @@ where
     }
 
     pub(in crate::de) fn error_at_current_tag(&mut self, kind: error::Kind) -> Error {
-        if let Err(error) = self.to_first_tag() {
+        if let Err(error) = self.iterate_to_first_tag() {
             error
         } else if self.exhausted {
             Error::new(error::Kind::EndOfFile, self.current_position)
