@@ -15,14 +15,14 @@ impl<'a> Iterator for Clean<'a> {
     type Item = u8;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let byte = *self.bytes.get(0)?;
+        let byte = *self.bytes.first()?;
         // SAFETY: If `self.bytes` is empty, it will have returned in the previous statement.
         self.bytes = unsafe { self.bytes.get_unchecked(1..) };
 
         match byte {
             b'\\' => {
                 // Possibly escaping the next byte.
-                match self.bytes.get(0).copied() {
+                match self.bytes.first().copied() {
                     Some(next_byte) => match next_byte {
                         b':' | b';' | b'\\' | b'/' | b'#' => {
                             // Escape the character.
@@ -37,11 +37,11 @@ impl<'a> Iterator for Clean<'a> {
             }
             b'/' => {
                 // Possibly entering a comment.
-                match self.bytes.get(0).copied() {
+                match self.bytes.first().copied() {
                     Some(b'/') => {
                         // Inside a comment.
                         loop {
-                            let comment_byte = *self.bytes.get(0)?;
+                            let comment_byte = *self.bytes.first()?;
                             // SAFETY: If `self.bytes` is empty, it will have returned in the
                             // previous statement.
                             self.bytes = unsafe { self.bytes.get_unchecked(1..) };

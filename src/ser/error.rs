@@ -2,7 +2,7 @@ use serde::ser;
 use std::{fmt, fmt::Display};
 
 /// An error that may occur during serialization.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum Error {
     UnsupportedType,
     Io,

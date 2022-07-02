@@ -5,7 +5,7 @@ use serde::{
 };
 use std::{fmt, fmt::Display};
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Kind {
     // Formatting errors.
     EndOfFile,
@@ -168,7 +168,7 @@ impl Display for Kind {
 }
 
 /// An error that may occur during deserialization.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Error {
     position: Position,
     kind: Kind,
