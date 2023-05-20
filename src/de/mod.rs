@@ -606,7 +606,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::{error, Deserializer, Error, Position};
-    use claim::{assert_err_eq, assert_ok_eq};
+    use claims::{assert_err_eq, assert_ok_eq};
     use serde::{de, de::Visitor, Deserialize};
     use serde_bytes::ByteBuf;
     use serde_derive::Deserialize;

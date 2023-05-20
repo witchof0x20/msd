@@ -36,7 +36,7 @@ impl<'a, 'b, 'de> SeqAccess<'de> for Access<'a, 'b> {
 mod tests {
     use super::Access;
     use crate::de::{error, parse::Values, Error, Position};
-    use claim::{assert_err_eq, assert_ok, assert_some_eq};
+    use claims::{assert_err_eq, assert_ok, assert_some_eq};
     use serde::de::SeqAccess;
 
     #[test]

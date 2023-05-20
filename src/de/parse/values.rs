@@ -192,7 +192,7 @@ impl<'a> Values<'a> {
 mod tests {
     use super::Values;
     use crate::de::{error, parse::Value, Error, Position};
-    use claim::{assert_err_eq, assert_ok, assert_ok_eq};
+    use claims::{assert_err_eq, assert_ok, assert_ok_eq};
 
     #[test]
     fn empty() {

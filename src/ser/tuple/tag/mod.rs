@@ -109,7 +109,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::Serializer;
-    use claim::assert_ok;
+    use claims::assert_ok;
 
     #[test]
     fn serialize_tuple_empty() {

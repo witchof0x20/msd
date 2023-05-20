@@ -55,7 +55,7 @@ where
 mod tests {
     use super::Access;
     use crate::de::parse::Tags;
-    use claim::{assert_none, assert_ok, assert_some_eq};
+    use claims::{assert_none, assert_ok, assert_some_eq};
     use serde::de::SeqAccess;
     use serde_derive::Deserialize;
 
