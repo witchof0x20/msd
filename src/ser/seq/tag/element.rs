@@ -718,7 +718,7 @@ mod tests {
 
         assert_ok!((42, "bar", (), 1.0).serialize(Serializer::new(&mut output)));
 
-        assert_eq!(output, b"#42:bar::1.0;\n");
+        assert_eq!(output, b"#42:bar:1.0;\n");
     }
 
     #[test]
@@ -763,7 +763,7 @@ mod tests {
 
         assert_ok!(TupleStruct(42, "bar", (), 1.0).serialize(Serializer::new(&mut output)));
 
-        assert_eq!(output, b"#42:bar::1.0;\n");
+        assert_eq!(output, b"#42:bar:1.0;\n");
     }
 
     #[test]
@@ -824,7 +824,7 @@ mod tests {
 
         assert_ok!(TupleEnum::Variant(42, "bar", (), 1.0).serialize(Serializer::new(&mut output)));
 
-        assert_eq!(output, b"#Variant:42:bar::1.0;\n");
+        assert_eq!(output, b"#Variant:42:bar:1.0;\n");
     }
 
     #[test]
@@ -865,7 +865,7 @@ mod tests {
         }
         .serialize(Serializer::new(&mut output)));
 
-        assert_eq!(output, b"#Variant:;\n#foo:42;\n#bar:test;\n#baz:;\n");
+        assert_eq!(output, b"#Variant:;\n#foo:42;\n#bar:test;\n#baz;\n");
     }
 
     #[test]

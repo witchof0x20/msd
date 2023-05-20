@@ -146,7 +146,7 @@ mod tests {
         assert_ok!(serializer.serialize_element(&()));
         assert_ok!(serializer.serialize_element(&1.0));
         assert_ok!(serializer.end());
-        assert_eq!(output, b"#42:foo::1.0");
+        assert_eq!(output, b"#42:foo:1.0");
     }
 
     #[test]
@@ -187,7 +187,7 @@ mod tests {
         assert_ok!(serializer.serialize_field(&()));
         assert_ok!(serializer.serialize_field(&1.0));
         assert_ok!(serializer.end());
-        assert_eq!(output, b"#42:foo::1.0");
+        assert_eq!(output, b"#42:foo:1.0");
     }
 
     #[test]
@@ -228,6 +228,6 @@ mod tests {
         assert_ok!(serializer.serialize_field(&()));
         assert_ok!(serializer.serialize_field(&1.0));
         assert_ok!(serializer.end());
-        assert_eq!(output, b"#42:foo::1.0");
+        assert_eq!(output, b"#42:foo:1.0");
     }
 }
