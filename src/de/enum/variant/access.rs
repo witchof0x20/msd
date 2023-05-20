@@ -94,7 +94,7 @@ mod tests {
             }
         }
 
-        let mut values = Values::new(b"42:foo::1.2", Position::new(0, 0));
+        let mut values = Values::new(b"42:foo:1.2", Position::new(0, 0));
         let access = Access::new(&mut values);
 
         assert_ok_eq!(

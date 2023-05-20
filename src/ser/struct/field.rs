@@ -192,14 +192,12 @@ where
     fn serialize_unit(self) -> Result<Self::Ok> {
         self.writer
             .write_tag_name_unescaped(&self.escaped_field_name)?;
-        self.writer.write_parameter_unescaped(b"")?;
         self.writer.close_tag()
     }
 
     fn serialize_unit_struct(self, _name: &'static str) -> Result<Self::Ok> {
         self.writer
             .write_tag_name_unescaped(&self.escaped_field_name)?;
-        self.writer.write_parameter_unescaped(b"")?;
         self.writer.close_tag()
     }
 
@@ -683,7 +681,7 @@ mod tests {
 
         assert_ok!(().serialize(Serializer::new(&mut output, b"foo".to_vec())));
 
-        assert_eq!(output, b"#foo:;\n");
+        assert_eq!(output, b"#foo;\n");
     }
 
     #[test]
@@ -695,7 +693,7 @@ mod tests {
 
         assert_ok!(Bar.serialize(Serializer::new(&mut output, b"foo".to_vec())));
 
-        assert_eq!(output, b"#foo:;\n");
+        assert_eq!(output, b"#foo;\n");
     }
 
     #[test]
@@ -771,7 +769,7 @@ mod tests {
 
         assert_ok!(vec![(), (), ()].serialize(Serializer::new(&mut output, b"foo".to_vec())));
 
-        assert_eq!(output, b"#foo:;\n#foo:;\n#foo:;\n");
+        assert_eq!(output, b"#foo;\n#foo;\n#foo;\n");
     }
 
     #[test]
@@ -876,7 +874,7 @@ mod tests {
         ]
         .serialize(Serializer::new(&mut output, b"repeating".to_vec())));
 
-        assert_eq!(output, b"#repeating:;\n#foo:1;\n#bar:abc;\n#baz:;\n#repeating:;\n#foo:2;\n#bar:def;\n#baz:;\n#qux:1.1;\n#repeating:;\n#foo:3;\n#bar:ghi;\n#baz:;\n");
+        assert_eq!(output, b"#repeating:;\n#foo:1;\n#bar:abc;\n#baz;\n#repeating:;\n#foo:2;\n#bar:def;\n#baz;\n#qux:1.1;\n#repeating:;\n#foo:3;\n#bar:ghi;\n#baz;\n");
     }
 
     #[test]
@@ -915,7 +913,7 @@ mod tests {
         ]
         .serialize(Serializer::new(&mut output, b"repeating".to_vec())));
 
-        assert_eq!(output, b"#repeating:Variant;\n#foo:1;\n#bar:abc;\n#baz:;\n#repeating:Variant;\n#foo:2;\n#bar:def;\n#baz:;\n#qux:1.1;\n#repeating:Variant;\n#foo:3;\n#bar:ghi;\n#baz:;\n");
+        assert_eq!(output, b"#repeating:Variant;\n#foo:1;\n#bar:abc;\n#baz;\n#repeating:Variant;\n#foo:2;\n#bar:def;\n#baz;\n#qux:1.1;\n#repeating:Variant;\n#foo:3;\n#bar:ghi;\n#baz;\n");
     }
 
     #[test]
@@ -945,7 +943,7 @@ mod tests {
 
         assert_ok!((42, "bar", (), 1.0).serialize(Serializer::new(&mut output, b"foo".to_vec())));
 
-        assert_eq!(output, b"#foo:42:bar::1.0;\n");
+        assert_eq!(output, b"#foo:42:bar:1.0;\n");
     }
 
     #[test]
@@ -1002,7 +1000,7 @@ mod tests {
         assert_ok!(TupleStruct(42, "bar", (), 1.0)
             .serialize(Serializer::new(&mut output, b"foo".to_vec())));
 
-        assert_eq!(output, b"#foo:42:bar::1.0;\n");
+        assert_eq!(output, b"#foo:42:bar:1.0;\n");
     }
 
     #[test]
@@ -1077,7 +1075,7 @@ mod tests {
         assert_ok!(TupleEnum::Variant(42, "bar", (), 1.0)
             .serialize(Serializer::new(&mut output, b"foo".to_vec())));
 
-        assert_eq!(output, b"#foo:Variant:42:bar::1.0;\n");
+        assert_eq!(output, b"#foo:Variant:42:bar:1.0;\n");
     }
 
     #[test]

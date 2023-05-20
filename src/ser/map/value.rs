@@ -154,14 +154,10 @@ where
     }
 
     fn serialize_unit(self) -> Result<Self::Ok> {
-        self.writer.write_parameter_unescaped(b"")?;
-
         self.writer.close_tag()
     }
 
     fn serialize_unit_struct(self, _name: &'static str) -> Result<Self::Ok> {
-        self.writer.write_parameter_unescaped(b"")?;
-
         self.writer.close_tag()
     }
 
@@ -636,7 +632,7 @@ mod tests {
 
         assert_ok!(().serialize(Serializer::new(&mut output)));
 
-        assert_eq!(output, b":;\n");
+        assert_eq!(output, b";\n");
     }
 
     #[test]
@@ -648,7 +644,7 @@ mod tests {
 
         assert_ok!(Bar.serialize(Serializer::new(&mut output)));
 
-        assert_eq!(output, b":;\n");
+        assert_eq!(output, b";\n");
     }
 
     #[test]
@@ -715,7 +711,7 @@ mod tests {
 
         assert_ok!((42, "bar", (), 1.0).serialize(Serializer::new(&mut output)));
 
-        assert_eq!(output, b":42:bar::1.0;\n");
+        assert_eq!(output, b":42:bar:1.0;\n");
     }
 
     #[test]
@@ -760,7 +756,7 @@ mod tests {
 
         assert_ok!(TupleStruct(42, "bar", (), 1.0).serialize(Serializer::new(&mut output)));
 
-        assert_eq!(output, b":42:bar::1.0;\n");
+        assert_eq!(output, b":42:bar:1.0;\n");
     }
 
     #[test]
@@ -821,7 +817,7 @@ mod tests {
 
         assert_ok!(TupleEnum::Variant(42, "bar", (), 1.0).serialize(Serializer::new(&mut output)));
 
-        assert_eq!(output, b":Variant:42:bar::1.0;\n");
+        assert_eq!(output, b":Variant:42:bar:1.0;\n");
     }
 
     #[test]

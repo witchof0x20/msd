@@ -2178,7 +2178,7 @@ mod tests {
 
     #[test]
     fn tuple() {
-        let mut tags = Tags::new(b"#42:foo::1.2;".as_slice());
+        let mut tags = Tags::new(b"#42:foo:1.2;".as_slice());
         let deserializer = Deserializer::new(&mut tags);
 
         assert_ok_eq!(
@@ -2189,23 +2189,23 @@ mod tests {
 
     #[test]
     fn tuple_too_many_values() {
-        let mut tags = Tags::new(b"#42:foo::1.2:bar;".as_slice());
+        let mut tags = Tags::new(b"#42:foo:1.2:bar;".as_slice());
         let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             <(u64, String, (), f64)>::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValue, Position::new(0, 13))
+            Error::new(error::Kind::UnexpectedValue, Position::new(0, 12))
         );
     }
 
     #[test]
     fn tuple_unexpected_values() {
-        let mut tags = Tags::new(b"#42:foo::1.2;bar;".as_slice());
+        let mut tags = Tags::new(b"#42:foo:1.2;bar;".as_slice());
         let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             <(u64, String, (), f64)>::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValues, Position::new(0, 13))
+            Error::new(error::Kind::UnexpectedValues, Position::new(0, 12))
         );
     }
 
@@ -2213,7 +2213,7 @@ mod tests {
     fn tuple_struct() {
         #[derive(Debug, Deserialize, PartialEq)]
         struct TupleStruct(u64, String, (), f64);
-        let mut tags = Tags::new(b"#42:foo::1.2;".as_slice());
+        let mut tags = Tags::new(b"#42:foo:1.2;".as_slice());
         let deserializer = Deserializer::new(&mut tags);
 
         assert_ok_eq!(
@@ -2226,12 +2226,12 @@ mod tests {
     fn tuple_struct_too_many_values() {
         #[derive(Debug, Deserialize, PartialEq)]
         struct TupleStruct(u64, String, (), f64);
-        let mut tags = Tags::new(b"#42:foo::1.2:bar;".as_slice());
+        let mut tags = Tags::new(b"#42:foo:1.2:bar;".as_slice());
         let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             TupleStruct::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValue, Position::new(0, 13))
+            Error::new(error::Kind::UnexpectedValue, Position::new(0, 12))
         );
     }
 
@@ -2239,12 +2239,12 @@ mod tests {
     fn tuple_struct_unexpected_values() {
         #[derive(Debug, Deserialize, PartialEq)]
         struct TupleStruct(u64, String, (), f64);
-        let mut tags = Tags::new(b"#42:foo::1.2;bar;".as_slice());
+        let mut tags = Tags::new(b"#42:foo:1.2;bar;".as_slice());
         let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             TupleStruct::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValues, Position::new(0, 13))
+            Error::new(error::Kind::UnexpectedValues, Position::new(0, 12))
         );
     }
 
@@ -2270,7 +2270,7 @@ mod tests {
             baz: (),
             qux: f64,
         }
-        let mut tags = Tags::new(b"#;\n#foo:test;\n#bar:42;\n#baz:;\n#qux:1.2;\n".as_slice());
+        let mut tags = Tags::new(b"#;\n#foo:test;\n#bar:42;\n#baz;\n#qux:1.2;\n".as_slice());
         let deserializer = Deserializer::new(&mut tags);
 
         assert_ok_eq!(
@@ -2374,7 +2374,7 @@ mod tests {
         enum Tuple {
             Variant(u64, String, (), f64),
         }
-        let mut tags = Tags::new(b"#Variant:42:foo::1.2;".as_slice());
+        let mut tags = Tags::new(b"#Variant:42:foo:1.2;".as_slice());
         let deserializer = Deserializer::new(&mut tags);
 
         assert_ok_eq!(
@@ -2389,12 +2389,12 @@ mod tests {
         enum Tuple {
             Variant(u64, String, (), f64),
         }
-        let mut tags = Tags::new(b"#Variant:42:foo::1.2:bar;".as_slice());
+        let mut tags = Tags::new(b"#Variant:42:foo:1.2:bar;".as_slice());
         let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             Tuple::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValue, Position::new(0, 21))
+            Error::new(error::Kind::UnexpectedValue, Position::new(0, 20))
         );
     }
 
@@ -2404,12 +2404,12 @@ mod tests {
         enum Tuple {
             Variant(u64, String, (), f64),
         }
-        let mut tags = Tags::new(b"#Variant:42:foo::1.2;bar;".as_slice());
+        let mut tags = Tags::new(b"#Variant:42:foo:1.2;bar;".as_slice());
         let deserializer = Deserializer::new(&mut tags);
 
         assert_err_eq!(
             Tuple::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValues, Position::new(0, 21))
+            Error::new(error::Kind::UnexpectedValues, Position::new(0, 20))
         );
     }
 
