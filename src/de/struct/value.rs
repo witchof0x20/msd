@@ -7,7 +7,7 @@ use serde::{de, de::Visitor};
 use std::io::Read;
 
 pub(in super::super) struct Deserializer<'a, R> {
-    field: &'static str,
+    field: &'a str,
     tags: &'a mut Tags<R>,
 
     tag: StoredTag,
@@ -16,7 +16,7 @@ pub(in super::super) struct Deserializer<'a, R> {
 
 impl<'a, R> Deserializer<'a, R> {
     pub(in super::super) fn new(
-        field: &'static str,
+        field: &'a str,
         tags: &'a mut Tags<R>,
         tag: StoredTag,
         values: StoredValues,

@@ -4,12 +4,12 @@ use serde::de::{DeserializeSeed, SeqAccess};
 use std::io::Read;
 
 pub(in crate::de) struct Access<'a, R> {
-    field: &'static str,
+    field: &'a str,
     tags: &'a mut Tags<R>,
 }
 
 impl<'a, R> Access<'a, R> {
-    pub(in crate::de) fn new(field: &'static str, tags: &'a mut Tags<R>) -> Self {
+    pub(in crate::de) fn new(field: &'a str, tags: &'a mut Tags<R>) -> Self {
         Self { field, tags }
     }
 }
