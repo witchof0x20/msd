@@ -522,13 +522,13 @@ where
     fn deserialize_struct<V>(
         self,
         _name: &'static str,
-        fields: &'static [&'static str],
+        _fields: &'static [&'static str],
         visitor: V,
     ) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        let result = visitor.visit_map(r#struct::Access::new(&mut self.tags, fields))?;
+        let result = visitor.visit_map(r#struct::root::Access::new(&mut self.tags))?;
         self.tags.assert_exhausted()?;
         Ok(result)
     }
