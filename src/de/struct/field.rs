@@ -352,7 +352,7 @@ impl<'a, 'de> de::Deserializer<'de> for Deserializer<'a> {
 mod tests {
     use super::Deserializer;
     use crate::de::{error, Error, Position};
-    use claim::{assert_err_eq, assert_ok_eq};
+    use claims::{assert_err_eq, assert_ok_eq};
     use serde::{de, de::Visitor, Deserialize};
     use serde_bytes::{ByteBuf, Bytes};
     use serde_derive::Deserialize;

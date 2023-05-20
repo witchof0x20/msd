@@ -137,7 +137,7 @@ mod tests {
         parse::{Tag, Tags},
         Position,
     };
-    use claim::{assert_none, assert_ok, assert_ok_eq, assert_some_eq};
+    use claims::{assert_none, assert_ok, assert_ok_eq, assert_some_eq};
     use serde::{
         de,
         de::{MapAccess, Visitor},

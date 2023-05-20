@@ -50,7 +50,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::WriteExt;
-    use claim::{assert_err, assert_ok};
+    use claims::{assert_err, assert_ok};
     use std::{io, io::Write};
 
     #[test]

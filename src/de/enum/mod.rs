@@ -32,7 +32,7 @@ impl<'a, 'b, 'de> EnumAccess<'de> for Access<'a, 'b> {
 mod tests {
     use super::Access;
     use crate::de::{parse::Values, Position};
-    use claim::assert_ok;
+    use claims::assert_ok;
     use serde::{
         de,
         de::{EnumAccess, Visitor},

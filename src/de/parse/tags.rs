@@ -319,7 +319,7 @@ where
 mod tests {
     use super::Tags;
     use crate::de::{error, parse::Tag, Error, Position};
-    use claim::{assert_err_eq, assert_ok, assert_ok_eq};
+    use claims::{assert_err_eq, assert_ok, assert_ok_eq};
 
     #[test]
     fn empty_reader() {

@@ -246,7 +246,7 @@ impl<'a> Tag<'a> {
 mod tests {
     use super::Tag;
     use crate::de::{error, parse::Values, Error, Position};
-    use claim::{assert_err_eq, assert_ok, assert_ok_eq};
+    use claims::{assert_err_eq, assert_ok, assert_ok_eq};
 
     #[test]
     fn empty() {

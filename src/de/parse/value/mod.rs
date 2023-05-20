@@ -481,7 +481,7 @@ impl<'a> Value<'a> {
 mod tests {
     use super::Value;
     use crate::de::{error, Error, Position};
-    use claim::{assert_err_eq, assert_ok, assert_ok_eq};
+    use claims::{assert_err_eq, assert_ok, assert_ok_eq};
 
     #[test]
     fn get_position() {

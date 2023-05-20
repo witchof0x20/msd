@@ -252,7 +252,7 @@ where
 mod tests {
     use super::Serializer;
     use crate::ser::Error;
-    use claim::{assert_err_eq, assert_ok};
+    use claims::{assert_err_eq, assert_ok};
     use serde::{
         ser::{SerializeMap, SerializeTupleStruct, SerializeTupleVariant},
         Serialize,

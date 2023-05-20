@@ -46,7 +46,7 @@ impl<'a, 'b, 'de> VariantAccess<'de> for Access<'a, 'b> {
 mod tests {
     use super::Access;
     use crate::de::{parse::Values, Position};
-    use claim::{assert_ok, assert_ok_eq};
+    use claims::{assert_ok, assert_ok_eq};
     use serde::de::{Error, SeqAccess, VariantAccess, Visitor};
     use std::fmt;
 
