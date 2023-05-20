@@ -317,7 +317,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::Serializer;
-    use claim::assert_ok;
+    use claims::assert_ok;
     use serde::{
         ser::{SerializeMap, SerializeTupleStruct, SerializeTupleVariant},
         Serialize,
@@ -838,7 +838,7 @@ mod tests {
         ]
         .serialize(&mut Serializer::new(&mut output)));
 
-        assert_eq!(output, b"#Variant:;\n#foo:1;\n#bar:abc;\n#baz:;\n#Variant:;\n#foo:2;\n#bar:def;\n#baz:;\n#qux:1.1;\n#Variant:;\n#foo:3;\n#bar:ghi;\n#baz:;\n");
+        assert_eq!(output, b"#Variant:;\n#foo:1;\n#bar:abc;\n#baz;\n#Variant:;\n#foo:2;\n#bar:def;\n#baz;\n#qux:1.1;\n#Variant:;\n#foo:3;\n#bar:ghi;\n#baz;\n");
     }
 
     #[test]
@@ -865,7 +865,7 @@ mod tests {
 
         assert_ok!((42, "bar", (), 1.0).serialize(&mut Serializer::new(&mut output)));
 
-        assert_eq!(output, b"#42:bar::1.0;\n");
+        assert_eq!(output, b"#42:bar:1.0;\n");
     }
 
     #[test]
@@ -919,7 +919,7 @@ mod tests {
 
         assert_ok!(TupleStruct(42, "bar", (), 1.0).serialize(&mut Serializer::new(&mut output)));
 
-        assert_eq!(output, b"#42:bar::1.0;\n");
+        assert_eq!(output, b"#42:bar:1.0;\n");
     }
 
     #[test]
@@ -985,7 +985,7 @@ mod tests {
 
         assert_ok!(Tuple::Variant(42, "bar", (), 1.0).serialize(&mut Serializer::new(&mut output)));
 
-        assert_eq!(output, b"#Variant:42:bar::1.0;\n");
+        assert_eq!(output, b"#Variant:42:bar:1.0;\n");
     }
 
     #[test]

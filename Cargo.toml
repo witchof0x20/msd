@@ -1,6 +1,6 @@
 [package]
 name = "msd"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["Anders Evensen"]
 edition = "2021"
 rust-version = "1.58.0"
@@ -23,6 +23,6 @@ serde = "1.0.136"
 serde = {version = "1.0.136", default-features = false}
 
 [dev-dependencies]
-claim = {git = "https://github.com/Anders429/rust-claim"}
+claims = "0.7.1"
 serde_bytes = "0.11.5"
 serde_derive = "1.0.136"

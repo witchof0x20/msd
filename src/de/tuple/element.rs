@@ -274,10 +274,8 @@ impl<'a, 'b, 'de> serde::Deserializer<'de> for Deserializer<'a, 'b> {
     where
         V: Visitor<'de>,
     {
-        let value = self.values.next()?;
-        value.parse_unit()?;
         visitor.visit_unit().map_err(|mut error: Error| {
-            error.set_position(value.position());
+            error.set_position(self.values.current_position());
             error
         })
     }
@@ -286,10 +284,8 @@ impl<'a, 'b, 'de> serde::Deserializer<'de> for Deserializer<'a, 'b> {
     where
         V: Visitor<'de>,
     {
-        let value = self.values.next()?;
-        value.parse_unit()?;
         visitor.visit_unit().map_err(|mut error: Error| {
-            error.set_position(value.position());
+            error.set_position(self.values.current_position());
             error
         })
     }
@@ -395,7 +391,7 @@ impl<'a, 'b, 'de> serde::Deserializer<'de> for Deserializer<'a, 'b> {
 mod tests {
     use super::Deserializer;
     use crate::de::{error, parse::Values, Error, Position};
-    use claim::{assert_err_eq, assert_ok_eq};
+    use claims::{assert_err_eq, assert_ok_eq};
     use serde::{de, de::Visitor, Deserialize};
     use serde_bytes::ByteBuf;
     use serde_derive::Deserialize;
@@ -1684,17 +1680,6 @@ mod tests {
     }
 
     #[test]
-    fn unit_invalid() {
-        let mut values = Values::new(b"invalid", Position::new(0, 0));
-        let deserializer = Deserializer::new(&mut values);
-
-        assert_err_eq!(
-            <()>::deserialize(deserializer),
-            Error::new(error::Kind::ExpectedUnit, Position::new(0, 0))
-        );
-    }
-
-    #[test]
     fn unit_multiple_values() {
         // The entire values iterator is not consumed. Just the first value is returned.
         let mut values = Values::new(b":", Position::new(0, 0));
@@ -1751,19 +1736,6 @@ mod tests {
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(Unit::deserialize(deserializer), Unit);
-    }
-
-    #[test]
-    fn unit_struct_invalid() {
-        #[derive(Debug, Deserialize, PartialEq)]
-        struct Unit;
-        let mut values = Values::new(b"invalid", Position::new(0, 0));
-        let deserializer = Deserializer::new(&mut values);
-
-        assert_err_eq!(
-            Unit::deserialize(deserializer),
-            Error::new(error::Kind::ExpectedUnit, Position::new(0, 0))
-        );
     }
 
     #[test]
@@ -1840,7 +1812,7 @@ mod tests {
 
     #[test]
     fn tuple() {
-        let mut values = Values::new(b"42:foo::1.2", Position::new(0, 0));
+        let mut values = Values::new(b"42:foo:1.2", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(
@@ -1853,7 +1825,7 @@ mod tests {
     fn tuple_trailing_values() {
         // The entire values iterator is not consumed. Just the requested tuple values are
         // consumed.
-        let mut values = Values::new(b"42:foo::1.2:not:consumed", Position::new(0, 0));
+        let mut values = Values::new(b"42:foo:1.2:not:consumed", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(
@@ -1866,7 +1838,7 @@ mod tests {
     fn tuple_struct() {
         #[derive(Debug, Deserialize, PartialEq)]
         struct TupleStruct(u64, String, (), f64);
-        let mut values = Values::new(b"42:foo::1.2", Position::new(0, 0));
+        let mut values = Values::new(b"42:foo:1.2", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(
@@ -1881,7 +1853,7 @@ mod tests {
         struct TupleStruct(u64, String, (), f64);
         // The entire values iterator is not consumed. Just the requested tuple values are
         // consumed.
-        let mut values = Values::new(b"42:foo::1.2:not:consumed", Position::new(0, 0));
+        let mut values = Values::new(b"42:foo:1.2:not:consumed", Position::new(0, 0));
         let deserializer = Deserializer::new(&mut values);
 
         assert_ok_eq!(

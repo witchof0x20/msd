@@ -80,7 +80,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::Serializer;
-    use claim::assert_ok;
+    use claims::assert_ok;
 
     #[test]
     fn serialize_tuple_empty() {
@@ -120,7 +120,7 @@ mod tests {
         assert_ok!(serializer.serialize_element(&()));
         assert_ok!(serializer.serialize_element(&1.0));
         assert_ok!(serializer.end());
-        assert_eq!(output, b":42:foo::1.0;\n");
+        assert_eq!(output, b":42:foo:1.0;\n");
     }
 
     #[test]
@@ -161,7 +161,7 @@ mod tests {
         assert_ok!(serializer.serialize_field(&()));
         assert_ok!(serializer.serialize_field(&1.0));
         assert_ok!(serializer.end());
-        assert_eq!(output, b":42:foo::1.0;\n");
+        assert_eq!(output, b":42:foo:1.0;\n");
     }
 
     #[test]
@@ -202,6 +202,6 @@ mod tests {
         assert_ok!(serializer.serialize_field(&()));
         assert_ok!(serializer.serialize_field(&1.0));
         assert_ok!(serializer.end());
-        assert_eq!(output, b":42:foo::1.0;\n");
+        assert_eq!(output, b":42:foo:1.0;\n");
     }
 }

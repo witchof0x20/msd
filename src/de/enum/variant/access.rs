@@ -46,7 +46,7 @@ impl<'a, 'b, 'de> VariantAccess<'de> for Access<'a, 'b> {
 mod tests {
     use super::Access;
     use crate::de::{parse::Values, Position};
-    use claim::{assert_ok, assert_ok_eq};
+    use claims::{assert_ok, assert_ok_eq};
     use serde::de::{Error, SeqAccess, VariantAccess, Visitor};
     use std::fmt;
 
@@ -94,7 +94,7 @@ mod tests {
             }
         }
 
-        let mut values = Values::new(b"42:foo::1.2", Position::new(0, 0));
+        let mut values = Values::new(b"42:foo:1.2", Position::new(0, 0));
         let access = Access::new(&mut values);
 
         assert_ok_eq!(

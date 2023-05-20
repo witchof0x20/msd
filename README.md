@@ -1,6 +1,6 @@
 # msd
 
-[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Anders429/msd/CI)](https://github.com/Anders429/msd/actions)
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/Anders429/msd/test.yml?branch=master)](https://github.com/Anders429/msd/actions)
 [![codecov.io](https://img.shields.io/codecov/c/gh/Anders429/msd)](https://codecov.io/gh/Anders429/msd)
 [![crates.io](https://img.shields.io/crates/v/msd)](https://crates.io/crates/msd)
 [![docs.rs](https://docs.rs/msd/badge.svg)](https://docs.rs/msd)

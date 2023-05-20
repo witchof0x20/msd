@@ -46,7 +46,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::Serializer;
-    use claim::assert_ok;
+    use claims::assert_ok;
     use serde::ser::SerializeSeq;
 
     #[test]
@@ -79,6 +79,6 @@ mod tests {
         assert_ok!(serializer.serialize_element(&()));
         assert_ok!(serializer.end());
 
-        assert_eq!(output, b"#foo:42;\n#foo:bar;\n#foo:;\n");
+        assert_eq!(output, b"#foo:42;\n#foo:bar;\n#foo;\n");
     }
 }

@@ -74,7 +74,7 @@ impl<'a, 'b, 'de> MapAccess<'de> for Access<'a, 'b> {
 mod tests {
     use super::Access;
     use crate::de::{parse::Tag, Position};
-    use claim::{assert_none, assert_ok, assert_ok_eq, assert_some_eq};
+    use claims::{assert_none, assert_ok, assert_ok_eq, assert_some_eq};
     use serde::de::MapAccess;
 
     #[test]

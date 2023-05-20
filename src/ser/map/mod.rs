@@ -55,7 +55,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::Serializer;
-    use claim::assert_ok;
+    use claims::assert_ok;
     use serde::ser::SerializeMap;
 
     #[test]

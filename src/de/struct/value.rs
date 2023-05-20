@@ -7,7 +7,7 @@ use serde::{de, de::Visitor};
 use std::io::Read;
 
 pub(in super::super) struct Deserializer<'a, R> {
-    field: &'static str,
+    field: &'a str,
     tags: &'a mut Tags<R>,
 
     tag: StoredTag,
@@ -16,7 +16,7 @@ pub(in super::super) struct Deserializer<'a, R> {
 
 impl<'a, R> Deserializer<'a, R> {
     pub(in super::super) fn new(
-        field: &'static str,
+        field: &'a str,
         tags: &'a mut Tags<R>,
         tag: StoredTag,
         values: StoredValues,
@@ -349,14 +349,11 @@ where
     where
         V: Visitor<'de>,
     {
-        let mut values = unsafe { self.values.into_values() };
-        let value = values.next()?;
-        let value_position = value.position();
-        value.parse_unit()?;
+        let values = unsafe { self.values.into_values() };
         values.assert_exhausted()?;
         unsafe { self.tag.into_tag() }.assert_exhausted()?;
         visitor.visit_unit().map_err(|mut error: Error| {
-            error.set_position(value_position);
+            error.set_position(values.current_position());
             error
         })
     }
@@ -365,14 +362,11 @@ where
     where
         V: Visitor<'de>,
     {
-        let mut values = unsafe { self.values.into_values() };
-        let value = values.next()?;
-        let value_position = value.position();
-        value.parse_unit()?;
+        let values = unsafe { self.values.into_values() };
         values.assert_exhausted()?;
         unsafe { self.tag.into_tag() }.assert_exhausted()?;
         visitor.visit_unit().map_err(|mut error: Error| {
-            error.set_position(value_position);
+            error.set_position(values.current_position());
             error
         })
     }
@@ -498,7 +492,7 @@ where
 mod tests {
     use super::Deserializer;
     use crate::de::{error, parse::Tags, Error, Position};
-    use claim::{assert_err_eq, assert_ok, assert_ok_eq};
+    use claims::{assert_err_eq, assert_ok, assert_ok_eq};
     use serde::{de, de::Visitor, Deserialize};
     use serde_bytes::ByteBuf;
     use serde_derive::Deserialize;
@@ -2474,7 +2468,7 @@ mod tests {
 
     #[test]
     fn unit() {
-        let mut tags = Tags::new(b"#foo:;\n".as_slice());
+        let mut tags = Tags::new(b"#foo;\n".as_slice());
         let mut tag = assert_ok!(tags.next());
         let mut values = assert_ok!(tag.next());
         let _field = assert_ok!(values.next());
@@ -2486,24 +2480,8 @@ mod tests {
     }
 
     #[test]
-    fn unit_invalid() {
-        let mut tags = Tags::new(b"#foo:invalid;\n".as_slice());
-        let mut tag = assert_ok!(tags.next());
-        let mut values = assert_ok!(tag.next());
-        let _field = assert_ok!(values.next());
-        let stored_tag = tag.into_stored();
-        let stored_values = values.into_stored();
-        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
-
-        assert_err_eq!(
-            <()>::deserialize(deserializer),
-            Error::new(error::Kind::ExpectedUnit, Position::new(0, 5))
-        );
-    }
-
-    #[test]
     fn unit_too_many_values() {
-        let mut tags = Tags::new(b"#foo::;\n".as_slice());
+        let mut tags = Tags::new(b"#foo:;\n".as_slice());
         let mut tag = assert_ok!(tags.next());
         let mut values = assert_ok!(tag.next());
         let _field = assert_ok!(values.next());
@@ -2513,13 +2491,13 @@ mod tests {
 
         assert_err_eq!(
             <()>::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValue, Position::new(0, 6))
+            Error::new(error::Kind::UnexpectedValue, Position::new(0, 5))
         );
     }
 
     #[test]
     fn unit_unexpected_values() {
-        let mut tags = Tags::new(b"#foo:;;\n".as_slice());
+        let mut tags = Tags::new(b"#foo;;\n".as_slice());
         let mut tag = assert_ok!(tags.next());
         let mut values = assert_ok!(tag.next());
         let _field = assert_ok!(values.next());
@@ -2529,7 +2507,7 @@ mod tests {
 
         assert_err_eq!(
             <()>::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValues, Position::new(0, 6))
+            Error::new(error::Kind::UnexpectedValues, Position::new(0, 5))
         );
     }
 
@@ -2564,7 +2542,7 @@ mod tests {
             }
         }
 
-        let mut tags = Tags::new(b"#foo:;\n".as_slice());
+        let mut tags = Tags::new(b"#foo;\n".as_slice());
         let mut tag = assert_ok!(tags.next());
         let mut values = assert_ok!(tag.next());
         let _field = assert_ok!(values.next());
@@ -2574,7 +2552,7 @@ mod tests {
 
         assert_err_eq!(
             CustomUnit::deserialize(deserializer),
-            Error::new(error::Kind::Custom("foo".to_string()), Position::new(0, 5))
+            Error::new(error::Kind::Custom("foo".to_string()), Position::new(0, 4))
         );
     }
 
@@ -2582,7 +2560,7 @@ mod tests {
     fn unit_struct() {
         #[derive(Debug, Deserialize, PartialEq)]
         struct Unit;
-        let mut tags = Tags::new(b"#foo:;\n".as_slice());
+        let mut tags = Tags::new(b"#foo;\n".as_slice());
         let mut tag = assert_ok!(tags.next());
         let mut values = assert_ok!(tag.next());
         let _field = assert_ok!(values.next());
@@ -2594,28 +2572,10 @@ mod tests {
     }
 
     #[test]
-    fn unit_struct_invalid() {
-        #[derive(Debug, Deserialize, PartialEq)]
-        struct Unit;
-        let mut tags = Tags::new(b"#foo:invalid;\n".as_slice());
-        let mut tag = assert_ok!(tags.next());
-        let mut values = assert_ok!(tag.next());
-        let _field = assert_ok!(values.next());
-        let stored_tag = tag.into_stored();
-        let stored_values = values.into_stored();
-        let deserializer = Deserializer::new("foo", &mut tags, stored_tag, stored_values);
-
-        assert_err_eq!(
-            Unit::deserialize(deserializer),
-            Error::new(error::Kind::ExpectedUnit, Position::new(0, 5))
-        );
-    }
-
-    #[test]
     fn unit_struct_too_many_values() {
         #[derive(Debug, Deserialize, PartialEq)]
         struct Unit;
-        let mut tags = Tags::new(b"#foo::;\n".as_slice());
+        let mut tags = Tags::new(b"#foo:;\n".as_slice());
         let mut tag = assert_ok!(tags.next());
         let mut values = assert_ok!(tag.next());
         let _field = assert_ok!(values.next());
@@ -2625,7 +2585,7 @@ mod tests {
 
         assert_err_eq!(
             Unit::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValue, Position::new(0, 6))
+            Error::new(error::Kind::UnexpectedValue, Position::new(0, 5))
         );
     }
 
@@ -2633,7 +2593,7 @@ mod tests {
     fn unit_struct_unexpected_values() {
         #[derive(Debug, Deserialize, PartialEq)]
         struct Unit;
-        let mut tags = Tags::new(b"#foo:;;\n".as_slice());
+        let mut tags = Tags::new(b"#foo;;\n".as_slice());
         let mut tag = assert_ok!(tags.next());
         let mut values = assert_ok!(tag.next());
         let _field = assert_ok!(values.next());
@@ -2643,7 +2603,7 @@ mod tests {
 
         assert_err_eq!(
             Unit::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValues, Position::new(0, 6))
+            Error::new(error::Kind::UnexpectedValues, Position::new(0, 5))
         );
     }
 
@@ -2678,7 +2638,7 @@ mod tests {
             }
         }
 
-        let mut tags = Tags::new(b"#foo:;\n".as_slice());
+        let mut tags = Tags::new(b"#foo;\n".as_slice());
         let mut tag = assert_ok!(tags.next());
         let mut values = assert_ok!(tag.next());
         let _field = assert_ok!(values.next());
@@ -2688,7 +2648,7 @@ mod tests {
 
         assert_err_eq!(
             CustomUnitStruct::deserialize(deserializer),
-            Error::new(error::Kind::Custom("foo".to_string()), Position::new(0, 5))
+            Error::new(error::Kind::Custom("foo".to_string()), Position::new(0, 4))
         );
     }
 
@@ -2707,7 +2667,7 @@ mod tests {
 
     #[test]
     fn tuple() {
-        let mut tags = Tags::new(b"#foo:42:foo::1.2;\n".as_slice());
+        let mut tags = Tags::new(b"#foo:42:foo:1.2;\n".as_slice());
         let mut tag = assert_ok!(tags.next());
         let mut values = assert_ok!(tag.next());
         let _field = assert_ok!(values.next());
@@ -2723,7 +2683,7 @@ mod tests {
 
     #[test]
     fn tuple_too_many_values() {
-        let mut tags = Tags::new(b"#foo:42:foo::1.2:100:bar::2.4;\n".as_slice());
+        let mut tags = Tags::new(b"#foo:42:foo:1.2:100:bar:2.4;\n".as_slice());
         let mut tag = assert_ok!(tags.next());
         let mut values = assert_ok!(tag.next());
         let _field = assert_ok!(values.next());
@@ -2733,13 +2693,13 @@ mod tests {
 
         assert_err_eq!(
             <(u64, String, (), f64)>::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValue, Position::new(0, 17))
+            Error::new(error::Kind::UnexpectedValue, Position::new(0, 16))
         );
     }
 
     #[test]
     fn tuple_unexpected_values() {
-        let mut tags = Tags::new(b"#foo:42:foo::1.2;100:bar::2.4;\n".as_slice());
+        let mut tags = Tags::new(b"#foo:42:foo:1.2;100:bar:2.4;\n".as_slice());
         let mut tag = assert_ok!(tags.next());
         let mut values = assert_ok!(tag.next());
         let _field = assert_ok!(values.next());
@@ -2749,7 +2709,7 @@ mod tests {
 
         assert_err_eq!(
             <(u64, String, (), f64)>::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValues, Position::new(0, 17))
+            Error::new(error::Kind::UnexpectedValues, Position::new(0, 16))
         );
     }
 
@@ -2757,7 +2717,7 @@ mod tests {
     fn tuple_struct() {
         #[derive(Debug, Deserialize, PartialEq)]
         struct TupleStruct(u64, String, (), f64);
-        let mut tags = Tags::new(b"#foo:42:foo::1.2;\n".as_slice());
+        let mut tags = Tags::new(b"#foo:42:foo:1.2;\n".as_slice());
         let mut tag = assert_ok!(tags.next());
         let mut values = assert_ok!(tag.next());
         let _field = assert_ok!(values.next());
@@ -2775,7 +2735,7 @@ mod tests {
     fn tuple_struct_too_many_values() {
         #[derive(Debug, Deserialize, PartialEq)]
         struct TupleStruct(u64, String, (), f64);
-        let mut tags = Tags::new(b"#foo:42:foo::1.2:100:bar::2.4;\n".as_slice());
+        let mut tags = Tags::new(b"#foo:42:foo:1.2:100:bar:2.4;\n".as_slice());
         let mut tag = assert_ok!(tags.next());
         let mut values = assert_ok!(tag.next());
         let _field = assert_ok!(values.next());
@@ -2785,7 +2745,7 @@ mod tests {
 
         assert_err_eq!(
             TupleStruct::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValue, Position::new(0, 17))
+            Error::new(error::Kind::UnexpectedValue, Position::new(0, 16))
         );
     }
 
@@ -2793,7 +2753,7 @@ mod tests {
     fn tuple_struct_unexpected_values() {
         #[derive(Debug, Deserialize, PartialEq)]
         struct TupleStruct(u64, String, (), f64);
-        let mut tags = Tags::new(b"#foo:42:foo::1.2;100:bar::2.4;\n".as_slice());
+        let mut tags = Tags::new(b"#foo:42:foo:1.2;100:bar:2.4;\n".as_slice());
         let mut tag = assert_ok!(tags.next());
         let mut values = assert_ok!(tag.next());
         let _field = assert_ok!(values.next());
@@ -2803,7 +2763,7 @@ mod tests {
 
         assert_err_eq!(
             TupleStruct::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValues, Position::new(0, 17))
+            Error::new(error::Kind::UnexpectedValues, Position::new(0, 16))
         );
     }
 
@@ -2945,7 +2905,7 @@ mod tests {
         enum Tuple {
             Variant(u64, String, (), f64),
         }
-        let mut tags = Tags::new(b"#foo:Variant:42:foo::1.2;\n".as_slice());
+        let mut tags = Tags::new(b"#foo:Variant:42:foo:1.2;\n".as_slice());
         let mut tag = assert_ok!(tags.next());
         let mut values = assert_ok!(tag.next());
         let _field = assert_ok!(values.next());
@@ -2965,7 +2925,7 @@ mod tests {
         enum Tuple {
             Variant(u64, String, (), f64),
         }
-        let mut tags = Tags::new(b"#foo:Variant:42:foo::1.2:bar;\n".as_slice());
+        let mut tags = Tags::new(b"#foo:Variant:42:foo:1.2:bar;\n".as_slice());
         let mut tag = assert_ok!(tags.next());
         let mut values = assert_ok!(tag.next());
         let _field = assert_ok!(values.next());
@@ -2975,7 +2935,7 @@ mod tests {
 
         assert_err_eq!(
             Tuple::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValue, Position::new(0, 25))
+            Error::new(error::Kind::UnexpectedValue, Position::new(0, 24))
         );
     }
 
@@ -2985,7 +2945,7 @@ mod tests {
         enum Tuple {
             Variant(u64, String, (), f64),
         }
-        let mut tags = Tags::new(b"#foo:Variant:42:foo::1.2;bar;\n".as_slice());
+        let mut tags = Tags::new(b"#foo:Variant:42:foo:1.2;bar;\n".as_slice());
         let mut tag = assert_ok!(tags.next());
         let mut values = assert_ok!(tag.next());
         let _field = assert_ok!(values.next());
@@ -2995,7 +2955,7 @@ mod tests {
 
         assert_err_eq!(
             Tuple::deserialize(deserializer),
-            Error::new(error::Kind::UnexpectedValues, Position::new(0, 25))
+            Error::new(error::Kind::UnexpectedValues, Position::new(0, 24))
         );
     }
 

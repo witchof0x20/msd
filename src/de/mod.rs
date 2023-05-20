@@ -522,13 +522,13 @@ where
     fn deserialize_struct<V>(
         self,
         _name: &'static str,
-        fields: &'static [&'static str],
+        _fields: &'static [&'static str],
         visitor: V,
     ) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        let result = visitor.visit_map(r#struct::Access::new(&mut self.tags, fields))?;
+        let result = visitor.visit_map(r#struct::root::Access::new(&mut self.tags))?;
         self.tags.assert_exhausted()?;
         Ok(result)
     }
@@ -606,7 +606,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::{error, Deserializer, Error, Position};
-    use claim::{assert_err_eq, assert_ok_eq};
+    use claims::{assert_err_eq, assert_ok_eq};
     use serde::{de, de::Visitor, Deserialize};
     use serde_bytes::ByteBuf;
     use serde_derive::Deserialize;
@@ -2386,7 +2386,7 @@ mod tests {
 
     #[test]
     fn tuple_multiple_values() {
-        let mut deserializer = Deserializer::new(b"#foo:42::1.2;\n".as_slice());
+        let mut deserializer = Deserializer::new(b"#foo:42:1.2;\n".as_slice());
 
         assert_ok_eq!(
             <(String, u64, (), f64)>::deserialize(&mut deserializer),
@@ -2396,7 +2396,7 @@ mod tests {
 
     #[test]
     fn tuple_nested_values() {
-        let mut deserializer = Deserializer::new(b"#foo:42::1.2;\n".as_slice());
+        let mut deserializer = Deserializer::new(b"#foo:42:1.2;\n".as_slice());
 
         assert_ok_eq!(
             <(String, (u64, ()), f64)>::deserialize(&mut deserializer),
@@ -2406,17 +2406,17 @@ mod tests {
 
     #[test]
     fn tuple_too_many_values() {
-        let mut deserializer = Deserializer::new(b"#foo:42::1.2;\n".as_slice());
+        let mut deserializer = Deserializer::new(b"#foo:42:1.2;\n".as_slice());
 
         assert_err_eq!(
             <(String, u64, ())>::deserialize(&mut deserializer),
-            Error::new(error::Kind::UnexpectedValue, Position::new(0, 9))
+            Error::new(error::Kind::UnexpectedValue, Position::new(0, 8))
         );
     }
 
     #[test]
     fn tuple_unexpected_values() {
-        let mut deserializer = Deserializer::new(b"#foo:42::1.2;\nbar:100;\n".as_slice());
+        let mut deserializer = Deserializer::new(b"#foo:42:1.2;\nbar:100;\n".as_slice());
 
         assert_err_eq!(
             <(String, u64, (), f64)>::deserialize(&mut deserializer),
@@ -2426,7 +2426,7 @@ mod tests {
 
     #[test]
     fn tuple_unexpected_tag() {
-        let mut deserializer = Deserializer::new(b"#foo:42::1.2;\n#bar:100;\n".as_slice());
+        let mut deserializer = Deserializer::new(b"#foo:42:1.2;\n#bar:100;\n".as_slice());
 
         assert_err_eq!(
             <(String, u64, (), f64)>::deserialize(&mut deserializer),
@@ -2450,7 +2450,7 @@ mod tests {
     fn tuple_struct_multiple_values() {
         #[derive(Debug, Deserialize, PartialEq)]
         struct TupleStruct(String, u64, (), f64);
-        let mut deserializer = Deserializer::new(b"#foo:42::1.2;\n".as_slice());
+        let mut deserializer = Deserializer::new(b"#foo:42:1.2;\n".as_slice());
 
         assert_ok_eq!(
             TupleStruct::deserialize(&mut deserializer),
@@ -2464,7 +2464,7 @@ mod tests {
         struct NestedTupleStruct(u64, ());
         #[derive(Debug, Deserialize, PartialEq)]
         struct TupleStruct(String, NestedTupleStruct, f64);
-        let mut deserializer = Deserializer::new(b"#foo:42::1.2;\n".as_slice());
+        let mut deserializer = Deserializer::new(b"#foo:42:1.2;\n".as_slice());
 
         assert_ok_eq!(
             TupleStruct::deserialize(&mut deserializer),
@@ -2476,11 +2476,11 @@ mod tests {
     fn tuple_struct_too_many_values() {
         #[derive(Debug, Deserialize, PartialEq)]
         struct TupleStruct(String, u64, ());
-        let mut deserializer = Deserializer::new(b"#foo:42::1.2;\n".as_slice());
+        let mut deserializer = Deserializer::new(b"#foo:42:1.2;\n".as_slice());
 
         assert_err_eq!(
             TupleStruct::deserialize(&mut deserializer),
-            Error::new(error::Kind::UnexpectedValue, Position::new(0, 9))
+            Error::new(error::Kind::UnexpectedValue, Position::new(0, 8))
         );
     }
 
@@ -2488,7 +2488,7 @@ mod tests {
     fn tuple_struct_unexpected_values() {
         #[derive(Debug, Deserialize, PartialEq)]
         struct TupleStruct(String, u64, (), f64);
-        let mut deserializer = Deserializer::new(b"#foo:42::1.2;\nbar:100;\n".as_slice());
+        let mut deserializer = Deserializer::new(b"#foo:42:1.2;\nbar:100;\n".as_slice());
 
         assert_err_eq!(
             TupleStruct::deserialize(&mut deserializer),
@@ -2500,7 +2500,7 @@ mod tests {
     fn tuple_struct_unexpected_tag() {
         #[derive(Debug, Deserialize, PartialEq)]
         struct TupleStruct(String, u64, (), f64);
-        let mut deserializer = Deserializer::new(b"#foo:42::1.2;\n#bar:100;\n".as_slice());
+        let mut deserializer = Deserializer::new(b"#foo:42:1.2;\n#bar:100;\n".as_slice());
 
         assert_err_eq!(
             TupleStruct::deserialize(&mut deserializer),
@@ -2534,7 +2534,7 @@ mod tests {
             qux: f64,
         }
         let mut deserializer =
-            Deserializer::new(b"#foo:text;\n#bar:42;\n#baz:;\n#qux:1.2;\n".as_slice());
+            Deserializer::new(b"#foo:text;\n#bar:42;\n#baz;\n#qux:1.2;\n".as_slice());
 
         assert_ok_eq!(
             Struct::deserialize(&mut deserializer),
@@ -2557,7 +2557,7 @@ mod tests {
             qux: f64,
         }
         let mut deserializer =
-            Deserializer::new(b"#foo:text;\n#bar:42;\n#baz:;\n#qux:1.2;\n".as_slice());
+            Deserializer::new(b"#foo:text;\n#bar:42;\n#baz;\n#qux:1.2;\n".as_slice());
 
         assert_ok_eq!(
             Struct::deserialize(&mut deserializer),
@@ -2579,7 +2579,7 @@ mod tests {
             baz: (),
             qux: f64,
         }
-        let mut deserializer = Deserializer::new(b"#foo:text;\n#baz:;\n#qux:1.2;\n".as_slice());
+        let mut deserializer = Deserializer::new(b"#foo:text;\n#baz;\n#qux:1.2;\n".as_slice());
 
         assert_ok_eq!(
             Struct::deserialize(&mut deserializer),
@@ -2602,7 +2602,7 @@ mod tests {
             qux: HashMap<String, u64>,
         }
         let mut deserializer =
-            Deserializer::new(b"#foo:text;\n#bar:42;\n#baz:;\n#qux:a:1;b:2;c:3;d:4;\n".as_slice());
+            Deserializer::new(b"#foo:text;\n#bar:42;\n#baz;\n#qux:a:1;b:2;c:3;d:4;\n".as_slice());
 
         let mut expected = HashMap::new();
         expected.insert("a".to_owned(), 1);
@@ -2630,7 +2630,7 @@ mod tests {
             qux: f64,
         }
         let mut deserializer =
-            Deserializer::new(b"#bar:42;\n#foo:text;\n#qux:1.2;\n#baz:;\n".as_slice());
+            Deserializer::new(b"#bar:42;\n#foo:text;\n#qux:1.2;\n#baz;\n".as_slice());
 
         assert_ok_eq!(
             Struct::deserialize(&mut deserializer),
@@ -2758,7 +2758,7 @@ mod tests {
         enum Tuple {
             Variant(u64, String, (), f64),
         }
-        let mut deserializer = Deserializer::new(b"#Variant:42:foo::1.2;\n".as_slice());
+        let mut deserializer = Deserializer::new(b"#Variant:42:foo:1.2;\n".as_slice());
 
         assert_ok_eq!(
             Tuple::deserialize(&mut deserializer),
@@ -2772,11 +2772,11 @@ mod tests {
         enum Tuple {
             Variant(u64, String, (), f64),
         }
-        let mut deserializer = Deserializer::new(b"#Variant:42:foo::1.2:bar;\n".as_slice());
+        let mut deserializer = Deserializer::new(b"#Variant:42:foo:1.2:bar;\n".as_slice());
 
         assert_err_eq!(
             Tuple::deserialize(&mut deserializer),
-            Error::new(error::Kind::UnexpectedValue, Position::new(0, 21))
+            Error::new(error::Kind::UnexpectedValue, Position::new(0, 20))
         );
     }
 
@@ -2786,11 +2786,11 @@ mod tests {
         enum Tuple {
             Variant(u64, String, (), f64),
         }
-        let mut deserializer = Deserializer::new(b"#Variant:42:foo::1.2;bar;\n".as_slice());
+        let mut deserializer = Deserializer::new(b"#Variant:42:foo:1.2;bar;\n".as_slice());
 
         assert_err_eq!(
             Tuple::deserialize(&mut deserializer),
-            Error::new(error::Kind::UnexpectedValues, Position::new(0, 21))
+            Error::new(error::Kind::UnexpectedValues, Position::new(0, 20))
         );
     }
 
@@ -2800,7 +2800,7 @@ mod tests {
         enum Tuple {
             Variant(u64, String, (), f64),
         }
-        let mut deserializer = Deserializer::new(b"#Variant:42:foo::1.2;\n#bar;\n".as_slice());
+        let mut deserializer = Deserializer::new(b"#Variant:42:foo:1.2;\n#bar;\n".as_slice());
 
         assert_err_eq!(
             Tuple::deserialize(&mut deserializer),
