@@ -213,11 +213,17 @@ impl<'a> Tag<'a> {
     pub(in crate::de) fn assert_exhausted(&self) -> Result<()> {
         let mut current_position = self.current_position;
         // SAFETY: self.current_byte_index is guaranteed to be within the bounds of self.bytes.
+        let mut in_comment = 0;
         for byte in unsafe { self.bytes.get_unchecked(self.current_byte_index..) } {
-            if !byte.is_ascii_whitespace() {
-                return Err(Error::new(error::Kind::UnexpectedValues, current_position));
+            if *byte == b'/' {
+                in_comment += 1;
+            } else if !byte.is_ascii_whitespace() {
+                if in_comment == 0 {
+                    return Err(Error::new(error::Kind::UnexpectedValues, current_position));
+                }
             } else if matches!(byte, b'\n') {
                 current_position = current_position.increment_line();
+                in_comment = 0;
             } else {
                 current_position = current_position.increment_column();
             }
